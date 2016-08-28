@@ -48,54 +48,6 @@ public class Consumers {
 		}
 	}
 
-	/**
-	 * This function corresponds to the consumers' utility function. (Eqn. #1 in
-	 * the proposal)
-	 * 
-	 * @param sectorValue
-	 * @param appInvestment
-	 * @param appPrice
-	 * @param netInvestment
-	 * @param bandwidthIntensity
-	 * @param bandwidthPrice
-	 * @param appPreference
-	 * @return
-	 */
-	double[] determineAppValues(
-			double sectorValue,
-			double appInvestment,
-			double netInvestment,
-			double appPreference) {
-
-		double[] values = new double[numConsumers];
-
-		double appVal = Math.pow(appInvestment, agentModel.psi);
-		double netVal = Math.pow(netInvestment, agentModel.tau);
-		double abstractVal = appVal * netVal * sectorValue;
-
-		for (int i = 0; i < values.length; i++) {
-			double pref = (1 - agentModel.theta) * Math.abs(preferenceFactors[i] - appPreference);
-			double value = abstractVal * incomes[i] * pref;
-			values[i] = value;
-		}
-
-		return values;
-	}
-
-	@Override
-	public String toString() {
-		return "Consumers [alpha=" + agentModel.alpha + ", beta=" + agentModel.beta + ", psi="
-				+ agentModel.psi + ", tau=" + agentModel.tau + ", theta=" + agentModel.theta
-				+ ", numConsumers=" + numConsumers
-				+ /*
-					 * ", preferenceFactors=" +
-					 * Arrays.toString(preferenceFactors) + ", incomes=" +
-					 * Arrays.toString(incomes) +
-					 */ ", integratedValue=" + integratedValue + ", otherValue=" + otherValue
-				+ ", videoBWIntensity=" + videoBWIntensity + ", otherBWIntensity="
-				+ otherBWIntensity + "]";
-	}
-
 	ArrayList<ConsumptionOption> determineOptions(
 			List<NetworkOffer> networkOnlyOffers,
 			List<ContentOffer> videoContentOffers,
@@ -211,9 +163,9 @@ public class Consumers {
 	}
 
 	/**
-	 * This function currently seems horrifically computationally expensive. How
-	 * bad is it? Is there a way to do this easier? Reduce mathematically? Look
-	 * into symbolic regression?
+	 * Given a list of consumption options, this function returns a list of
+	 * surplusses. The actual values for each consumer are determined by method
+	 * determineAppValues().
 	 * 
 	 * @param contentOffersVerticalSegment
 	 * @param contentOffersOtherSegment
@@ -223,6 +175,12 @@ public class Consumers {
 	 * @param bundledZeroRatedOffers
 	 */
 	ConsumptionOptionSurplus determineSurplusses(ArrayList<ConsumptionOption> options) {
+		/*
+		 * This function currently seems computationally expensive. How bad is
+		 * it? Is there a way to do this easier? Reduce mathematically? Look
+		 * into symbolic regression?
+		 */
+
 		// randomizing order of offers to eliminate potential
 		// order effects, e.g., from equalities
 		Collections.shuffle(options);
@@ -268,6 +226,54 @@ public class Consumers {
 		consumptionOptionSurpluses.consumptionOptions = options;
 		consumptionOptionSurpluses.surplus = consumerSurplus;
 		return consumptionOptionSurpluses;
+	}
+
+	/**
+	 * This function corresponds to the consumers' utility function. (Eqn. #1 in
+	 * the proposal)
+	 * 
+	 * @param sectorValue
+	 * @param appInvestment
+	 * @param appPrice
+	 * @param netInvestment
+	 * @param bandwidthIntensity
+	 * @param bandwidthPrice
+	 * @param appPreference
+	 * @return
+	 */
+	double[] determineAppValues(
+			double sectorValue,
+			double appInvestment,
+			double netInvestment,
+			double appPreference) {
+
+		double[] values = new double[numConsumers];
+
+		double appVal = Math.pow(appInvestment, agentModel.psi);
+		double netVal = Math.pow(netInvestment, agentModel.tau);
+		double abstractVal = appVal * netVal * sectorValue;
+
+		for (int i = 0; i < values.length; i++) {
+			double pref = (1 - agentModel.theta) * Math.abs(preferenceFactors[i] - appPreference);
+			double value = abstractVal * incomes[i] * pref;
+			values[i] = value;
+		}
+
+		return values;
+	}
+
+	@Override
+	public String toString() {
+		return "Consumers [alpha=" + agentModel.alpha + ", beta=" + agentModel.beta + ", psi="
+				+ agentModel.psi + ", tau=" + agentModel.tau + ", theta=" + agentModel.theta
+				+ ", numConsumers=" + numConsumers
+				+ /*
+					 * ", preferenceFactors=" +
+					 * Arrays.toString(preferenceFactors) + ", incomes=" +
+					 * Arrays.toString(incomes) +
+					 */ ", integratedValue=" + integratedValue + ", otherValue=" + otherValue
+				+ ", videoBWIntensity=" + videoBWIntensity + ", otherBWIntensity="
+				+ otherBWIntensity + "]";
 	}
 
 	public class ConsumptionOptionSurplus {
