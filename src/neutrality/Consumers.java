@@ -23,12 +23,9 @@ public class Consumers {
 	double			videoBWIntensity;
 	double			otherBWIntensity;
 
-	public Consumers() {
-
-	}
-
 	public Consumers(int numConsumers, double topIncome, NeutralityModel agentModel) {
 		this.numConsumers = numConsumers;
+		this.agentModel = agentModel;
 
 		// Make calculcations of values based on alpha
 		integratedValue = agentModel.alpha / (1.0 + agentModel.alpha);
