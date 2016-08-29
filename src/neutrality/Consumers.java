@@ -47,7 +47,7 @@ public class Consumers {
 			// incomes are evenly distributed from [0,topIncome]
 			incomes[i] = ((double) i / numConsumers) * topIncome;
 		}
-		
+
 		// Running surplus initialized to zero.
 		runningSurplus = new double[numConsumers];
 	}
@@ -86,7 +86,7 @@ public class Consumers {
 				}
 			}
 
-			// We've tried to find the best consumption option.  If there 
+			// We've tried to find the best consumption option. If there
 			// was one, consume it.
 			if (bestOption != null) {
 				// Buy it
@@ -136,9 +136,16 @@ public class Consumers {
 				option.otherContent = null;
 
 				// Costs
-				option.price += videoContentOffer.contentPrice; // Content
-				option.price += networkOnlyOffer.connectionPrice; // Connection
-				option.price += networkOnlyOffer.bandwidthPrice * videoBWIntensity; // BW
+				double networkPrice = 0;
+				networkPrice += networkOnlyOffer.connectionPrice; // Connection
+				networkPrice += networkOnlyOffer.bandwidthPrice * videoBWIntensity; // BW
+				option.toNetwork = networkPrice;
+
+				double videoPrice = videoContentOffer.contentPrice; // Content
+				option.toVideoContent = videoPrice;
+
+				option.price += networkPrice;
+				option.price += videoPrice;
 
 				options.add(option);
 			}
@@ -152,9 +159,16 @@ public class Consumers {
 				option.otherContent = otherContentOffer.content;
 
 				// Costs
-				option.price += otherContentOffer.contentPrice; // Content
-				option.price += networkOnlyOffer.connectionPrice; // Connection
-				option.price += networkOnlyOffer.bandwidthPrice * otherBWIntensity; // BW
+				double networkPrice = 0;
+				networkPrice += networkOnlyOffer.connectionPrice; // Connection
+				networkPrice += networkOnlyOffer.bandwidthPrice * otherBWIntensity; // BW
+				option.toNetwork = networkPrice;
+				option.price += networkPrice;
+
+				double otherPrice = 0;
+				otherPrice += otherContentOffer.contentPrice; // Content
+				option.toOtherContent = otherPrice;
+				option.price += otherPrice;
 
 				options.add(option);
 			}
@@ -169,10 +183,16 @@ public class Consumers {
 					option.otherContent = otherContentOffer.content;
 
 					// Costs
-					option.price += networkOnlyOffer.connectionPrice; // Connection
+					double networkPrice = 0;
+					networkPrice += networkOnlyOffer.connectionPrice; // Connection
+					networkPrice += networkOnlyOffer.bandwidthPrice; // BW
+					option.toNetwork = networkPrice;
+					option.price += networkPrice;
+
 					option.price += videoContentOffer.contentPrice; // Video
+					option.toVideoContent = videoContentOffer.contentPrice;
 					option.price += otherContentOffer.contentPrice; // Other
-					option.price += networkOnlyOffer.bandwidthPrice; // BW
+					option.toOtherContent = otherContentOffer.contentPrice;
 
 					options.add(option);
 				}
@@ -192,13 +212,23 @@ public class Consumers {
 					option.otherContent = otherContentOffer.content;
 
 					// Costs
+					
 					// Connection and video content
-					option.price += bundledOffer.bundlePrice; // Connection
-					option.price += otherContentOffer.contentPrice; // Other
-					option.price += bundledOffer.bandwidthPrice * otherBWIntensity; // BW
+					double networkPrice = 0;
+					// Connection and video to network operator
+					networkPrice += bundledOffer.bundlePrice;
+					// BW for other content
+					networkPrice += bundledOffer.bandwidthPrice * otherBWIntensity; 
+
 					// If not zero rated, then BW for Video too
 					if (!bundledOffer.contentZeroRated)
-						option.price += bundledOffer.bandwidthPrice * videoBWIntensity;
+						networkPrice += bundledOffer.bandwidthPrice * videoBWIntensity;
+
+					option.toNetwork = networkPrice;
+					option.price += networkPrice;
+
+					option.price += otherContentOffer.contentPrice; // Other
+					option.toOtherContent += otherContentOffer.contentPrice;
 
 					options.add(option);
 				}
@@ -215,7 +245,9 @@ public class Consumers {
 				// If not zero rated, then BW for Video too
 				if (!bundledOffer.contentZeroRated)
 					option.price += bundledOffer.bandwidthPrice * videoBWIntensity;
-
+				// All $ to network in this case.
+				option.toNetwork = option.price;
+				
 				options.add(option);
 
 			}
