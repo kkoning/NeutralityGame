@@ -12,8 +12,15 @@ public class ConsumptionOption {
 	double				toVideoContent;
 	double				toOtherContent;
 
+	/**
+	 * Pay each firm and execute any side-effects of this consumption (currently
+	 * none, as consumer surplus is added by Consumers.procurementProcess, which
+	 * should be the primary called of this function).
+	 */
 	public void consume() {
-		// TODO: Stub
+		network.account.receive(toNetwork);
+		videoContent.account.receive(toVideoContent);
+		otherContent.account.receive(toOtherContent);
 	}
 
 	@Override
