@@ -1,9 +1,9 @@
 package neutrality;
 
-import agency.Agent;
 import agency.Individual;
+import agency.SimpleFirm;
 
-public class ContentProvider implements Agent {
+public class ContentProvider<T extends Individual> extends SimpleFirm<T> {
 	
 	double contentInvestment;
 	double preference;
@@ -16,15 +16,5 @@ public class ContentProvider implements Agent {
 		return preference;
 	}
 
-	@Override
-	public Individual getIndividual() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	@Override
-	public void setIndividual(Individual ind) {
-		// TODO Auto-generated method stub
-		
-	}
 }

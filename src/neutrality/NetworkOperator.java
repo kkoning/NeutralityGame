@@ -1,25 +1,13 @@
 package neutrality;
 
-import agency.Agent;
 import agency.Individual;
+import agency.SimpleFirm;
 
-public class NetworkOperator implements Agent {
+public class NetworkOperator<T extends Individual> extends SimpleFirm<T> {
 	double networkInvestment;
 	
 	double getInvestment() {
 		return networkInvestment;
-	}
-
-	@Override
-	public Individual getIndividual() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setIndividual(Individual ind) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }

@@ -2,15 +2,20 @@ package neutrality;
 
 public class ConsumptionOption {
 
-	NetworkOperator	network;
-	ContentProvider	videoContent;
-	ContentProvider	otherContent;
-	double			price;
+	NetworkOperator<?>	network;
+	ContentProvider<?>	videoContent;
+	ContentProvider<?>	otherContent;
+	double				price;
+
+	// if this option is consumed, these agents get paid this much.
+	double				toNetwork;
+	double				toVideoContent;
+	double				toOtherContent;
 
 	public void consume() {
 		// TODO: Stub
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
