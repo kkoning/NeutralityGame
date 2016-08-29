@@ -17,6 +17,7 @@ public class Consumers {
 	int				numConsumers;
 	double[]		preferenceFactors;
 	double[]		incomes;
+	double[]		runningSurplus;
 
 	double			integratedValue;
 	double			otherValue;
@@ -46,8 +47,68 @@ public class Consumers {
 			// incomes are evenly distributed from [0,topIncome]
 			incomes[i] = ((double) i / numConsumers) * topIncome;
 		}
+		
+		// Running surplus initialized to zero.
+		runningSurplus = new double[numConsumers];
 	}
 
+	public void procurementProcess(
+			List<NetworkOffer> networkOnlyOffers,
+			List<ContentOffer> videoContentOffers,
+			List<ContentOffer> otherContentOffers,
+			List<BundledOffer> bundledOffers) {
+
+		// Determine the list of options
+		ArrayList<ConsumptionOption> options;
+		options = determineOptions(
+				networkOnlyOffers,
+				videoContentOffers,
+				otherContentOffers,
+				bundledOffers);
+
+		// Calculate the surplus for each option
+		ConsumptionOptionSurplus cos;
+		cos = determineSurplusses(options);
+
+		// Consume the best positive option, or nothing if all negative.
+		for (int i = 0; i < numConsumers; i++) {
+			// starting initial best is to consume nothing
+			ConsumptionOption bestOption = null;
+			double bestOptionValue = 0;
+			for (int j = 0; j < cos.consumptionOptions.size(); j++) {
+				// i_th consumer, j_th option
+
+				// if i_th consumer, j_th option is better
+				if (cos.surplus[j][i] > bestOptionValue) {
+					// then probably consume it instead
+					bestOption = cos.consumptionOptions.get(j);
+					bestOptionValue = cos.surplus[j][i];
+				}
+			}
+
+			// We've tried to find the best consumption option.  If there 
+			// was one, consume it.
+			if (bestOption != null) {
+				// Buy it
+				bestOption.consume();
+				// keep track of our surplus.
+				runningSurplus[i] += bestOptionValue;
+			}
+		}
+	}
+
+	/**
+	 * Given a list of different kinds of offers from network operators and
+	 * content providers, this function returns a list of all possible and
+	 * allowable combinations of consumption. The restrictions are merely that
+	 * content may not be consumed without a network, and
+	 * 
+	 * @param networkOnlyOffers
+	 * @param videoContentOffers
+	 * @param otherContentOffers
+	 * @param bundledOffers
+	 * @return
+	 */
 	ArrayList<ConsumptionOption> determineOptions(
 			List<NetworkOffer> networkOnlyOffers,
 			List<ContentOffer> videoContentOffers,

@@ -7,6 +7,10 @@ public class ConsumptionOption {
 	ContentProvider	otherContent;
 	double			price;
 
+	public void consume() {
+		// TODO: Stub
+	}
+	
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
