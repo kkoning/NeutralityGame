@@ -39,20 +39,14 @@ public class TestConsumers {
 		// Create a group of standalone offers.
 
 		// One network operator with K_n=25, P_n=3, and P_b=3.
-		NetworkOperator netOp = new NetworkOperator();
+		NetworkOperator<?> netOp = new HardCodedNetworkOperator(nm);
 		netOp.networkInvestment = 25;
-		NetworkOffer netOffer = new NetworkOffer();
-		netOffer.network = netOp;
-		netOffer.connectionPrice = 3;
-		netOffer.bandwidthPrice = 3;
+		NetworkOffer netOffer = new NetworkOffer(netOp,3,3);
 
 		// Another network operator with K_n=60, P_n=9, and P_b=9.
-		NetworkOperator netOp2 = new NetworkOperator();
+		NetworkOperator<?> netOp2 = new HardCodedNetworkOperator(nm);
 		netOp2.networkInvestment = 60;
-		NetworkOffer netOffer2 = new NetworkOffer();
-		netOffer2.network = netOp2;
-		netOffer2.connectionPrice = 9;
-		netOffer2.bandwidthPrice = 9;
+		NetworkOffer netOffer2 = new NetworkOffer(netOp2,9,9);
 
 		ArrayList<NetworkOffer> netOffers = new ArrayList<>();
 		netOffers.add(netOffer);
@@ -60,20 +54,16 @@ public class TestConsumers {
 
 		
 		// Content provider A with Q=9, P=1, pref=0
-		ContentProvider cp_A = new ContentProvider();
+		ContentProvider<?> cp_A = new HardCodedContentProvider(nm,true);
 		cp_A.contentInvestment = 9;
 		cp_A.preference = 0;
-		ContentOffer co_A = new ContentOffer();
-		co_A.content = cp_A;
-		co_A.contentPrice = 1;
+		ContentOffer co_A = new ContentOffer(cp_A,1);
 
 		// Content provider B with Q=16, P=5, pref=1
-		ContentProvider cp_B = new ContentProvider();
+		ContentProvider<?> cp_B = new HardCodedContentProvider(nm,true);
 		cp_B.contentInvestment = 16;
 		cp_B.preference = 1;
-		ContentOffer co_B = new ContentOffer();
-		co_B.content = cp_B;
-		co_B.contentPrice = 5;
+		ContentOffer co_B = new ContentOffer(cp_B,5);
 
 		// Offerings for CP A and B are both in the vertically integrated
 		// segment
@@ -82,32 +72,20 @@ public class TestConsumers {
 		contentOffersIntegrated.add(co_B);
 
 		// Content provider C with Q=19, P=13, pref=0.5
-		ContentProvider cp_C = new ContentProvider();
+		ContentProvider<?> cp_C = new HardCodedContentProvider(nm,false);
 		cp_C.contentInvestment = 19;
 		cp_C.preference = 0.5;
-		ContentOffer co_C = new ContentOffer();
-		co_C.content = cp_A;
-		co_C.contentPrice = 13;
+		ContentOffer co_C = new ContentOffer(cp_C,13);
 
 		// Offerings for CP C in the other segment
 		ArrayList<ContentOffer> contentOffersOther = new ArrayList<>();
 		contentOffersOther.add(co_C);
 
 		// Bundled offer of NetOp and CP A
-		BundledOffer bo1 = new BundledOffer();
-		bo1.network = netOp;
-		bo1.videoContent = cp_A;
-		bo1.bandwidthPrice = 1;
-		bo1.bundlePrice = 4;
-		bo1.contentZeroRated = false;
+		BundledOffer bo1 = new BundledOffer(netOp, cp_A, 4, 1, false);
 
 		// Bundled offer of NetOp and CP A, zero rated
-		BundledOffer bo2 = new BundledOffer();
-		bo2.network = netOp;
-		bo2.videoContent = cp_A;
-		bo2.bandwidthPrice = 1;
-		bo2.bundlePrice = 6;
-		bo2.contentZeroRated = true;
+		BundledOffer bo2 = new BundledOffer(netOp, cp_A, 6, 1, true);
 
 		ArrayList<BundledOffer> bos = new ArrayList<>();
 		bos.add(bo1);
@@ -115,7 +93,7 @@ public class TestConsumers {
 
 		// Create the combination of purchase options possible from these offers
 		ArrayList<ConsumptionOption> options;
-		options = c.determineOptions(netOffers, contentOffersIntegrated, contentOffersOther, bos);
+		options = ConsumptionOption.determineOptions(nm, netOffers, contentOffersIntegrated, contentOffersOther, bos);
 
 		// Print out details about consumers
 		System.out.println(c);

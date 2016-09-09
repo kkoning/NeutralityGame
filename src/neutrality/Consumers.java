@@ -1,14 +1,9 @@
 package neutrality;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
-
-import neutrality.Offers.BundledOffer;
-import neutrality.Offers.ContentOffer;
-import neutrality.Offers.NetworkOffer;
 
 public class Consumers {
 
@@ -19,22 +14,9 @@ public class Consumers {
 	double[]		incomes;
 	double[]		runningSurplus;
 
-	double			integratedValue;
-	double			otherValue;
-	double			videoBWIntensity;
-	double			otherBWIntensity;
-
 	public Consumers(int numConsumers, double topIncome, NeutralityModel agentModel) {
 		this.numConsumers = numConsumers;
 		this.agentModel = agentModel;
-
-		// Make calculcations of values based on alpha
-		integratedValue = agentModel.alpha / (1.0 + agentModel.alpha);
-		otherValue = 1 - integratedValue;
-
-		// Make calculations of bw intensity based on beta
-		videoBWIntensity = agentModel.beta / (1.0 + agentModel.beta);
-		otherBWIntensity = 1 - videoBWIntensity;
 
 		// Per individual consumer stuff, preferences and income
 		preferenceFactors = new double[numConsumers];
@@ -52,19 +34,7 @@ public class Consumers {
 		runningSurplus = new double[numConsumers];
 	}
 
-	public void procurementProcess(
-			List<NetworkOffer> networkOnlyOffers,
-			List<ContentOffer> videoContentOffers,
-			List<ContentOffer> otherContentOffers,
-			List<BundledOffer> bundledOffers) {
-
-		// Determine the list of options
-		ArrayList<ConsumptionOption> options;
-		options = determineOptions(
-				networkOnlyOffers,
-				videoContentOffers,
-				otherContentOffers,
-				bundledOffers);
+	public void procurementProcess(List<ConsumptionOption> options) {
 
 		// Calculate the surplus for each option
 		ConsumptionOptionSurplus cos;
@@ -98,164 +68,6 @@ public class Consumers {
 	}
 
 	/**
-	 * Given a list of different kinds of offers from network operators and
-	 * content providers, this function returns a list of all possible and
-	 * allowable combinations of consumption. The restrictions are merely that
-	 * content may not be consumed without a network, and
-	 * 
-	 * @param networkOnlyOffers
-	 * @param videoContentOffers
-	 * @param otherContentOffers
-	 * @param bundledOffers
-	 * @return
-	 */
-	ArrayList<ConsumptionOption> determineOptions(
-			List<NetworkOffer> networkOnlyOffers,
-			List<ContentOffer> videoContentOffers,
-			List<ContentOffer> otherContentOffers,
-			List<BundledOffer> bundledOffers) {
-
-		// TODO: Put together synthetic offer for zero rated but not bundled
-		// content.
-		// Should probably come from the network agents.
-
-		ArrayList<ConsumptionOption> options = new ArrayList<>();
-
-		// Network only offers, put together synthetic bundles.
-		for (NetworkOffer networkOnlyOffer : networkOnlyOffers) {
-			//
-			// Need all combinations of Content
-			//
-
-			// Video but not other
-			for (ContentOffer videoContentOffer : videoContentOffers) {
-				ConsumptionOption option = new ConsumptionOption();
-				// Goods
-				option.network = networkOnlyOffer.network;
-				option.videoContent = videoContentOffer.content;
-				option.otherContent = null;
-
-				// Costs
-				double networkPrice = 0;
-				networkPrice += networkOnlyOffer.connectionPrice; // Connection
-				networkPrice += networkOnlyOffer.bandwidthPrice * videoBWIntensity; // BW
-				option.toNetwork = networkPrice;
-
-				double videoPrice = videoContentOffer.contentPrice; // Content
-				option.toVideoContent = videoPrice;
-
-				option.price += networkPrice;
-				option.price += videoPrice;
-
-				options.add(option);
-			}
-
-			// No integrated content, but other content
-			for (ContentOffer otherContentOffer : otherContentOffers) {
-				ConsumptionOption option = new ConsumptionOption();
-				// Goods
-				option.network = networkOnlyOffer.network;
-				option.videoContent = null;
-				option.otherContent = otherContentOffer.content;
-
-				// Costs
-				double networkPrice = 0;
-				networkPrice += networkOnlyOffer.connectionPrice; // Connection
-				networkPrice += networkOnlyOffer.bandwidthPrice * otherBWIntensity; // BW
-				option.toNetwork = networkPrice;
-				option.price += networkPrice;
-
-				double otherPrice = 0;
-				otherPrice += otherContentOffer.contentPrice; // Content
-				option.toOtherContent = otherPrice;
-				option.price += otherPrice;
-
-				options.add(option);
-			}
-
-			// Both integrated and other content
-			for (ContentOffer videoContentOffer : videoContentOffers) {
-				for (ContentOffer otherContentOffer : otherContentOffers) {
-					ConsumptionOption option = new ConsumptionOption();
-					// Goods
-					option.network = networkOnlyOffer.network;
-					option.videoContent = videoContentOffer.content;
-					option.otherContent = otherContentOffer.content;
-
-					// Costs
-					double networkPrice = 0;
-					networkPrice += networkOnlyOffer.connectionPrice; // Connection
-					networkPrice += networkOnlyOffer.bandwidthPrice; // BW
-					option.toNetwork = networkPrice;
-					option.price += networkPrice;
-
-					option.price += videoContentOffer.contentPrice; // Video
-					option.toVideoContent = videoContentOffer.contentPrice;
-					option.price += otherContentOffer.contentPrice; // Other
-					option.toOtherContent = otherContentOffer.contentPrice;
-
-					options.add(option);
-				}
-			}
-
-		}
-
-		// Bundled Offers
-		if (bundledOffers != null)
-			for (BundledOffer bundledOffer : bundledOffers) {
-				// With each combination of unrelated content.
-				for (ContentOffer otherContentOffer : otherContentOffers) {
-					// Goods
-					ConsumptionOption option = new ConsumptionOption();
-					option.network = bundledOffer.network;
-					option.videoContent = bundledOffer.videoContent;
-					option.otherContent = otherContentOffer.content;
-
-					// Costs
-					
-					// Connection and video content
-					double networkPrice = 0;
-					// Connection and video to network operator
-					networkPrice += bundledOffer.bundlePrice;
-					// BW for other content
-					networkPrice += bundledOffer.bandwidthPrice * otherBWIntensity; 
-
-					// If not zero rated, then BW for Video too
-					if (!bundledOffer.contentZeroRated)
-						networkPrice += bundledOffer.bandwidthPrice * videoBWIntensity;
-
-					option.toNetwork = networkPrice;
-					option.price += networkPrice;
-
-					option.price += otherContentOffer.contentPrice; // Other
-					option.toOtherContent += otherContentOffer.contentPrice;
-
-					options.add(option);
-				}
-
-				// Bundled offer without other content
-				// Goods
-				ConsumptionOption option = new ConsumptionOption();
-				option.network = bundledOffer.network;
-				option.videoContent = bundledOffer.videoContent;
-				option.otherContent = null;
-
-				// Costs
-				option.price += bundledOffer.bundlePrice; // Connection
-				// If not zero rated, then BW for Video too
-				if (!bundledOffer.contentZeroRated)
-					option.price += bundledOffer.bandwidthPrice * videoBWIntensity;
-				// All $ to network in this case.
-				option.toNetwork = option.price;
-				
-				options.add(option);
-
-			}
-
-		return options;
-	}
-
-	/**
 	 * Given a list of consumption options, this function returns a list of
 	 * surplusses. The actual values for each consumer are determined by method
 	 * determineAppValues().
@@ -267,7 +79,7 @@ public class Consumers {
 	 * @param zeroRatedOffers
 	 * @param bundledZeroRatedOffers
 	 */
-	ConsumptionOptionSurplus determineSurplusses(ArrayList<ConsumptionOption> options) {
+	ConsumptionOptionSurplus determineSurplusses(List<ConsumptionOption> options) {
 		/*
 		 * This function currently seems computationally expensive. How bad is
 		 * it? Is there a way to do this easier? Reduce mathematically? Look
@@ -288,7 +100,7 @@ public class Consumers {
 			// Add value of video content, if any.
 			if (option.videoContent != null) {
 				double[] videoContentValue = determineAppValues(
-						integratedValue,
+						agentModel.getVideoContentValue(),
 						option.videoContent.getInvestment(),
 						option.network.getInvestment(),
 						option.videoContent.getPreference());
@@ -300,7 +112,7 @@ public class Consumers {
 			// Add value of other content, if any.
 			if (option.otherContent != null) {
 				double[] otherContentValue = determineAppValues(
-						otherValue,
+						agentModel.getOtherContentValue(),
 						option.otherContent.getInvestment(),
 						option.network.getInvestment(),
 						option.otherContent.getPreference());
@@ -311,7 +123,7 @@ public class Consumers {
 
 			// Subtract price
 			for (int j = 0; j < numConsumers; j++) {
-				consumerSurplus[i][j] -= option.price;
+				consumerSurplus[i][j] -= option.cost;
 			}
 		}
 
@@ -355,6 +167,23 @@ public class Consumers {
 		return values;
 	}
 
+	public double[] getSurplusses() {
+		return runningSurplus;
+	}
+
+	/**
+	 * @return The sum of all consumer surplusses
+	 */
+	public double getTotalSurplus() {
+		double totalSurplus = 0;
+
+		for (double d : runningSurplus)
+			totalSurplus += d;
+
+		return totalSurplus;
+
+	}
+
 	@Override
 	public String toString() {
 		return "Consumers [alpha=" + agentModel.alpha + ", beta=" + agentModel.beta + ", psi="
@@ -364,14 +193,15 @@ public class Consumers {
 					 * ", preferenceFactors=" +
 					 * Arrays.toString(preferenceFactors) + ", incomes=" +
 					 * Arrays.toString(incomes) +
-					 */ ", integratedValue=" + integratedValue + ", otherValue=" + otherValue
-				+ ", videoBWIntensity=" + videoBWIntensity + ", otherBWIntensity="
-				+ otherBWIntensity + "]";
+					 */ ", integratedValue=" + agentModel.getVideoContentValue() + ", otherValue="
+				+ agentModel.getOtherContentValue() + ", videoBWIntensity="
+				+ agentModel.getVideoBWIntensity() + ", otherBWIntensity="
+				+ agentModel.getOtherBWIntensity() + "]";
 	}
 
 	public class ConsumptionOptionSurplus {
 
-		ArrayList<ConsumptionOption>	consumptionOptions;
+		List<ConsumptionOption>	consumptionOptions;
 
 		/**
 		 * Contains the surplus of each option for each consumer. The first
@@ -380,7 +210,7 @@ public class Consumers {
 		 * 
 		 * Or, in shorthand, surplus[option][consumer].
 		 */
-		double[][]						surplus;
+		double[][]				surplus;
 
 		@Override
 		public String toString() {
