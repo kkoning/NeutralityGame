@@ -61,4 +61,6 @@ public class HardCodedNetworkOperator extends NetworkOperator<NullIndividual> {
 		return fixedBundledOffer;
 	}
 
+	
+	
 }

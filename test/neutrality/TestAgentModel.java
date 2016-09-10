@@ -43,6 +43,9 @@ public class TestAgentModel {
 				"Detailed Consumer Surpluses = "
 						+ Arrays.toString(model.consumers.getSurplusses()));
 
+		System.out.println(hcno);
+		System.out.println(hccpVideo);
+		System.out.println(hccpOther);
 	}
 
 }

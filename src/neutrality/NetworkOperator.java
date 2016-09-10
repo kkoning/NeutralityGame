@@ -3,23 +3,22 @@ package neutrality;
 import agency.Individual;
 import agency.NullIndividual;
 import agency.SimpleFirm;
+import agency.SimpleFitness;
 import neutrality.Offers.BundledOffer;
 import neutrality.Offers.ContentOffer;
 import neutrality.Offers.NetworkOffer;
 
 public abstract class NetworkOperator<T extends Individual> extends SimpleFirm<T> {
 
-	double					networkInvestment;
+	double							networkInvestment;
 
 	// Track the # of different purchases of each type
 	int								numStandaloneNetworkOffersAccepted;
-	int								numStandaloneContentOffersAccepted;
 	int								numBundledOffersAccepted;
 	int								numBundledZeroRatedOffersAccepted;
 
 	// Track the total income from different purchases of each type
 	double							totalStandaloneNetworkRevenue;
-	double							totalStandaloneContentRevenue;
 	double							totalBundledRevenue;
 	double							totalBundledZeroRatedRevenue;
 
@@ -40,9 +39,9 @@ public abstract class NetworkOperator<T extends Individual> extends SimpleFirm<T
 	NetworkOperator(NeutralityModel model) {
 		this.model = model;
 	}
-	
+
 	abstract void step();
-	
+
 	double getInvestment() {
 		return networkInvestment;
 	}
@@ -52,7 +51,7 @@ public abstract class NetworkOperator<T extends Individual> extends SimpleFirm<T
 	public abstract ContentOffer getVideoContentOffer();
 
 	public abstract BundledOffer getBundledOffer();
-	
+
 	public void receiveInterconnectionPayment(ContentProvider<?> cp, double amount) {
 		// Credit the payment to our account
 		account.receive(amount);
@@ -83,10 +82,14 @@ public abstract class NetworkOperator<T extends Individual> extends SimpleFirm<T
 			boolean videoUsed,
 			boolean otherUsed) {
 
-		// Track
+		// Track # of accepted standalone offers
 		numStandaloneNetworkOffersAccepted++;
 
+		// Track total revenue received from connection fees
 		account.receive(networkOffer.connectionPrice);
+		totalStandaloneNetworkRevenue += networkOffer.connectionPrice;
+
+		// Track consumer bandwidth usage.
 		consumerBandwidthUsage(networkOffer.bandwidthPrice, videoUsed, otherUsed);
 
 	}
@@ -105,11 +108,25 @@ public abstract class NetworkOperator<T extends Individual> extends SimpleFirm<T
 	 *            true if the consumer also purchased other content.
 	 */
 	public void processAcceptedBundledOffer(BundledOffer bundledOffer, boolean otherUsed) {
+
+		// Earn the $
 		account.receive(bundledOffer.bundlePrice);
+
+		// Track # of accepted bundled offers accepted
+		if (bundledOffer.contentZeroRated) {
+			numBundledZeroRatedOffersAccepted++;
+			totalBundledZeroRatedRevenue += bundledOffer.bundlePrice;
+		} else {
+			numBundledOffersAccepted++;
+			totalBundledRevenue += bundledOffer.bundlePrice;
+		}
+
+		// Track consumer bandwidth usage.
 		consumerBandwidthUsage(
 				bundledOffer.bandwidthPrice,
 				!bundledOffer.contentZeroRated, // if zero rated, don't charge
 				otherUsed);
+
 	}
 
 	/**
@@ -143,6 +160,56 @@ public abstract class NetworkOperator<T extends Individual> extends SimpleFirm<T
 		}
 	}
 
+	@Override
+	public SimpleFitness getFitness() {
+		/*
+		 * In this case, the total fitness of the agent is equal to the sum of
+		 * the fitness for the network operator and content provider aspects of
+		 * the agent's business.
+		 */
+		double fitness = account.getBalance();
+		if (integratedContentProvider != null)
+			fitness += integratedContentProvider.account.getBalance();
+		
+		return new SimpleFitness(fitness);
+	}
+
 	public abstract double getInterconnectionBandwidthPrice();
+
+	public double getNumStandaloneContentOffersAccepted() {
+		if (integratedContentProvider == null)
+			return 0;
+		else
+			return integratedContentProvider.numAcceptedOffers;
+	}
+	
+	public double getTotalStandaloneContentRevenue() {
+		if (integratedContentProvider == null)
+			return 0;
+		else
+			return integratedContentProvider.totalRevenue;
+	}
+
+	
+	@Override
+	public String toString() {
+		return "NetworkOperator [networkInvestment=" + networkInvestment
+				+ ", numStandaloneNetworkOffersAccepted=" + numStandaloneNetworkOffersAccepted
+				+ ", numStandaloneContentOffersAccepted=" + getNumStandaloneContentOffersAccepted()
+				+ ", numBundledOffersAccepted=" + numBundledOffersAccepted
+				+ ", numBundledZeroRatedOffersAccepted=" + numBundledZeroRatedOffersAccepted
+				+ ", totalStandaloneNetworkRevenue=" + totalStandaloneNetworkRevenue
+				+ ", totalStandaloneContentRevenue=" + getTotalStandaloneContentRevenue()
+				+ ", totalBundledRevenue=" + totalBundledRevenue + ", totalBundledZeroRatedRevenue="
+				+ totalBundledZeroRatedRevenue + ", totalConsumerBandwidthPayments="
+				+ totalConsumerBandwidthPayments + ", totalConsumerBandwidthPaymentsFromVideo="
+				+ totalConsumerBandwidthPaymentsFromVideo
+				+ ", totalConsumerBandwidthPaymentsFromOther="
+				+ totalConsumerBandwidthPaymentsFromOther
+				+ ", totalInterconnectionPaymentsReceived=" + totalInterconnectionPaymentsReceived
+				+ ", totalInterconnectionPaymentsFromVideo=" + totalInterconnectionPaymentsFromVideo
+				+ ", totalInterconnectionPaymentsFromOther=" + totalInterconnectionPaymentsFromOther
+				+ ", integratedContentProvider=" + integratedContentProvider + "]";
+	}
 
 }

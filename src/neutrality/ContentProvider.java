@@ -6,6 +6,15 @@ import neutrality.Offers.ContentOffer;
 
 public abstract class ContentProvider<T extends Individual> extends SimpleFirm<T> {
 
+	@Override
+	public String toString() {
+		return super.toString() + "[contentInvestment=" + contentInvestment + ", preference="
+				+ preference + ", isVideoProvider=" + isVideoProvider + ", numAcceptedOffers="
+				+ numAcceptedOffers + ", totalRevenue=" + totalRevenue
+				+ ", totalPaidForInterconnection=" + totalPaidForInterconnection + ", account="
+				+ account + "]";
+	}
+
 	// Parameters relevant to consumer value; investment and preference.
 	double			contentInvestment;
 	double			preference;
@@ -51,6 +60,12 @@ public abstract class ContentProvider<T extends Individual> extends SimpleFirm<T
 		// Earn $
 		account.receive(acceptedOffer.contentPrice);
 
+		// Track total revenue
+		totalRevenue += acceptedOffer.contentPrice;
+		
+		// Track total # of offers accepted.
+		numAcceptedOffers++;
+		
 		// Pay network provider for bandwidth use.
 		payInterconnectionBandwidth(onNetwork);
 	}
