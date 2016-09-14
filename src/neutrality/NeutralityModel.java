@@ -2,8 +2,7 @@ package neutrality;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Stream;
 
 import agency.Agent;
 import agency.AgentModel;
@@ -11,6 +10,7 @@ import agency.Fitness;
 import agency.Individual;
 import agency.SimpleFirm;
 import agency.SimpleFitness;
+import agency.util.Statistics;
 import neutrality.Offers.BundledOffer;
 import neutrality.Offers.ContentOffer;
 import neutrality.Offers.NetworkOffer;
@@ -66,13 +66,13 @@ public class NeutralityModel implements AgentModel {
 
 		// Step each agent; allow them to generate and update offers.
 		for (NetworkOperator<?> no : networkOperators)
-			no.step();  // Network Operators
+			no.step(); // Network Operators
 		for (ContentProvider<?> cp : videoContentProviders)
-			cp.step();  // Video Content Providers
+			cp.step(); // Video Content Providers
 		for (ContentProvider<?> cp : otherContentProviders)
-			cp.step();  // Other Content Providers
+			cp.step(); // Other Content Providers
 		// Consumers do not need to be stepped; behavior is specified.
-		
+
 		// Agents generate offers, add them to these lists.
 		List<NetworkOffer> networkOnlyOffers = new ArrayList<>();
 		List<ContentOffer> videoContentOffers = new ArrayList<>();
@@ -163,16 +163,132 @@ public class NeutralityModel implements AgentModel {
 		return maxSteps;
 	}
 
+	/*
+	 * TODO: In progress...
+	 * 
+	 * (non-Javadoc)
+	 * 
+	 * @see agency.AgentModel#getSummaryData()
+	 */
 	@Override
 	public Object getSummaryData() {
-		// TODO Auto-generated method stub
-		return null;
+		OutputData o = new OutputData();
+
+		/*
+		 * Data on network operatros
+		 */
+		// How many
+		o.numNetworkOperators = networkOperators.size();
+
+		// Total investment & HHI
+		o.networkOperatorInvestment = networkOperators.stream()
+				.mapToDouble(no -> no.networkInvestment).sum();
+		o.networkOperatorInvestmentHHI = Statistics.HHI(
+				networkOperators.stream().map(no -> no.networkInvestment).toArray(Double[]::new));
+
+		// Standalone Network offers & HHI
+		o.numStandaloneNetworkOffersAccepted = networkOperators.stream()
+				.mapToInt(no -> no.numStandaloneNetworkOffersAccepted).sum();
+		o.numStandaloneNetworkOffersHHI = Statistics.HHI(
+				networkOperators.stream().map(no -> no.networkInvestment).toArray(Integer[]::new));
+
+		/*
+		 * Data on Video Markets, in which both NSPs and some CPs participate.
+		 */
+
+		// Standalone Content Offers & HHI
+		// These are by both NSPs and others
+		o.numNSPStandaloneVideoOffersAccepted = networkOperators.stream()
+				.mapToInt(no -> no.getNumStandaloneContentOffersAccepted()).sum();
+		o.numThirdPartyStandaloneVideoOffersAccepted = videoContentProviders.stream()
+				.mapToInt(vcp -> vcp.numAcceptedOffers).sum();
+		o.numStandaloneNetworkOffersAccepted = o.numNSPStandaloneVideoOffersAccepted
+				+ o.numThirdPartyStandaloneVideoOffersAccepted;
+		o.numStandaloneVideoOffersHHI = Statistics.HHI(
+				Stream.concat(
+						networkOperators.stream()
+								.map(no -> no.getNumStandaloneContentOffersAccepted()),
+						videoContentProviders.stream().map(vcp -> vcp.numAcceptedOffers))
+						.toArray(Integer[]::new));
+
+		/*
+		 * Data on standalone video content providers
+		 */
+		o.numVideoContentProviders = videoContentProviders.size();
+
+		/*
+		 * Data on other content providers
+		 */
+		o.numOtherContentProvides = otherContentProviders.size();
+
+		return o;
 	}
 
 	@Override
 	public Object getStepData() {
-		// TODO Auto-generated method stub
+		// Do not output any per-step data.
 		return null;
+	}
+
+	public static class OutputData {
+		/*
+		 * This object gets translated directly into column headers and data
+		 * values in output files. For this reason, it needs to be flattened and
+		 * not hierarchical. Also, it will necessarily be somewhat repetitive
+		 * because fields from other object cannot be re-used directly.
+		 * 
+		 * Notes to self:
+		 * 
+		 * (1) Use first class types to distinguish between null and default
+		 * values. (2) Don't add values here faster than populating them.
+		 * 
+		 */
+
+		// Use first class
+
+		Integer	numNetworkOperators;
+		Double	networkOperatorInvestment;
+		Double	networkOperatorInvestmentHHI;
+		Integer	numStandaloneNetworkOffersAccepted;
+		Double	numStandaloneNetworkOffersHHI;
+
+		Integer	numStandaloneVideoOffersAccepted;
+		Integer	numNSPStandaloneVideoOffersAccepted;
+		Integer	numThirdPartyStandaloneVideoOffersAccepted;
+		Double	numStandaloneVideoOffersHHI;
+
+		Integer	numVideoContentProviders;
+
+		Integer	numOtherContentProvides;
+
+		// return "NetworkOperator [networkInvestment=" + networkInvestment
+		// + ", numStandaloneNetworkOffersAccepted=" +
+		// numStandaloneNetworkOffersAccepted
+		// + ", numStandaloneContentOffersAccepted=" +
+		// getNumStandaloneContentOffersAccepted()
+		// + ", numBundledOffersAccepted=" + numBundledOffersAccepted
+		// + ", numBundledZeroRatedOffersAccepted=" +
+		// numBundledZeroRatedOffersAccepted
+		// + ", totalStandaloneNetworkRevenue=" + totalStandaloneNetworkRevenue
+		// + ", totalStandaloneContentRevenue=" +
+		// getTotalStandaloneContentRevenue()
+		// + ", totalBundledRevenue=" + totalBundledRevenue + ",
+		// totalBundledZeroRatedRevenue="
+		// + totalBundledZeroRatedRevenue + ", totalConsumerBandwidthPayments="
+		// + totalConsumerBandwidthPayments + ",
+		// totalConsumerBandwidthPaymentsFromVideo="
+		// + totalConsumerBandwidthPaymentsFromVideo
+		// + ", totalConsumerBandwidthPaymentsFromOther="
+		// + totalConsumerBandwidthPaymentsFromOther
+		// + ", totalInterconnectionPaymentsReceived=" +
+		// totalInterconnectionPaymentsReceived
+		// + ", totalInterconnectionPaymentsFromVideo=" +
+		// totalInterconnectionPaymentsFromVideo
+		// + ", totalInterconnectionPaymentsFromOther=" +
+		// totalInterconnectionPaymentsFromOther
+		// + ", integratedContentProvider=" + integratedContentProvider + "]";
+		// }
+
 	}
 
 }

@@ -176,7 +176,7 @@ public abstract class NetworkOperator<T extends Individual> extends SimpleFirm<T
 
 	public abstract double getInterconnectionBandwidthPrice();
 
-	public double getNumStandaloneContentOffersAccepted() {
+	public int getNumStandaloneContentOffersAccepted() {
 		if (integratedContentProvider == null)
 			return 0;
 		else
