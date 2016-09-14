@@ -30,7 +30,7 @@ public class TestAgentModel {
 		model.addAgent(hccpOther);
 
 		System.out.println("Executing Model");
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 100_000; i++) {
 			model.step();
 		}
 

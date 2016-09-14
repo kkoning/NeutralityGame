@@ -32,7 +32,7 @@ public class HardCodedNetworkOperator extends NetworkOperator<NullIndividual> {
 		fixedVideoContentOffer = integratedContentProvider.getContentOffer();
 
 		// Bundled Offer
-		fixedBundledOffer = new BundledOffer(this, integratedContentProvider, 1, 1, false);
+		fixedBundledOffer = new BundledOffer(this, integratedContentProvider, 2, 1, false);
 
 	}
 
