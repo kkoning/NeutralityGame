@@ -10,8 +10,8 @@ public class HardCodedContentProvider extends ContentProvider<NullIndividual> {
 	/**
 	 * Default constructor, all prices and investment have unit values (=1).
 	 */
-	public HardCodedContentProvider(NeutralityModel model, boolean isVideoProvider) {
-		super(model, isVideoProvider);
+	public HardCodedContentProvider() {
+		super();
 		
 		contentInvestment = 1;
 		this.fixedOffer = new ContentOffer(this, 1);

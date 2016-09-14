@@ -23,10 +23,8 @@ public abstract class ContentProvider<T extends Individual> extends SimpleFirm<T
 	 * True if this content provider is in the video market, false if it in the
 	 * other content market.
 	 */
-	boolean			isVideoProvider;
+	Boolean			isVideoProvider;
 
-	// Keep reference to
-	NeutralityModel	model;
 
 	// Track the # of units sold, revenue, and $ for interconnection
 	int				numAcceptedOffers;
@@ -34,9 +32,7 @@ public abstract class ContentProvider<T extends Individual> extends SimpleFirm<T
 	double			totalPaidForInterconnection;
 
 	// TODO: Constructor
-	public ContentProvider(NeutralityModel model, boolean isVideoProvider) {
-		this.model = model;
-		this.isVideoProvider = isVideoProvider;
+	public ContentProvider() {
 	}
 
 	public double getInvestment() {
@@ -82,9 +78,9 @@ public abstract class ContentProvider<T extends Individual> extends SimpleFirm<T
 		// How much to pay depends on BW usage of sector apps.
 		double bwIntensity;
 		if (isVideoProvider)
-			bwIntensity = model.getVideoBWIntensity();
+			bwIntensity = ((NeutralityModel) getModel()).getVideoBWIntensity();
 		else
-			bwIntensity = model.getOtherBWIntensity();
+			bwIntensity = ((NeutralityModel) getModel()).getOtherBWIntensity();
 		double paymentAmount = bwIntensity * toNetwork.getInterconnectionBandwidthPrice();
 
 		// Pay and track.

@@ -1,5 +1,6 @@
 package neutrality;
 
+import agency.AgentModel;
 import agency.NullIndividual;
 import neutrality.Offers.BundledOffer;
 import neutrality.Offers.ContentOffer;
@@ -15,15 +16,15 @@ public class HardCodedNetworkOperator extends NetworkOperator<NullIndividual> {
 	/**
 	 * A default constructor for debugging purposes. All values=1
 	 */
-	public HardCodedNetworkOperator(NeutralityModel model) {
-		super(model);
+	public HardCodedNetworkOperator() {
 
 		// Investment
 		networkInvestment = 1;
 
 		// Vertically Integrated Content Provider, use corresponded hard coded
 		// content provider
-		integratedContentProvider = new HardCodedContentProvider(model, true);
+		integratedContentProvider = new HardCodedContentProvider();
+		integratedContentProvider.isVideoProvider = true;
 
 		// Network Offer
 		fixedNetworkOffer = new NetworkOffer(this, 1, 1);
@@ -35,6 +36,16 @@ public class HardCodedNetworkOperator extends NetworkOperator<NullIndividual> {
 		fixedBundledOffer = new BundledOffer(this, integratedContentProvider, 2, 1, false);
 
 	}
+
+	
+	
+	@Override
+	public void setModel(AgentModel model) {
+		super.setModel(model);
+		integratedContentProvider.setModel(model);
+	}
+
+
 
 	@Override
 	void step() {

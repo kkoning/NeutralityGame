@@ -33,12 +33,6 @@ public abstract class NetworkOperator<T extends Individual> extends SimpleFirm<T
 	double							totalInterconnectionPaymentsFromOther;
 
 	ContentProvider<NullIndividual>	integratedContentProvider;
-	NeutralityModel					model;
-
-	// TODO: Constructor
-	NetworkOperator(NeutralityModel model) {
-		this.model = model;
-	}
 
 	abstract void step();
 
@@ -147,13 +141,13 @@ public abstract class NetworkOperator<T extends Individual> extends SimpleFirm<T
 
 		double amount = 0;
 		if (chargeVideoBandwidth) {
-			amount = bandwidthPrice * model.getVideoBWIntensity();
+			amount = bandwidthPrice * ((NeutralityModel)getModel()).getVideoBWIntensity();
 			totalConsumerBandwidthPayments += amount;
 			totalConsumerBandwidthPaymentsFromVideo += amount;
 			account.receive(amount);
 		}
 		if (chargeOtherBandwidth) {
-			amount = bandwidthPrice * model.getOtherBWIntensity();
+			amount = bandwidthPrice * ((NeutralityModel)getModel()).getOtherBWIntensity();
 			totalConsumerBandwidthPayments += amount;
 			totalConsumerBandwidthPaymentsFromOther += amount;
 			account.receive(amount);

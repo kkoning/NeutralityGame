@@ -19,18 +19,29 @@ public class TestAgentModel {
 
 		model.consumers = new Consumers(100, 100, model);
 
-		// Create one network operator and content provider
-		HardCodedNetworkOperator hcno = new HardCodedNetworkOperator(model);
-		HardCodedContentProvider hccpVideo = new HardCodedContentProvider(model,true);
+		/*
+		 * Create one network operator and content provider. Normally this would
+		 * be done by an evaluation group, so there are some extra steps to
+		 * remember here...
+		 */
+		HardCodedNetworkOperator hcno = new HardCodedNetworkOperator();
+		hcno.setModel(model);
+		
+		HardCodedContentProvider hccpVideo = new HardCodedContentProvider();
+		hccpVideo.setModel(model);
+		hccpVideo.isVideoProvider = true;
+
 		hccpVideo.preference = 1;
-		HardCodedContentProvider hccpOther = new HardCodedContentProvider(model,false);
+		HardCodedContentProvider hccpOther = new HardCodedContentProvider();
+		hccpOther.setModel(model);
+		hccpOther.isVideoProvider = false;
 
 		model.addAgent(hcno);
 		model.addAgent(hccpVideo);
 		model.addAgent(hccpOther);
 
 		System.out.println("Executing Model");
-		for (int i = 0; i < 100_000; i++) {
+		for (int i = 0; i < 100; i++) {
 			model.step();
 		}
 
@@ -39,9 +50,7 @@ public class TestAgentModel {
 		System.out.println("Video Content Provider Fitness = " + hccpVideo.getFitness().toString());
 		System.out.println("Other Content Provider Fitness = " + hccpOther.getFitness().toString());
 		System.out.println("Consumer Surplus = " + model.consumers.getTotalSurplus());
-		System.out.println(
-				"Detailed Consumer Surpluses = "
-						+ Arrays.toString(model.consumers.getSurplusses()));
+		System.out.println("Detailed Consumer Surpluses = " + Arrays.toString(model.consumers.getSurplusses()));
 
 		System.out.println(hcno);
 		System.out.println(hccpVideo);
