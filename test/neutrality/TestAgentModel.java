@@ -10,8 +10,8 @@ public class TestAgentModel {
 	public void testAgentModel() {
 		NeutralityModel model = new NeutralityModel();
 		// For now, hard-code parameter values.
-		model.alpha = 1;
-		model.beta = 1;
+		model.alpha = 1.0;
+		model.beta = 1.0;
 		model.psi = 0.4;
 		model.tau = 0.4;
 		model.theta = 0.2;

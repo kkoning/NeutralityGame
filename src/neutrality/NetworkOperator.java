@@ -39,6 +39,16 @@ public abstract class NetworkOperator<T extends Individual> extends SimpleFirm<T
 	double getInvestment() {
 		return networkInvestment;
 	}
+	
+	void makeNetworkInvestment(double amount) {
+		this.networkInvestment += amount;
+		this.account.pay(amount);
+	}
+	
+	void makeContentInvestment(double amount) {
+		this.integratedContentProvider.contentInvestment += amount;
+		this.integratedContentProvider.account.pay(amount);
+	}
 
 	public abstract NetworkOffer getNetworkOffer();
 

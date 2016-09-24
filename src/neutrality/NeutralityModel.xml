@@ -1,33 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Environment>
-  <Population initialSize="50">
-    <NullAgentFactory />
-    <MeanSimpleFitnessAggregator />
-    <VectorIndividualFactory genomeSize="20">
-      <FlatIntegerInitializer ceiling="10" end="19" floor="0" start="0" />
-    </VectorIndividualFactory>
-    <VectorMutationPipeline>
-      <WeightedBreedingPipeline>
-        <ElitismSelector proportionElites="0.3" weight="0.5" />
-        <TournamentSelector topIndividuals="1" touramentSize="2" weight="4.5" />
-        <FitnessProportionalSelector weight="2.0" />
-        <RandomIndividualSelector weight="1.0" />
-      </WeightedBreedingPipeline>
-      <GaussianIntegerMutator end="19" mutationProbability="0.05" sd="5.0" start="0" />
-      <IntegerLimiter ceiling="20" end="19" floor="0" start="0" />
-    </VectorMutationPipeline>
-  </Population>
+    <PopulationGroup id="test" totalSize="50">
+        <Population initialSize="50">
+            <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedNetworkOperator">
+            </DefaultAgentFactory>
+            <MeanSimpleFitnessAggregator/>
+            <VectorIndividualFactory genomeSize="20">
+                <FlatDoubleInitializer ceiling="10" end="19"
+                                       floor="0" start="0"/>
+            </VectorIndividualFactory>
+            <VectorMutationPipeline>
+                <WeightedBreedingPipeline>
+                    <ElitismSelector proportionElites="0.3" weight="0.5"/>
+                    <TournamentSelector topIndividuals="1"
+                                        touramentSize="2" weight="4.5"/>
+                    <FitnessProportionalSelector weight="2.0"/>
+                    <RandomIndividualSelector weight="1.0"/>
+                </WeightedBreedingPipeline>
+                <GaussianDoubleMutator end="19"
+                                       mutationProbability="0.05" sd="5.0" start="0"/>
+                <DoubleLimiter ceiling="20" end="19" floor="0"
+                               start="0"/>
+            </VectorMutationPipeline>
+        </Population>
+    </PopulationGroup>
 
-  <!-- Need an EvaluationGroupFactory -->
-  <ShuffledEvaluationGroupFactory groupSize="11" timesThrough="2" />
+    <!-- Need an EvaluationGroupFactory -->
+    <ShuffledEvaluationGroupFactory numGroups="200">
+        <AgentSource populationGroup="test" numAgents="1"/>
+    </ShuffledEvaluationGroupFactory>
 
-  <!-- Need an Agent Model Factory -->
-  <DefaultAgentModelFactory modelClass="neutrality.NeutralityModel" />
+    <!-- Need an Agent Model Factory -->
+    <DefaultAgentModelFactory modelClass="neutrality.NeutralityModel">
+        <Parameter name="alpha" value="1.0"/>
+        <Parameter name="beta" value="1.0"/>
+        <Parameter name="psi" value="0.4"/>
+        <Parameter name="tau" value="0.4"/>
+        <Parameter name="theta" value="0.2"/>
+        <Parameter name="maxSteps" value="10"/>
+        <Parameter name="numConsumers" value="400"/>
+        <Parameter name="topIncome" value="10.0"/>
+    </DefaultAgentModelFactory>
 
-  <!-- Need an Evaluator -->
-  <LocalEvaluator />
+    <!-- Need an Evaluator -->
+    <LocalEvaluator/>
 
-  <!-- Test out an AgentModelReporter -->
-  <AgentModelReporter perStepFile="psf.tsv" summaryFile="sum.tsv" />
+    <!-- Test out an AgentModelReporter -->
+    <AgentModelReporter perStepFile="psf.tsv"
+                        summaryFile="sum.tsv"/>
 
 </Environment>

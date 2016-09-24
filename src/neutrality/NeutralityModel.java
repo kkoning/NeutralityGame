@@ -17,19 +17,24 @@ import neutrality.Offers.NetworkOffer;
 
 public class NeutralityModel implements AgentModel {
 
-	public double				alpha;
-	public double				beta;
+	public Double				alpha;
+	public Double				beta;
 
-	public double				psi;
-	public double				tau;
-	public double				theta;
+	public Double				psi;
+	public Double				tau;
+	public Double				theta;
 
-	int							maxSteps;
+	public Integer				numConsumers;
+	public Double				topIncome;
+
+	public Integer				maxSteps;
 
 	List<NetworkOperator<?>>	networkOperators;
 	List<ContentProvider<?>>	videoContentProviders;
 	List<ContentProvider<?>>	otherContentProviders;
 	Consumers					consumers;
+
+	boolean						firstStep	= true;
 
 	public NeutralityModel() {
 		networkOperators = new ArrayList<>();
@@ -64,6 +69,12 @@ public class NeutralityModel implements AgentModel {
 	@Override
 	public boolean step() {
 
+		if (firstStep) {
+			consumers = new Consumers(numConsumers, topIncome, this);
+			firstStep = false;
+		}
+		
+		
 		// Step each agent; allow them to generate and update offers.
 		for (NetworkOperator<?> no : networkOperators)
 			no.step(); // Network Operators
@@ -190,7 +201,7 @@ public class NeutralityModel implements AgentModel {
 		o.numStandaloneNetworkOffersAccepted = networkOperators.stream()
 				.mapToInt(no -> no.numStandaloneNetworkOffersAccepted).sum();
 		o.numStandaloneNetworkOffersHHI = Statistics.HHI(
-				networkOperators.stream().map(no -> no.networkInvestment).toArray(Integer[]::new));
+				networkOperators.stream().map(no -> no.networkInvestment).toArray(Double[]::new));
 
 		/*
 		 * Data on Video Markets, in which both NSPs and some CPs participate.
