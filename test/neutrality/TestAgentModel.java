@@ -31,7 +31,7 @@ public class TestAgentModel {
 		hccpVideo.setModel(model);
 		hccpVideo.isVideoProvider = true;
 
-		hccpVideo.preference = 1;
+		hccpVideo.preference = 1.0;
 		HardCodedContentProvider hccpOther = new HardCodedContentProvider();
 		hccpOther.setModel(model);
 		hccpOther.isVideoProvider = false;

@@ -13,7 +13,7 @@ public class HardCodedContentProvider extends ContentProvider<NullIndividual> {
 	public HardCodedContentProvider() {
 		super();
 		
-		contentInvestment = 1;
+		contentInvestment = 1.0;
 		this.fixedOffer = new ContentOffer(this, 1);
 	}
 

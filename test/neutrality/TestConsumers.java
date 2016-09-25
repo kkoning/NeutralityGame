@@ -59,16 +59,16 @@ public class TestConsumers {
         ContentProvider<?> cp_A = new HardCodedContentProvider();
         cp_A.setModel(nm);
         cp_A.isVideoProvider = true;
-        cp_A.contentInvestment = 9;
-        cp_A.preference = 0;
+        cp_A.contentInvestment = 9.0;
+        cp_A.preference = 0.0;
         ContentOffer co_A = new ContentOffer(cp_A, 1);
 
         // Content provider B with Q=16, P=5, pref=1
         ContentProvider<?> cp_B = new HardCodedContentProvider();
         cp_B.setModel(nm);
         cp_B.isVideoProvider = true;
-        cp_B.contentInvestment = 16;
-        cp_B.preference = 1;
+        cp_B.contentInvestment = 16.0;
+        cp_B.preference = 1.0;
         ContentOffer co_B = new ContentOffer(cp_B, 5);
 
         // Offerings for CP A and B are both in the vertically integrated
@@ -81,7 +81,7 @@ public class TestConsumers {
         ContentProvider<?> cp_C = new HardCodedContentProvider();
         cp_C.setModel(nm);
         cp_C.isVideoProvider = false;
-        cp_C.contentInvestment = 19;
+        cp_C.contentInvestment = 19.0;
         cp_C.preference = 0.5;
         ContentOffer co_C = new ContentOffer(cp_C, 13);
 
