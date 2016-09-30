@@ -10,6 +10,7 @@ import agency.Fitness;
 import agency.Individual;
 import agency.SimpleFirm;
 import agency.SimpleFitness;
+import agency.data.AgencyData;
 import agency.util.Statistics;
 import neutrality.Offers.BundledOffer;
 import neutrality.Offers.ContentOffer;
@@ -174,7 +175,7 @@ public int getMaxSteps() {
   return maxSteps;
 }
 
-public static class OutputData {
+public static class OutputData implements AgencyData {
     /*
 		 * This object gets translated directly into column headers and data
 		 * values in output files. For this reason, it needs to be flattened and
@@ -195,7 +196,6 @@ public static class OutputData {
    */
   Double consumerSurplus;
 
-
   /*
    * Network Operator Variables
    */
@@ -215,16 +215,18 @@ public static class OutputData {
   Integer numThirdPartyStandaloneVideoOffersAccepted;
   Double numStandaloneVideoOffersHHI;
 
+  /*
+   * Video Content Providers
+   */
   Integer numVideoContentProviders;
+  Double cpVideoProvderSurplus;
 
-  Integer numOtherContentProvides;
 
   /*
-   * Content Provider Variables
+   * Other Content Providers
    */
-  Double cpVideoProvderSurplus;
+  Integer numOtherContentProvides;
   Double cpOtherProviderSurplus;
-
 
   /*
    * Content Market Variables
@@ -235,34 +237,53 @@ public static class OutputData {
   Double totalContentInvestment;
 
 
-  // return "NetworkOperator [networkInvestment=" + networkInvestment
-  // + ", numStandaloneNetworkOffersAccepted=" +
-  // numStandaloneNetworkOffersAccepted
-  // + ", numStandaloneContentOffersAccepted=" +
-  // getNumStandaloneContentOffersAccepted()
-  // + ", numBundledOffersAccepted=" + numBundledOffersAccepted
-  // + ", numBundledZeroRatedOffersAccepted=" +
-  // numBundledZeroRatedOffersAccepted
-  // + ", totalStandaloneNetworkRevenue=" + totalStandaloneNetworkRevenue
-  // + ", totalStandaloneContentRevenue=" +
-  // getTotalStandaloneContentRevenue()
-  // + ", totalBundledRevenue=" + totalBundledRevenue + ",
-  // totalBundledZeroRatedRevenue="
-  // + totalBundledZeroRatedRevenue + ", totalConsumerBandwidthPayments="
-  // + totalConsumerBandwidthPayments + ",
-  // totalConsumerBandwidthPaymentsFromVideo="
-  // + totalConsumerBandwidthPaymentsFromVideo
-  // + ", totalConsumerBandwidthPaymentsFromOther="
-  // + totalConsumerBandwidthPaymentsFromOther
-  // + ", totalInterconnectionPaymentsReceived=" +
-  // totalInterconnectionPaymentsReceived
-  // + ", totalInterconnectionPaymentsFromVideo=" +
-  // totalInterconnectionPaymentsFromVideo
-  // + ", totalInterconnectionPaymentsFromOther=" +
-  // totalInterconnectionPaymentsFromOther
-  // + ", integratedContentProvider=" + integratedContentProvider + "]";
-  // }
+  @Override
+  public List<String> getHeaders() {
+    List<String> headers = new ArrayList<>();
+    headers.add("consumerSurplus");
+    headers.add("numNetworkOperators");
+    headers.add("networkOperatorSurplus");
+    headers.add("networkOperatorInvestment");
+    headers.add("networkOperatorInvestmentHHI");
+    headers.add("numStandaloneNetworkOffersAccepted");
+    headers.add("numStandaloneNetworkOffersHHI");
+    headers.add("numNSPStandaloneVideoOffersAccepted");
+    headers.add("numThirdPartyStandaloneVideoOffersAccepted");
+    headers.add("numStandaloneVideoOffersHHI");
+    headers.add("numVideoContentProviders");
+    headers.add("cpVideoProvderSurplus");
+    headers.add("numOtherContentProvides");
+    headers.add("cpOtherProviderSurplus");
+    headers.add("nspVideoContentInvestment");
+    headers.add("cpVideoContentInvestment");
+    headers.add("cpOtherContentInvestment");
+    headers.add("totalContentInvestment");
+    return headers;
+  }
 
+  @Override
+  public List<Object> getValues() {
+    List<Object> values = new ArrayList<>();
+    values.add(consumerSurplus);
+    values.add(numNetworkOperators);
+    values.add(networkOperatorSurplus);
+    values.add(networkOperatorInvestment);
+    values.add(networkOperatorInvestmentHHI);
+    values.add(numStandaloneNetworkOffersAccepted);
+    values.add(numStandaloneNetworkOffersHHI);
+    values.add(numNSPStandaloneVideoOffersAccepted);
+    values.add(numThirdPartyStandaloneVideoOffersAccepted);
+    values.add(numStandaloneVideoOffersHHI);
+    values.add(numVideoContentProviders);
+    values.add(cpVideoProvderSurplus);
+    values.add(numOtherContentProvides);
+    values.add(cpOtherProviderSurplus);
+    values.add(nspVideoContentInvestment);
+    values.add(cpVideoContentInvestment);
+    values.add(cpOtherContentInvestment);
+    values.add(totalContentInvestment);
+    return values;
+  }
 }
 
 
@@ -274,7 +295,7 @@ public static class OutputData {
  * @see agency.AgentModel#getSummaryData()
  */
 @Override
-public Object getSummaryData() {
+public AgencyData getSummaryData() {
   OutputData o = new OutputData();
 
   /* Data on Consumers
@@ -359,7 +380,7 @@ public Object getSummaryData() {
 }
 
 @Override
-public Object getStepData() {
+public AgencyData getStepData() {
   // Do not output any per-step data.
   return null;
 }

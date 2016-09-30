@@ -2,7 +2,7 @@
 <!-- Warning: Used as template!  Make sure you're pointing at the correct file. -->
 <Environment>
     <PopulationGroup id="nsp" totalSize="200">
-        <Population initialSize="100">
+        <Population initialSize="100" id="DirectlyEncodedNetworkOperators">
             <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedNetworkOperator">
             </DefaultAgentFactory>
             <MeanSimpleFitnessAggregator/>
@@ -90,13 +90,12 @@
     </DefaultAgentModelFactory>
 
     <!-- Environment Statistics -->
-    <DefaultEnvironmentStatistics/>
+    <DefaultEnvironmentStatistics file="DefaultEnvironmentStatistics.csv" format="csv"/>
 
     <!-- Need an Evaluator -->
     <LocalParallelEvaluator/>
 
-    <!-- Test out an AgentModelReporter -->
-    <AgentModelReporter perStepFile="psf.tsv"
-                        summaryFile="sum.tsv"/>
+    <!-- Test out an DefaultAgentModelReporter -->
+    <DefaultModelSummaryData file="summary.csv" format="csv"/>
 
 </Environment>
