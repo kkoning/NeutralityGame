@@ -23,7 +23,7 @@
         </Population>
     </PopulationGroup>
     <PopulationGroup id="videoContent" totalSize="200">
-        <Population initialSize="100">
+        <Population initialSize="100" id="DirectlyEncodedVideoContentProviders">
             <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedContentProvider">
                 <Parameter name="isVideoProvider" value="true"/>
             </DefaultAgentFactory>
@@ -45,7 +45,7 @@
         </Population>
     </PopulationGroup>
     <PopulationGroup id="otherContent" totalSize="200">
-        <Population initialSize="100">
+        <Population initialSize="100" id="DirectlyEncodedOtherContentProviders">
             <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedContentProvider">
                 <Parameter name="isVideoProvider" value="false"/>
             </DefaultAgentFactory>
@@ -88,6 +88,9 @@
         <Parameter name="numConsumers" value="200"/>
         <Parameter name="topIncome" value="10.0"/>
     </DefaultAgentModelFactory>
+
+    <!-- Environment Statistics -->
+    <DefaultEnvironmentStatistics/>
 
     <!-- Need an Evaluator -->
     <LocalEvaluator/>
