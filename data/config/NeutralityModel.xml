@@ -93,7 +93,7 @@
     <DefaultEnvironmentStatistics/>
 
     <!-- Need an Evaluator -->
-    <LocalEvaluator/>
+    <LocalParallelEvaluator/>
 
     <!-- Test out an AgentModelReporter -->
     <AgentModelReporter perStepFile="psf.tsv"
