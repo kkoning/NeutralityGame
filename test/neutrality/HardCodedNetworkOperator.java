@@ -45,9 +45,12 @@ public class HardCodedNetworkOperator extends NetworkOperator<NullIndividual> {
 		integratedContentProvider.setModel(model);
 	}
 
+@Override
+public BundledOffer getBundledZeroRatedOffer() {
+	return null;
+}
 
-
-	@Override
+@Override
 	void step() {
 		// Nothing needs to be done each step; offers are hard coded and fixed.
 	}
