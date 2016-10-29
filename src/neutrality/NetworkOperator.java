@@ -41,7 +41,8 @@ public abstract class NetworkOperator<T extends Individual> extends SimpleFirm<T
 	}
 	
 	void makeNetworkInvestment(double amount) {
-		this.networkInvestment += amount;
+		NeutralityModel model = (NeutralityModel) getModel();
+		this.networkInvestment += amount / model.capitalCost;
 		this.account.pay(amount);
 	}
 	
@@ -55,6 +56,8 @@ public abstract class NetworkOperator<T extends Individual> extends SimpleFirm<T
 	public abstract ContentOffer getVideoContentOffer();
 
 	public abstract BundledOffer getBundledOffer();
+
+	public abstract BundledOffer getBundledZeroRatedOffer();
 
 	public void receiveInterconnectionPayment(ContentProvider<?> cp, double amount) {
 		// Credit the payment to our account
