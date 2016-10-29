@@ -6,95 +6,96 @@ import neutrality.Offers.ContentOffer;
 
 public abstract class ContentProvider<T extends Individual> extends SimpleFirm<T> {
 
-    @Override
-    public String toString() {
-        return super.toString() + "[contentInvestment=" + contentInvestment + ", preference="
-                + preference + ", isVideoProvider=" + isVideoProvider + ", numAcceptedOffers="
-                + numAcceptedOffers + ", totalRevenue=" + totalRevenue
-                + ", totalPaidForInterconnection=" + totalPaidForInterconnection + ", account="
-                + account + "]";
-    }
+/**
+ * True if this content provider is in the video market, false if it in the
+ * other content market.
+ */
+public Boolean isVideoProvider;
+// Parameters relevant to consumer value; investment and preference.
+Double contentInvestment = 0.0;
+Double preference        = 0.0;
+// Track the # of units sold, revenue, and $ for interconnection
+int    numAcceptedOffers;
+double totalRevenue;
+double totalPaidForInterconnection;
+// TODO: Constructor
+public ContentProvider() {
+  super();
+}
 
-    // Parameters relevant to consumer value; investment and preference.
-    Double contentInvestment = 0.0;
-    Double preference = 0.0;
+@Override
+public String toString() {
+  return super.toString() + "[contentInvestment=" + contentInvestment + ", preference="
+          + preference + ", isVideoProvider=" + isVideoProvider + ", numAcceptedOffers="
+          + numAcceptedOffers + ", totalRevenue=" + totalRevenue
+          + ", totalPaidForInterconnection=" + totalPaidForInterconnection + ", account="
+          + account + "]";
+}
 
-    /**
-     * True if this content provider is in the video market, false if it in the
-     * other content market.
-     */
-    public Boolean isVideoProvider;
+public double getInvestment() {
+  return contentInvestment;
+}
 
+public double getPreference() {
+  return preference;
+}
 
-    // Track the # of units sold, revenue, and $ for interconnection
-    int numAcceptedOffers;
-    double totalRevenue;
-    double totalPaidForInterconnection;
+public abstract ContentOffer getContentOffer();
 
-    // TODO: Constructor
-    public ContentProvider() {
-        super();
-    }
+public void makeContentInvestment(double amount) {
+  this.contentInvestment += amount;
+  this.account.pay(amount);
+}
 
-    public double getInvestment() {
-        return contentInvestment;
-    }
+/**
+ * Is called whenever a content provider's offer is accepted by a consumer.
+ *
+ * @param acceptedOffer
+ */
+public void processAcceptedContentOffer(
+        ContentOffer acceptedOffer,
+        NetworkOperator<?> onNetwork) {
+  // Earn $
+  account.receive(acceptedOffer.contentPrice);
 
-    public double getPreference() {
-        return preference;
-    }
+  // Track total revenue
+  totalRevenue += acceptedOffer.contentPrice;
 
-    public abstract ContentOffer getContentOffer();
+  // Track total # of offers accepted.
+  numAcceptedOffers++;
 
-    public void makeContentInvestment(double amount) {
-        this.contentInvestment += amount;
-        this.account.pay(amount);
-    }
+  // Pay network provider for bandwidth use.
+  payInterconnectionBandwidth(onNetwork);
+}
 
-    /**
-     * Is called whenever a content provider's offer is accepted by a consumer.
-     *
-     * @param acceptedOffer
-     */
-    public void processAcceptedContentOffer(
-            ContentOffer acceptedOffer,
-            NetworkOperator<?> onNetwork) {
-        // Earn $
-        account.receive(acceptedOffer.contentPrice);
+/**
+ * Pay interconnection bandwidth to the consumer's network operator. This is
+ * left as an abstract function
+ *
+ * @param toNetwork
+ *         the consumer's network operator.
+ */
+void payInterconnectionBandwidth(NetworkOperator<?> toNetwork) {
 
-        // Track total revenue
-        totalRevenue += acceptedOffer.contentPrice;
+  NeutralityModel nm = (NeutralityModel) this.getModel();
+  if (nm.forceZeroPriceIC)
+    return;
 
-        // Track total # of offers accepted.
-        numAcceptedOffers++;
+  // How much to pay depends on BW usage of sector apps.
+  double bwIntensity;
+  if (isVideoProvider)
+    bwIntensity = ((NeutralityModel) getModel()).getVideoBWIntensity();
+  else
+    bwIntensity = ((NeutralityModel) getModel()).getOtherBWIntensity();
+  double paymentAmount = bwIntensity * toNetwork.getInterconnectionBandwidthPrice();
 
-        // Pay network provider for bandwidth use.
-        payInterconnectionBandwidth(onNetwork);
-    }
+  // Pay and track.
+  account.pay(paymentAmount); // from us
+  toNetwork.receiveInterconnectionPayment(this, paymentAmount); // to nsp
+  totalPaidForInterconnection += paymentAmount;
 
-    /**
-     * Pay interconnection bandwidth to the consumer's network operator. This is
-     * left as an abstract function
-     *
-     * @param toNetwork the consumer's network operator.
-     */
-    void payInterconnectionBandwidth(NetworkOperator<?> toNetwork) {
+}
 
-        // How much to pay depends on BW usage of sector apps.
-        double bwIntensity;
-        if (isVideoProvider)
-            bwIntensity = ((NeutralityModel) getModel()).getVideoBWIntensity();
-        else
-            bwIntensity = ((NeutralityModel) getModel()).getOtherBWIntensity();
-        double paymentAmount = bwIntensity * toNetwork.getInterconnectionBandwidthPrice();
-
-        // Pay and track.
-        account.pay(paymentAmount); // from us
-        toNetwork.receiveInterconnectionPayment(this, paymentAmount); // to nsp
-        totalPaidForInterconnection += paymentAmount;
-
-    }
-
-    public abstract void step();
+public abstract void step();
 
 }
