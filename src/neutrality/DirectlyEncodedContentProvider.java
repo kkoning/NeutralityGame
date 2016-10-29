@@ -7,38 +7,37 @@ import agency.vector.VectorIndividual;
  */
 public class DirectlyEncodedContentProvider extends ContentProvider<VectorIndividual> {
 
-    private enum Position {
-        ContentInvestment,
-        ContentOfferPrice
-    }
+boolean firstStep = true;
 
-    boolean firstStep = true;
+public DirectlyEncodedContentProvider() {
+  super();
+}
 
-    private double e(Position pos) {
-        VectorIndividual<Double> ind = getManager();
-        Double genomeValue = ind.get(pos.ordinal());
-        double toReturn = Math.exp(genomeValue);
-        return toReturn;
-    }
+@Override
+public Offers.ContentOffer getContentOffer() {
+  Offers.ContentOffer offer = new Offers.ContentOffer(this, e(Position.ContentOfferPrice));
+  return offer;
+}
 
-    public DirectlyEncodedContentProvider() {
-        super();
-    }
+private double e(Position pos) {
+  VectorIndividual<Double> ind = getManager();
+  Double genomeValue = ind.get(pos.ordinal());
+  double toReturn = Math.exp(genomeValue);
+  return toReturn;
+}
 
-    @Override
-    public Offers.ContentOffer getContentOffer() {
-        Offers.ContentOffer offer = new Offers.ContentOffer(this, e(Position.ContentOfferPrice));
-        return offer;
-    }
+@Override
+public void step() {
+  if (firstStep) {
+    makeContentInvestment(e(Position.ContentInvestment));
+    firstStep = false;
+  }
+}
 
-    @Override
-    public void step() {
-        if (firstStep) {
-            makeContentInvestment(e(Position.ContentInvestment));
-            firstStep = false;
-        }
-
-    }
+private enum Position {
+  ContentInvestment,
+  ContentOfferPrice
+}
 
 
 }
