@@ -1,5 +1,6 @@
 package neutrality;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -29,6 +30,8 @@ public class Consumers {
 			// incomes are evenly distributed from [0,topIncome]
 			incomes[i] = ((double) i / numConsumers) * topIncome;
 		}
+
+		Collections.reverse(Arrays.asList(incomes));
 
 		// Running surplus initialized to zero.
 		runningSurplus = new double[numConsumers];
@@ -72,12 +75,6 @@ public class Consumers {
 	 * surplusses. The actual values for each consumer are determined by method
 	 * determineAppValues().
 	 * 
-	 * @param contentOffersVerticalSegment
-	 * @param contentOffersOtherSegment
-	 * @param networkOffers
-	 * @param bundledOffers
-	 * @param zeroRatedOffers
-	 * @param bundledZeroRatedOffers
 	 */
 	ConsumptionOptionSurplus determineSurplusses(List<ConsumptionOption> options) {
 		/*
@@ -137,14 +134,6 @@ public class Consumers {
 	 * This function corresponds to the consumers' utility function. (Eqn. #1 in
 	 * the proposal)
 	 * 
-	 * @param sectorValue
-	 * @param appInvestment
-	 * @param appPrice
-	 * @param netInvestment
-	 * @param bandwidthIntensity
-	 * @param bandwidthPrice
-	 * @param appPreference
-	 * @return
 	 */
 	double[] determineAppValues(
 			double sectorValue,
@@ -159,7 +148,7 @@ public class Consumers {
 		double abstractVal = appVal * netVal * sectorValue;
 
 		for (int i = 0; i < values.length; i++) {
-			double pref = (1 - agentModel.theta) * Math.abs(preferenceFactors[i] - appPreference);
+			double pref = 1.0 - (agentModel.theta * (Math.abs(preferenceFactors[i] - appPreference)));
 			double value = abstractVal * incomes[i] * pref;
 			values[i] = value;
 		}
