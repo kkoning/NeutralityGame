@@ -43,8 +43,9 @@ public double getPreference() {
 public abstract ContentOffer getContentOffer();
 
 public void makeContentInvestment(double amount) {
+  NeutralityModel model = (NeutralityModel) getModel();
   this.contentInvestment += amount;
-  this.account.pay(amount);
+  this.account.pay(amount * model.capitalCost);
 }
 
 /**

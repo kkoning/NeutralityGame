@@ -204,7 +204,7 @@ public AgencyData getSummaryData() {
   o.numNetworkOperators = networkOperators.size();
 
   // What was their total surplus
-  o.networkOperatorSurplus = networkOperators.stream().mapToDouble(no -> no.getFitness().getFitness()).sum();
+  o.networkOperatorSurplus = networkOperators.stream().mapToDouble(no -> no.getFitness().getAverageFitness()).sum();
 
   // Total investment & HHI
   o.networkOperatorInvestment = networkOperators.stream()
@@ -271,17 +271,12 @@ public AgencyData getSummaryData() {
                   videoContentProviders.stream().map(vcp -> vcp.numAcceptedOffers))
                   .toArray(Integer[]::new));
 
-
-
-
-
-
 		/*
      * Data on standalone video content providers
 		 */
   o.numVideoContentProviders = videoContentProviders.size();
-  o.cpVideoProvderSurplus = videoContentProviders.stream().mapToDouble(cp -> cp.getFitness().getFitness()).sum();
-  o.cpOtherProviderSurplus = otherContentProviders.stream().mapToDouble(cp -> cp.getFitness().getFitness()).sum();
+  o.cpVideoProvderSurplus = videoContentProviders.stream().mapToDouble(cp -> cp.getFitness().getAverageFitness()).sum();
+  o.cpOtherProviderSurplus = otherContentProviders.stream().mapToDouble(cp -> cp.getFitness().getAverageFitness()).sum();
 
 		/*
      * Data on other content providers
@@ -294,7 +289,7 @@ public AgencyData getSummaryData() {
    */
   // Network Market
   List<Integer> sales = new ArrayList<>(networkOperators.size());
-  for(NetworkOperator<?> no : networkOperators) {
+  for (NetworkOperator<?> no : networkOperators) {
     int totalSold = 0;
     totalSold += no.numStandaloneNetworkOffersAccepted;
     totalSold += no.numBundledOffersAccepted;
@@ -307,14 +302,14 @@ public AgencyData getSummaryData() {
 
   // Video Content Market
   sales = new ArrayList<>(networkOperators.size() + videoContentProviders.size());
-  for(NetworkOperator<?> no : networkOperators) {
+  for (NetworkOperator<?> no : networkOperators) {
     int totalSold = 0;
     totalSold += no.getNumStandaloneContentOffersAccepted();
     totalSold += no.numBundledOffersAccepted;
     totalSold += no.numBundledZeroRatedOffersAccepted;
     sales.add(totalSold);
   }
-  for(ContentProvider<?> cp : videoContentProviders) {
+  for (ContentProvider<?> cp : videoContentProviders) {
     int totalSold = 0;
     totalSold += cp.numAcceptedOffers;
     sales.add(totalSold);
@@ -325,7 +320,7 @@ public AgencyData getSummaryData() {
 
   // Other Content Market
   sales = new ArrayList<>(otherContentProviders.size());
-  for(ContentProvider<?> cp : otherContentProviders) {
+  for (ContentProvider<?> cp : otherContentProviders) {
     int totalSold = 0;
     totalSold += cp.numAcceptedOffers;
     sales.add(totalSold);
@@ -333,12 +328,6 @@ public AgencyData getSummaryData() {
   salesArray = new Integer[sales.size()];
   salesArray = sales.toArray(salesArray);
   o.otherHHI = Statistics.HHI(salesArray);
-
-
-
-
-
-
 
   return o;
 }
