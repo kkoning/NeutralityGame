@@ -1,232 +1,223 @@
 package neutrality;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Consumers {
 
-	NeutralityModel	agentModel;
+NeutralityModel agentModel;
 
-	int				numConsumers;
-	double[]		preferenceFactors;
-	double[]		incomes;
-	double[]		runningSurplus;
+int      numConsumers;
+double[] preferenceFactors;
+double[] incomes;
+double[] runningSurplus;
 
-	public Consumers(int numConsumers, double topIncome, NeutralityModel agentModel) {
-		this.numConsumers = numConsumers;
-		this.agentModel = agentModel;
+ConsumptionOptionSurplus surplusCalculator;
 
-		// Per individual consumer stuff, preferences and income
-		preferenceFactors = new double[numConsumers];
-		incomes = new double[numConsumers];
-		Random r = ThreadLocalRandom.current();
-		for (int i = 0; i < numConsumers; i++) {
-			// preference factors are random
-			preferenceFactors[i] = r.nextDouble();
+public Consumers(int numConsumers, double topIncome, NeutralityModel agentModel) {
+  this.numConsumers = numConsumers;
+  this.agentModel = agentModel;
 
-			// incomes are evenly distributed from [0,topIncome]
-			incomes[i] = ((double) i / numConsumers) * topIncome;
-		}
+  // Per individual consumer stuff, preferences and income
+  preferenceFactors = new double[numConsumers];
+  incomes = new double[numConsumers];
+  Random r = ThreadLocalRandom.current();
+  for (int i = 0; i < numConsumers; i++) {
+    // preference factors are random
+    preferenceFactors[i] = r.nextDouble();
 
-		Collections.reverse(Arrays.asList(incomes));
+    // incomes are evenly distributed from [0,topIncome]
+    incomes[i] = ((double) i / numConsumers) * topIncome;
+  }
 
-		// Running surplus initialized to zero.
-		runningSurplus = new double[numConsumers];
-	}
+  // Start with higher incomes first, for ease of debugging.
+  Collections.reverse(Arrays.asList(incomes));
 
-	public void procurementProcess(List<ConsumptionOption> options) {
+  // Running surplus initialized to zero.
+  runningSurplus = new double[numConsumers];
 
-		// Calculate the surplus for each option
-		ConsumptionOptionSurplus cos;
-		cos = determineSurplusses(options);
+  // Use a single surplus calculator
+  surplusCalculator = new ConsumptionOptionSurplus(
+          agentModel.alpha,
+          agentModel.psi,
+          agentModel.tau,
+          agentModel.theta,
+          incomes,
+          preferenceFactors);
+}
 
-		// Consume the best positive option, or nothing if all negative.
-		for (int i = 0; i < numConsumers; i++) {
-			// starting initial best is to consume nothing
-			ConsumptionOption bestOption = null;
-			double bestOptionValue = 0;
-			for (int j = 0; j < cos.consumptionOptions.size(); j++) {
-				// i_th consumer, j_th option
 
-				// if i_th consumer, j_th option is better
-				if (cos.surplus[j][i] > bestOptionValue) {
-					// then probably consume it instead
-					bestOption = cos.consumptionOptions.get(j);
-					bestOptionValue = cos.surplus[j][i];
-				}
-			}
 
-			// We've tried to find the best consumption option. If there
-			// was one, consume it.
-			if (bestOption != null) {
-				// Buy it
-				bestOption.consume();
-				// keep track of our surplus.
-				runningSurplus[i] += bestOptionValue;
-			}
-		}
-	}
+/**
+ * Given a list of different kinds of offers from network operators and
+ * content providers, this function returns a list of all possible and
+ * allowable combinations of consumption.
+ *
+ * @param networkOnlyOffers
+ * @param videoContentOffers
+ * @param otherContentOffers
+ * @param bundledOffers
+ * @return
+ */
+public static final ArrayList<ConsumptionOption> determineOptions(
+        NeutralityModel model,
+        List<Offers.NetworkOffer> networkOnlyOffers,
+        List<Offers.ContentOffer> videoContentOffers,
+        List<Offers.ContentOffer> otherContentOffers,
+        List<Offers.BundledOffer> bundledOffers) {
 
-	/**
-	 * Given a list of consumption options, this function returns a list of
-	 * surplusses. The actual values for each consumer are determined by method
-	 * determineAppValues().
-	 * 
-	 */
-	ConsumptionOptionSurplus determineSurplusses(List<ConsumptionOption> options) {
-		/*
-		 * This function currently seems computationally expensive. How bad is
-		 * it? Is there a way to do this easier? Reduce mathematically? Look
-		 * into symbolic regression?
-		 */
+  // TODO: Put together synthetic offer for zero rated but not bundled
+  // content?
+  ArrayList<ConsumptionOption> options = new ArrayList<>();
 
-		// randomizing order of offers to eliminate potential
-		// order effects, e.g., from equalities
-		Collections.shuffle(options);
+  // Network only offers, put together synthetic bundles.
+  for (Offers.NetworkOffer networkOnlyOffer : networkOnlyOffers) {
+			/*
+			 * We need to create all possible combinations of content for use
+			 * with this network offer.
+			 */
 
-		int numOptions = options.size();
-		// Surplus starts at zero.
-		double[][] consumerSurplus = new double[numOptions][numConsumers];
+    // Video content but not other content
+    for (Offers.ContentOffer videoContentOffer : videoContentOffers) {
+      ConsumptionOption option = new ConsumptionOption(model, networkOnlyOffer,
+              videoContentOffer, null);
+      options.add(option);
+    }
 
-		for (int i = 0; i < numOptions; i++) {
-			ConsumptionOption option = options.get(i);
+    // No integrated content, but other content
+    for (Offers.ContentOffer otherContentOffer : otherContentOffers) {
+      ConsumptionOption option = new ConsumptionOption(model, networkOnlyOffer, null,
+              otherContentOffer);
+      options.add(option);
+    }
 
-			// Add value of video content, if any.
-			if (option.videoContent != null) {
-				double[] videoContentValue = determineAppValues(
-						agentModel.getVideoContentValue(),
-						option.videoContent.getInvestment(),
-						option.network.getInvestment(),
-						option.videoContent.getPreference());
-				for (int j = 0; j < numConsumers; j++) {
-					consumerSurplus[i][j] += videoContentValue[j];
-				}
-			}
+    // Both integrated and other content
+    for (Offers.ContentOffer videoContentOffer : videoContentOffers) {
+      for (Offers.ContentOffer otherContentOffer : otherContentOffers) {
+        ConsumptionOption option = new ConsumptionOption(model, networkOnlyOffer,
+                videoContentOffer, otherContentOffer);
+        options.add(option);
+      }
+    }
 
-			// Add value of other content, if any.
-			if (option.otherContent != null) {
-				double[] otherContentValue = determineAppValues(
-						agentModel.getOtherContentValue(),
-						option.otherContent.getInvestment(),
-						option.network.getInvestment(),
-						option.otherContent.getPreference());
-				for (int j = 0; j < numConsumers; j++) {
-					consumerSurplus[i][j] += otherContentValue[j];
-				}
-			}
+  }
 
-			// Subtract price
-			for (int j = 0; j < numConsumers; j++) {
-				consumerSurplus[i][j] -= option.cost;
-			}
-		}
+  // Bundled offers may not be allowed.
+  if (bundledOffers != null)
+    for (Offers.BundledOffer bundledOffer : bundledOffers) {
+      // Bundled offer without other content
+      ConsumptionOption option = new ConsumptionOption(model, bundledOffer, null);
+      options.add(option);
+      options.add(option);
 
-		ConsumptionOptionSurplus consumptionOptionSurpluses = new ConsumptionOptionSurplus();
-		consumptionOptionSurpluses.consumptionOptions = options;
-		consumptionOptionSurpluses.surplus = consumerSurplus;
-		return consumptionOptionSurpluses;
-	}
+      // With each combination of unrelated content.
+      for (Offers.ContentOffer otherContentOffer : otherContentOffers) {
+        // Goods
+        option = new ConsumptionOption(model, bundledOffer, otherContentOffer);
+        options.add(option);
+      }
+    }
+  return options;
+}
 
-	/**
-	 * This function corresponds to the consumers' utility function. (Eqn. #1 in
-	 * the proposal)
-	 * 
-	 */
-	double[] determineAppValues(
-			double sectorValue,
-			double appInvestment,
-			double netInvestment,
-			double appPreference) {
 
-		double[] values = new double[numConsumers];
+public String printConsumerProperties() {
+  StringBuffer toReturn = new StringBuffer();
+  toReturn.append("Consumer,Income,Preference,Surplus\n");
+  for (int i = 0; i < numConsumers; i++) {
+    toReturn.append(i);
+    toReturn.append(",");
+    toReturn.append(incomes[i]);
+    toReturn.append(",");
+    toReturn.append(preferenceFactors[i]);
+    toReturn.append(",");
+    toReturn.append(runningSurplus[i]);
+    toReturn.append("\n");
+  }
 
-		double appVal = Math.pow(appInvestment, agentModel.psi);
-		double netVal = Math.pow(netInvestment, agentModel.tau);
-		double abstractVal = appVal * netVal * sectorValue;
+  return toReturn.toString();
+}
 
-		for (int i = 0; i < values.length; i++) {
-			double pref = 1.0 - (agentModel.theta * (Math.abs(preferenceFactors[i] - appPreference)));
-			double value = abstractVal * incomes[i] * pref;
-			values[i] = value;
-		}
+public void consume(ConsumptionOption[] choices, double[] surplus) {
+  for (int i = 0; i < choices.length; i++) {
+    ConsumptionOption co = choices[i];
+    consume(co);
+    runningSurplus[i] += surplus[i];
+  }
+}
 
-		return values;
-	}
+void consume(ConsumptionOption co) {
+  if (co != null)
+    co.payProviders();
+}
 
-	public double[] getSurplusses() {
-		return runningSurplus;
-	}
+public void procurementProcess(List<ConsumptionOption> options) {
 
-	/**
-	 * @return The sum of all consumer surplusses
-	 */
-	public double getTotalSurplus() {
-		double totalSurplus = 0;
+  surplusCalculator.setConsumptionOptions(options);
+  surplusCalculator.calculate();
 
-		for (double d : runningSurplus)
-			totalSurplus += d;
+  if (agentModel.debug) {
+    agentModel.debugOut.println("Analysis of consumption choices follows:");
+    agentModel.debugOut.println(surplusCalculator.surplusTable());
+    agentModel.debugOut.println(surplusCalculator.sales());
+  }
 
-		return totalSurplus;
+  // Go through and actually consume
+  ConsumptionOption[] toConsume = surplusCalculator.getChosenOptions();
+  double[] surplus = surplusCalculator.getSurplus();
+  consume(toConsume, surplus);
+}
 
-	}
 
-	@Override
-	public String toString() {
-		return "Consumers [alpha=" + agentModel.alpha + ", beta=" + agentModel.beta + ", psi="
-				+ agentModel.psi + ", tau=" + agentModel.tau + ", theta=" + agentModel.theta
-				+ ", numConsumers=" + numConsumers
-				+ /*
-					 * ", preferenceFactors=" +
-					 * Arrays.toString(preferenceFactors) + ", incomes=" +
-					 * Arrays.toString(incomes) +
-					 */ ", integratedValue=" + agentModel.getVideoContentValue() + ", otherValue="
-				+ agentModel.getOtherContentValue() + ", videoBWIntensity="
-				+ agentModel.getVideoBWIntensity() + ", otherBWIntensity="
-				+ agentModel.getOtherBWIntensity() + "]";
-	}
+/**
+ * This function corresponds to the consumers' utility function. (Eqn. #1 in
+ * the proposal)
+ */
+static final void addAppValues(
+        double income[],
+        double sectorValue,
+        double appInvestment,
+        double netInvestment,
+        double consumerPreference[],
+        double appPreference,
+        double psi,
+        double tau,
+        double theta,
+        double[] values) {
 
-	public class ConsumptionOptionSurplus {
+  double appVal = Math.pow(appInvestment, psi);
+  double netVal = Math.pow(netInvestment, tau);
 
-		List<ConsumptionOption>	consumptionOptions;
+  for (int i = 0; i < income.length; i++) {
+    // Intermediate calculation to reduce complexity of utility eqn. line
+    double preference = 1.0 - (theta * (Math.abs(consumerPreference[i] - appPreference)));
 
-		/**
-		 * Contains the surplus of each option for each consumer. The first
-		 * dimension represents the option#, such that surplus[m][n] corresponds
-		 * to the surplus for option <consumptionOptions.get(m)> for consumer n.
-		 * 
-		 * Or, in shorthand, surplus[option][consumer].
-		 */
-		double[][]				surplus;
+    // First half of Eqn. 1
+    double value;
+    value = (sectorValue * appVal * netVal * income[i] * preference);
+    values[i] += value;
+  }
 
-		@Override
-		public String toString() {
-			StringBuffer sb = new StringBuffer();
-			sb.append("Consumer\t");
-			sb.append("Income\t");
-			sb.append("Preference\t");
-			// for each consumption option
-			for (int i = 0; i < consumptionOptions.size(); i++) {
-				sb.append(consumptionOptions.get(i) + "\t");
-			}
-			sb.append("\n");
+}
 
-			// for each consumer
-			for (int i = 0; i < surplus[0].length; i++) {
-				sb.append(i + "\t");
-				sb.append(incomes[i] + "\t");
-				sb.append(preferenceFactors[i] + "\t");
-				for (int j = 0; j < consumptionOptions.size(); j++) {
-					sb.append(surplus[j][i] + "\t");
-				}
-				sb.append("\n");
-			}
 
-			return sb.toString();
-		}
+public double[] getSurplusses() {
+  return runningSurplus;
+}
 
-	}
+/**
+ * @return The sum of all consumer surplusses
+ */
+public double getTotalSurplus() {
+  double totalSurplus = 0;
+
+  for (double d : runningSurplus)
+    totalSurplus += d;
+
+  return totalSurplus;
+
+}
+
+
 
 }

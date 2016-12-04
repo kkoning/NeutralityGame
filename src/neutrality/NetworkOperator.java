@@ -155,13 +155,13 @@ public abstract class NetworkOperator<T extends Individual> extends SimpleFirm<T
 
 		double amount = 0;
 		if (chargeVideoBandwidth) {
-			amount = bandwidthPrice * ((NeutralityModel)getModel()).getVideoBWIntensity();
+			amount = bandwidthPrice * ((NeutralityModel)getModel()).videoBWIntensity();
 			totalConsumerBandwidthPayments += amount;
 			totalConsumerBandwidthPaymentsFromVideo += amount;
 			account.receive(amount);
 		}
 		if (chargeOtherBandwidth) {
-			amount = bandwidthPrice * ((NeutralityModel)getModel()).getOtherBWIntensity();
+			amount = bandwidthPrice * ((NeutralityModel)getModel()).otherBWIntensity();
 			totalConsumerBandwidthPayments += amount;
 			totalConsumerBandwidthPaymentsFromOther += amount;
 			account.receive(amount);

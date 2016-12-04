@@ -35,16 +35,16 @@ private void describeAlpha(double value) {
   System.out.println("When alpha=" + value);
   NeutralityModel model = new NeutralityModel();
   model.alpha = value;
-  System.out.println("Video Content Value = " + model.getVideoContentValue());
-  System.out.println("Other Content Value = " + model.getOtherContentValue());
+  System.out.println("Video Content Value = " + model.videoContentValue());
+  System.out.println("Other Content Value = " + model.otherContentValue());
 }
 
 private void describeBeta(double value) {
   System.out.println("When beta=" + value);
   NeutralityModel model = new NeutralityModel();
   model.beta = value;
-  System.out.println("Video Content Bandwidth = " + model.getVideoBWIntensity());
-  System.out.println("Other Content Bandwidth = " + model.getOtherBWIntensity());
+  System.out.println("Video Content Bandwidth = " + model.videoBWIntensity());
+  System.out.println("Other Content Bandwidth = " + model.otherBWIntensity());
 }
 
 

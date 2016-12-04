@@ -85,9 +85,9 @@ void payInterconnectionBandwidth(NetworkOperator<?> toNetwork) {
   // How much to pay depends on BW usage of sector apps.
   double bwIntensity;
   if (isVideoProvider)
-    bwIntensity = ((NeutralityModel) getModel()).getVideoBWIntensity();
+    bwIntensity = ((NeutralityModel) getModel()).videoBWIntensity();
   else
-    bwIntensity = ((NeutralityModel) getModel()).getOtherBWIntensity();
+    bwIntensity = ((NeutralityModel) getModel()).otherBWIntensity();
   double paymentAmount = bwIntensity * toNetwork.getInterconnectionBandwidthPrice();
 
   // Pay and track.
