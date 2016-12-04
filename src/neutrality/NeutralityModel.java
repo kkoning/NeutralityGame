@@ -1,5 +1,6 @@
 package neutrality;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -41,6 +42,8 @@ List<ContentProvider<?>> otherContentProviders;
 Consumers                consumers;
 
 boolean firstStep = true;
+boolean debug = false;
+PrintStream debugOut = null;
 
 public NeutralityModel() {
   networkOperators = new ArrayList<>();
@@ -76,20 +79,56 @@ public Fitness getFitness(Agent<? extends Individual> agent) {
 public boolean step() {
 
   if (firstStep) {
+    if (debug)
+      debugOut.println("Executing first step of model");
+
+    if (debug)
+      debugOut.println("Initializing Consumers");
     consumers = new Consumers(numConsumers, topIncome, this);
+    if (debug) {
+      debugOut.println("Consumer properties follow:");
+      debugOut.println(consumers.printConsumerProperties());
+    }
+
+    if (debug)
+      debugOut.println("Spacing preferences of provider agents");
     spacePreferences();
+    if (debug) {
+      debugOut.println("Content Provider Properties Follow:");
+      List<ContentProvider<?>> vidCPs = new ArrayList<>();
+      vidCPs.addAll(videoContentProviders);
+      for (NetworkOperator<?> netOp : networkOperators) {
+        ContentProvider<?> netOpCP = netOp.integratedContentProvider;
+        vidCPs.add(netOpCP);
+      }
+      for (ContentProvider<?> cp : vidCPs)
+        debugOut.println(cp);
+      for (ContentProvider<?> cp : otherContentProviders)
+        debugOut.println(cp);
+    }
+
     firstStep = false;
+    if (debug)
+      debugOut.println("First step initialization completed.");
   }
 
-
+  if (debug)
+    debugOut.println("Stepping Network Operators");
   // Step each agent; allow them to generate and update offers.
   for (NetworkOperator<?> no : networkOperators)
     no.step(); // Network Operators
+  if (debug)
+    debugOut.println("Stepping Independent Video Content Providers");
   for (ContentProvider<?> cp : videoContentProviders)
     cp.step(); // Video Content Providers
+  if (debug)
+    debugOut.println("Stepping Independent Other Content Providers");
   for (ContentProvider<?> cp : otherContentProviders)
     cp.step(); // Other Content Providers
   // Consumers do not need to be stepped; behavior is specified.
+
+  if (debug)
+    debugOut.println("Collecting offers from networks and providers");
 
   // Agents generate offers, add them to these lists.
   List<NetworkOffer> networkOnlyOffers = new ArrayList<>();
@@ -131,17 +170,56 @@ public boolean step() {
       otherContentOffers.add(cp.getContentOffer());
   }
 
-		/*
-         * Now that we have a list of all the offers made by network operators
-		 * and content providers, we need to generate a list of possible
-		 * consumption options for consumers to consider.
-		 */
-  List<ConsumptionOption> options = ConsumptionOption.determineOptions(
+  /*
+   * Print details of offers made by the individual agents
+   */
+  if (debug) {
+    debugOut.println("Details of offers follows:");
+
+    debugOut.println("Network Only Offers:");
+    for (NetworkOffer no : networkOnlyOffers)
+      debugOut.println(no);
+
+    debugOut.println("Unbundled Video Content Offers:");
+    for (ContentOffer co : videoContentOffers)
+      debugOut.println(co);
+
+    debugOut.println("Other Content Offers:");
+    for (ContentOffer co : otherContentOffers)
+      debugOut.println(co);
+
+    debugOut.println("Bundled Network and Video Offers:");
+    for (BundledOffer bo : bundledOffers)
+      debugOut.println(bo);
+
+  }
+
+
+
+
+	/*
+   * Now that we have a list of all the offers made by network operators
+   * and content providers, we need to generate a list of possible
+	 * consumption options for consumers to consider.
+	 */
+  if (debug)
+    debugOut.println("Calculating possible consumption options of consumers");
+  List<ConsumptionOption> options = Consumers.determineOptions(
           this,
           networkOnlyOffers,
           videoContentOffers,
           otherContentOffers,
           bundledOffers);
+  // Debug for completed offers
+  if (debug) {
+    debugOut.println("Details of offers follows:");
+    for (ConsumptionOption co : options)
+      debugOut.println(co);
+  }
+
+  /*
+   * Consumers consider and consume offers
+   */
 
   // Consumers consider and consume offers.
   // Details are specified in Consumers.procurementProcess
@@ -338,21 +416,50 @@ public AgencyData getStepData() {
   return null;
 }
 
-/**
- * @return the consumer valuation of other content.
- */
-public double getOtherContentValue() {
-  return (1 - getVideoContentValue());
+@Override
+public void enableDebug(PrintStream out) {
+  debug = true;
+  debugOut = out;
 }
+
 
 /**
  * @return the consumer valuation of video content.
  */
-public double getVideoContentValue() {
+public static final double videoContentValue(double alpha) {
   // Make calculations of sector value based on alpha
   double videoContentValue;
-  videoContentValue = this.alpha / (1.0 + this.alpha);
+  videoContentValue = alpha / (1.0 + alpha);
   return videoContentValue;
+}
+
+public final double videoContentValue() {
+  return videoContentValue(this.alpha);
+}
+
+/**
+ * @return the consumer valuation of other content.
+ */
+public static final double otherContentValue(double alpha) {
+  return (1 - videoContentValue(alpha));
+}
+
+public final double otherContentValue() {
+  return otherContentValue(this.alpha);
+}
+
+/**
+ * @return the relative intensity of bandwidth usage for video content.
+ */
+public static final double videoBWIntensity(double beta) {
+  // Make calculations of bw intensity based on beta
+  double videoBWIntensity;
+  videoBWIntensity = beta / (1.0 + beta);
+  return videoBWIntensity;
+}
+
+public final double videoBWIntensity() {
+  return videoBWIntensity(this.beta);
 }
 
 /**
@@ -360,20 +467,15 @@ public double getVideoContentValue() {
  *
  * @return the relative intensity of bandwidth usage for other content.
  */
-public double getOtherBWIntensity() {
+public static final double otherBWIntensity(double beta) {
   // Calculations of bw intensity based on beta, both always sum to 1.
-  return (1 - getVideoBWIntensity());
+  return (1 - videoBWIntensity(beta));
 }
 
-/**
- * @return the relative intensity of bandwidth usage for video content.
- */
-public double getVideoBWIntensity() {
-  // Make calculations of bw intensity based on beta
-  double videoBWIntensity;
-  videoBWIntensity = this.beta / (1.0 + this.beta);
-  return videoBWIntensity;
+public final double otherBWIntensity() {
+  return otherBWIntensity(this.beta);
 }
+
 
 public static class OutputData implements AgencyData {
     /*
