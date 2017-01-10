@@ -1,6 +1,7 @@
 package neutrality;
 
 import agency.vector.VectorIndividual;
+import agency.vector.VectorIndividual;
 import neutrality.Offers.BundledOffer;
 import neutrality.Offers.ContentOffer;
 import neutrality.Offers.NetworkOffer;

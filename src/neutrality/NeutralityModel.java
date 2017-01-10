@@ -34,6 +34,8 @@ public Boolean forceZeroPriceIC;
 public Boolean bundlingAllowed;
 public Boolean zeroRatingAllowed;
 
+public Boolean integratedContentAllowed;
+
 public Integer maxSteps;
 
 List<NetworkOperator<?>> networkOperators;
@@ -140,19 +142,22 @@ public boolean step() {
   for (NetworkOperator<?> no : networkOperators) {
     if (no.getNetworkOffer() != null)
       networkOnlyOffers.add(no.getNetworkOffer());
-    if (no.getVideoContentOffer() != null)
-      videoContentOffers.add(no.getVideoContentOffer());
 
-    if (bundlingAllowed) {
-      if (no.getBundledOffer() != null) {
-        bundledOffers.add(no.getBundledOffer());
-      }
+    if (integratedContentAllowed) {
+      if (no.getVideoContentOffer() != null)
+        videoContentOffers.add(no.getVideoContentOffer());
 
-      // zero rating only works with bundling?
-      if (zeroRatingAllowed) {
-        BundledOffer zrbo = no.getBundledZeroRatedOffer();
-        if (zrbo != null)
-          bundledOffers.add(zrbo);
+      if (bundlingAllowed) {
+        if (no.getBundledOffer() != null) {
+          bundledOffers.add(no.getBundledOffer());
+        }
+
+        // zero rating only works with bundling?
+        if (zeroRatingAllowed) {
+          BundledOffer zrbo = no.getBundledZeroRatedOffer();
+          if (zrbo != null)
+            bundledOffers.add(zrbo);
+        }
       }
     }
 
@@ -267,7 +272,7 @@ public int getMaxSteps() {
  * @see agency.AgentModel#getSummaryData()
  */
 @Override
-public AgencyData getSummaryData() {
+public Object getSummaryData() {
   OutputData o = new OutputData();
 
   /* Data on Consumers
@@ -477,7 +482,7 @@ public final double otherBWIntensity() {
 }
 
 
-public static class OutputData implements AgencyData {
+public static class OutputData {
     /*
      * This object gets translated directly into column headers and data
 		 * values in output files. For this reason, it needs to be flattened and
@@ -557,73 +562,73 @@ public static class OutputData implements AgencyData {
   Double videoHHI;
   Double otherHHI;
 
+//
+//  @Override
+//  public List<String> getHeaders() {
+//    List<String> headers = new ArrayList<>();
+//    headers.add("consumerSurplus");
+//    headers.add("numNetworkOperators");
+//    headers.add("networkOperatorSurplus");
+//    headers.add("networkOperatorInvestment");
+//    headers.add("totalICFeesFromVideo");
+//    headers.add("totalICFeesFromOther");
+//    headers.add("numStandaloneNetworkOffersAccepted");
+//    headers.add("numNSPStandaloneVideoOffersAccepted");
+//    headers.add("numThirdPartyStandaloneVideoOffersAccepted");
+//    headers.add("numStandaloneVideoOffersHHI");
+//    headers.add("numVideoContentProviders");
+//    headers.add("cpVideoProvderSurplus");
+//    headers.add("numOtherContentProvides");
+//    headers.add("cpOtherProviderSurplus");
+//    headers.add("nspVideoContentInvestment");
+//    headers.add("cpVideoContentInvestment");
+//    headers.add("cpOtherContentInvestment");
+//    headers.add("totalContentInvestment");
+//    headers.add("totalStandaloneNetworkRevenue");
+//    headers.add("numBundledNetworkOffersAccepted");
+//    headers.add("numBundledZeroRatedOffersAccepted");
+//    headers.add("totalBundledRevenue");
+//    headers.add("totalBundledZeroRatedRevenue");
+//    headers.add("networkHHI");
+//    headers.add("videoHHI");
+//    headers.add("otherHHI");
+//
+//    return headers;
+//  }
 
-  @Override
-  public List<String> getHeaders() {
-    List<String> headers = new ArrayList<>();
-    headers.add("consumerSurplus");
-    headers.add("numNetworkOperators");
-    headers.add("networkOperatorSurplus");
-    headers.add("networkOperatorInvestment");
-    headers.add("totalICFeesFromVideo");
-    headers.add("totalICFeesFromOther");
-    headers.add("numStandaloneNetworkOffersAccepted");
-    headers.add("numNSPStandaloneVideoOffersAccepted");
-    headers.add("numThirdPartyStandaloneVideoOffersAccepted");
-    headers.add("numStandaloneVideoOffersHHI");
-    headers.add("numVideoContentProviders");
-    headers.add("cpVideoProvderSurplus");
-    headers.add("numOtherContentProvides");
-    headers.add("cpOtherProviderSurplus");
-    headers.add("nspVideoContentInvestment");
-    headers.add("cpVideoContentInvestment");
-    headers.add("cpOtherContentInvestment");
-    headers.add("totalContentInvestment");
-    headers.add("totalStandaloneNetworkRevenue");
-    headers.add("numBundledNetworkOffersAccepted");
-    headers.add("numBundledZeroRatedOffersAccepted");
-    headers.add("totalBundledRevenue");
-    headers.add("totalBundledZeroRatedRevenue");
-    headers.add("networkHHI");
-    headers.add("videoHHI");
-    headers.add("otherHHI");
-
-    return headers;
-  }
-
-  @Override
-  public List<Object> getValues() {
-    List<Object> values = new ArrayList<>();
-    values.add(consumerSurplus);
-    values.add(numNetworkOperators);
-    values.add(networkOperatorSurplus);
-    values.add(networkOperatorInvestment);
-    values.add(totalICFeesFromVideo);
-    values.add(totalICFeesFromOther);
-    values.add(numStandaloneNetworkOffersAccepted);
-    values.add(numNSPStandaloneVideoOffersAccepted);
-    values.add(numThirdPartyStandaloneVideoOffersAccepted);
-    values.add(numStandaloneVideoOffersHHI);
-    values.add(numVideoContentProviders);
-    values.add(cpVideoProvderSurplus);
-    values.add(numOtherContentProvides);
-    values.add(cpOtherProviderSurplus);
-    values.add(nspVideoContentInvestment);
-    values.add(cpVideoContentInvestment);
-    values.add(cpOtherContentInvestment);
-    values.add(totalContentInvestment);
-    values.add(totalStandaloneNetworkRevenue);
-    values.add(numBundledNetworkOffersAccepted);
-    values.add(numBundledZeroRatedOffersAccepted);
-    values.add(totalBundledRevenue);
-    values.add(totalBundledZeroRatedRevenue);
-    values.add(networkHHI);
-    values.add(videoHHI);
-    values.add(otherHHI);
-
-
-    return values;
-  }
+//  @Override
+//  public List<Object> getValues() {
+//    List<Object> values = new ArrayList<>();
+//    values.add(consumerSurplus);
+//    values.add(numNetworkOperators);
+//    values.add(networkOperatorSurplus);
+//    values.add(networkOperatorInvestment);
+//    values.add(totalICFeesFromVideo);
+//    values.add(totalICFeesFromOther);
+//    values.add(numStandaloneNetworkOffersAccepted);
+//    values.add(numNSPStandaloneVideoOffersAccepted);
+//    values.add(numThirdPartyStandaloneVideoOffersAccepted);
+//    values.add(numStandaloneVideoOffersHHI);
+//    values.add(numVideoContentProviders);
+//    values.add(cpVideoProvderSurplus);
+//    values.add(numOtherContentProvides);
+//    values.add(cpOtherProviderSurplus);
+//    values.add(nspVideoContentInvestment);
+//    values.add(cpVideoContentInvestment);
+//    values.add(cpOtherContentInvestment);
+//    values.add(totalContentInvestment);
+//    values.add(totalStandaloneNetworkRevenue);
+//    values.add(numBundledNetworkOffersAccepted);
+//    values.add(numBundledZeroRatedOffersAccepted);
+//    values.add(totalBundledRevenue);
+//    values.add(totalBundledZeroRatedRevenue);
+//    values.add(networkHHI);
+//    values.add(videoHHI);
+//    values.add(otherHHI);
+//
+//
+//    return values;
+//  }
 }
 
 
