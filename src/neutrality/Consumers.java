@@ -47,7 +47,6 @@ public Consumers(int numConsumers, double topIncome, NeutralityModel agentModel)
 }
 
 
-
 /**
  * Given a list of different kinds of offers from network operators and
  * content providers, this function returns a list of all possible and
@@ -72,7 +71,7 @@ public static final ArrayList<ConsumptionOption> determineOptions(
 
   // Network only offers, put together synthetic bundles.
   for (Offers.NetworkOffer networkOnlyOffer : networkOnlyOffers) {
-			/*
+      /*
 			 * We need to create all possible combinations of content for use
 			 * with this network offer.
 			 */
@@ -120,55 +119,6 @@ public static final ArrayList<ConsumptionOption> determineOptions(
   return options;
 }
 
-
-public String printConsumerProperties() {
-  StringBuffer toReturn = new StringBuffer();
-  toReturn.append("Consumer,Income,Preference,Surplus\n");
-  for (int i = 0; i < numConsumers; i++) {
-    toReturn.append(i);
-    toReturn.append(",");
-    toReturn.append(incomes[i]);
-    toReturn.append(",");
-    toReturn.append(preferenceFactors[i]);
-    toReturn.append(",");
-    toReturn.append(runningSurplus[i]);
-    toReturn.append("\n");
-  }
-
-  return toReturn.toString();
-}
-
-public void consume(ConsumptionOption[] choices, double[] surplus) {
-  for (int i = 0; i < choices.length; i++) {
-    ConsumptionOption co = choices[i];
-    consume(co);
-    runningSurplus[i] += surplus[i];
-  }
-}
-
-void consume(ConsumptionOption co) {
-  if (co != null)
-    co.payProviders();
-}
-
-public void procurementProcess(List<ConsumptionOption> options) {
-
-  surplusCalculator.setConsumptionOptions(options);
-  surplusCalculator.calculate();
-
-  if (agentModel.debug) {
-    agentModel.debugOut.println("Analysis of consumption choices follows:");
-    agentModel.debugOut.println(surplusCalculator.surplusTable());
-    agentModel.debugOut.println(surplusCalculator.sales());
-  }
-
-  // Go through and actually consume
-  ConsumptionOption[] toConsume = surplusCalculator.getChosenOptions();
-  double[] surplus = surplusCalculator.getSurplus();
-  consume(toConsume, surplus);
-}
-
-
 /**
  * This function corresponds to the consumers' utility function. (Eqn. #1 in
  * the proposal)
@@ -200,6 +150,52 @@ static final void addAppValues(
 
 }
 
+public String printConsumerProperties() {
+  StringBuffer toReturn = new StringBuffer();
+  toReturn.append("Consumer,Income,Preference,Surplus\n");
+  for (int i = 0; i < numConsumers; i++) {
+    toReturn.append(i);
+    toReturn.append(",");
+    toReturn.append(incomes[i]);
+    toReturn.append(",");
+    toReturn.append(preferenceFactors[i]);
+    toReturn.append(",");
+    toReturn.append(runningSurplus[i]);
+    toReturn.append("\n");
+  }
+
+  return toReturn.toString();
+}
+
+public void procurementProcess(List<ConsumptionOption> options) {
+
+  surplusCalculator.setConsumptionOptions(options);
+  surplusCalculator.calculate();
+
+  if (agentModel.debug) {
+    agentModel.debugOut.println("Analysis of consumption choices follows:");
+    agentModel.debugOut.println(surplusCalculator.surplusTable());
+    agentModel.debugOut.println(surplusCalculator.sales());
+  }
+
+  // Go through and actually consume
+  ConsumptionOption[] toConsume = surplusCalculator.getChosenOptions();
+  double[] surplus = surplusCalculator.getSurplus();
+  consume(toConsume, surplus);
+}
+
+public void consume(ConsumptionOption[] choices, double[] surplus) {
+  for (int i = 0; i < choices.length; i++) {
+    ConsumptionOption co = choices[i];
+    consume(co);
+    runningSurplus[i] += surplus[i];
+  }
+}
+
+void consume(ConsumptionOption co) {
+  if (co != null)
+    co.payProviders();
+}
 
 public double[] getSurplusses() {
   return runningSurplus;
@@ -217,7 +213,6 @@ public double getTotalSurplus() {
   return totalSurplus;
 
 }
-
 
 
 }
