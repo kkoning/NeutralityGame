@@ -8,73 +8,78 @@ import neutrality.Offers.NetworkOffer;
 
 public class HardCodedNetworkOperator extends NetworkOperator<NullIndividual> {
 
-	NetworkOffer			fixedNetworkOffer;
-	ContentOffer			fixedVideoContentOffer;
-	BundledOffer			fixedBundledOffer;
+NetworkOffer fixedNetworkOffer;
+ContentOffer fixedVideoContentOffer;
+BundledOffer fixedBundledOffer;
 
-	
-	/**
-	 * A default constructor for debugging purposes. All values=1
-	 */
-	public HardCodedNetworkOperator() {
 
-		// Investment
-		networkInvestment = 1;
+/**
+ * A default constructor for debugging purposes. All values=1
+ */
+public HardCodedNetworkOperator() {
+  unitOffers();
 
-		// Vertically Integrated Content Provider, use corresponded hard coded
-		// content provider
-		integratedContentProvider = new HardCodedContentProvider();
-		integratedContentProvider.isVideoProvider = true;
+}
 
-		// Network Offer
-		fixedNetworkOffer = new NetworkOffer(this, 1, 1);
+public void unitOffers() {
+  // Investment
+  networkInvestment = 1;
 
-		// Content Offer
-		fixedVideoContentOffer = integratedContentProvider.getContentOffer();
+  // Vertically Integrated Content Provider, use corresponded hard coded
+  // content provider
+  integratedContentProvider = new HardCodedContentProvider();
+  integratedContentProvider.isVideoProvider = true;
 
-		// Bundled Offer
-		fixedBundledOffer = new BundledOffer(this, integratedContentProvider, 2, 1, false);
+  // Network Offer
+  fixedNetworkOffer = new NetworkOffer(this, 1, 1);
 
-	}
+  // Content Offer
+  fixedVideoContentOffer = integratedContentProvider.getContentOffer();
 
-	
-	
-	@Override
-	public void setModel(AgentModel model) {
-		super.setModel(model);
-		integratedContentProvider.setModel(model);
-	}
+  // Bundled Offer
+  fixedBundledOffer = new BundledOffer(this, integratedContentProvider, 2, 1, false);
+
+}
+
 
 @Override
-public BundledOffer getBundledZeroRatedOffer() {
-	return null;
+public void setModel(AgentModel model) {
+  super.setModel(model);
+  integratedContentProvider.setModel(model);
 }
 
 @Override
-	void step() {
-		// Nothing needs to be done each step; offers are hard coded and fixed.
-	}
+public BundledOffer getBundledZeroRatedOffer() {
+  return null;
+}
 
-	@Override
-	public double getInterconnectionBandwidthPrice() {
-		return 1;
-	}
+@Override
+void step() {
+  // Nothing needs to be done each step; offers are hard coded and fixed.
+}
 
-	@Override
-	public NetworkOffer getNetworkOffer() {
-		return fixedNetworkOffer;
-	}
+@Override
+public double getInterconnectionBandwidthPrice() {
+  return 1;
+}
 
-	@Override
-	public ContentOffer getVideoContentOffer() {
-		return fixedVideoContentOffer;
-	}
+@Override
+public NetworkOffer getNetworkOffer() {
+  return fixedNetworkOffer;
+}
 
-	@Override
-	public BundledOffer getBundledOffer() {
-		return fixedBundledOffer;
-	}
+@Override
+public ContentOffer getVideoContentOffer() {
+  return fixedVideoContentOffer;
+}
 
-	
-	
+@Override
+public BundledOffer getBundledOffer() {
+  return fixedBundledOffer;
+}
+
+public void setNetworkInvestment(double investment) {
+  makeNetworkInvestment(investment);
+}
+
 }
