@@ -2,7 +2,7 @@
 <!-- Warning: Used as template!  Make sure you're pointing at the correct file. -->
 <Environment checkpointEvery="100">
     <PopulationGroup id="nsp" totalSize="200">
-        <Population initialSize="200" id="DirectlyEncodedNetworkOperators">
+        <Population initialSize="20w0" id="DirectlyEncodedNetworkOperators">
             <DefaultVectorIndividualData generations="10" file="deno.csv"/>
             <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedNetworkOperator">
             </DefaultAgentFactory>
