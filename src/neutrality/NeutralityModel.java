@@ -17,7 +17,8 @@ import neutrality.Offers.BundledOffer;
 import neutrality.Offers.ContentOffer;
 import neutrality.Offers.NetworkOffer;
 
-public class NeutralityModel implements AgentModel {
+public class NeutralityModel
+        implements AgentModel {
 
 public Double alpha;
 public Double beta;
@@ -26,6 +27,9 @@ public Double psi;
 public Double tau;
 public Double capitalCost;
 public Double theta;
+
+public Double networkCapitalCostExponent;
+public Double contentCapitalCostExponent;
 
 public Integer numConsumers;
 public Double  topIncome;
@@ -43,9 +47,9 @@ List<ContentProvider<?>> videoContentProviders;
 List<ContentProvider<?>> otherContentProviders;
 Consumers                consumers;
 
-boolean firstStep = true;
-boolean debug = false;
-PrintStream debugOut = null;
+boolean     firstStep = true;
+boolean     debug     = false;
+PrintStream debugOut  = null;
 
 public NeutralityModel() {
   networkOperators = new ArrayList<>();
@@ -78,6 +82,11 @@ public Fitness getFitness(Agent<? extends Individual> agent) {
 }
 
 @Override
+public void init() {
+ // Currently, no additional initialization is required.
+}
+
+@Override
 public boolean step() {
 
   if (firstStep) {
@@ -103,10 +112,12 @@ public boolean step() {
         ContentProvider<?> netOpCP = netOp.integratedContentProvider;
         vidCPs.add(netOpCP);
       }
-      for (ContentProvider<?> cp : vidCPs)
+      for (ContentProvider<?> cp : vidCPs) {
         debugOut.println(cp);
-      for (ContentProvider<?> cp : otherContentProviders)
+      }
+      for (ContentProvider<?> cp : otherContentProviders) {
         debugOut.println(cp);
+      }
     }
 
     firstStep = false;
@@ -117,16 +128,19 @@ public boolean step() {
   if (debug)
     debugOut.println("Stepping Network Operators");
   // Step each agent; allow them to generate and update offers.
-  for (NetworkOperator<?> no : networkOperators)
+  for (NetworkOperator<?> no : networkOperators) {
     no.step(); // Network Operators
+  }
   if (debug)
     debugOut.println("Stepping Independent Video Content Providers");
-  for (ContentProvider<?> cp : videoContentProviders)
+  for (ContentProvider<?> cp : videoContentProviders) {
     cp.step(); // Video Content Providers
+  }
   if (debug)
     debugOut.println("Stepping Independent Other Content Providers");
-  for (ContentProvider<?> cp : otherContentProviders)
+  for (ContentProvider<?> cp : otherContentProviders) {
     cp.step(); // Other Content Providers
+  }
   // Consumers do not need to be stepped; behavior is specified.
 
   if (debug)
@@ -182,20 +196,24 @@ public boolean step() {
     debugOut.println("Details of offers follows:");
 
     debugOut.println("Network Only Offers:");
-    for (NetworkOffer no : networkOnlyOffers)
+    for (NetworkOffer no : networkOnlyOffers) {
       debugOut.println(no);
+    }
 
     debugOut.println("Unbundled Video Content Offers:");
-    for (ContentOffer co : videoContentOffers)
+    for (ContentOffer co : videoContentOffers) {
       debugOut.println(co);
+    }
 
     debugOut.println("Other Content Offers:");
-    for (ContentOffer co : otherContentOffers)
+    for (ContentOffer co : otherContentOffers) {
       debugOut.println(co);
+    }
 
     debugOut.println("Bundled Network and Video Offers:");
-    for (BundledOffer bo : bundledOffers)
+    for (BundledOffer bo : bundledOffers) {
       debugOut.println(bo);
+    }
 
   }
 
@@ -218,8 +236,9 @@ public boolean step() {
   // Debug for completed offers
   if (debug) {
     debugOut.println("Details of offers follows:");
-    for (ConsumptionOption co : options)
+    for (ConsumptionOption co : options) {
       debugOut.println(co);
+    }
   }
 
   /*
@@ -233,6 +252,13 @@ public boolean step() {
   // Don't terminate early.
   return false;
 }
+
+@Override
+public void finish() {
+  // TODO: Bankruptcy
+}
+
+
 
 /**
  *
@@ -287,18 +313,23 @@ public Object getSummaryData() {
   o.numNetworkOperators = networkOperators.size();
 
   // What was their total surplus
-  o.networkOperatorSurplus = networkOperators.stream().mapToDouble(no -> no.getFitness().getAverageFitness()).sum();
+  o.networkOperatorSurplus = networkOperators.stream()
+                                             .mapToDouble(no -> no.getFitness()
+                                                                  .getAverageFitness())
+                                             .sum();
 
   // Total investment & HHI
   o.networkOperatorInvestment = networkOperators.stream()
-          .mapToDouble(no -> no.networkInvestment).sum();
+                                                .mapToDouble(no -> no.networkInvestment)
+                                                .sum();
 
   /*
    * Standalone Network offers
    */
   // Num of offers
   o.numStandaloneNetworkOffersAccepted = networkOperators.stream()
-          .mapToInt(no -> no.numStandaloneNetworkOffersAccepted).sum();
+                                                         .mapToInt(no -> no.numStandaloneNetworkOffersAccepted)
+                                                         .sum();
   // Revenue
   o.totalStandaloneNetworkRevenue = networkOperators.stream().mapToDouble(
           no -> no.totalStandaloneNetworkRevenue).sum();
@@ -307,9 +338,11 @@ public Object getSummaryData() {
    * Bundled Offers
    */
   o.numBundledNetworkOffersAccepted = networkOperators.stream()
-          .mapToInt(no -> no.numBundledOffersAccepted).sum();
+                                                      .mapToInt(no -> no.numBundledOffersAccepted)
+                                                      .sum();
   o.numBundledZeroRatedOffersAccepted = networkOperators.stream()
-          .mapToInt(no -> no.numBundledZeroRatedOffersAccepted).sum();
+                                                        .mapToInt(no -> no.numBundledZeroRatedOffersAccepted)
+                                                        .sum();
   o.totalBundledRevenue = networkOperators.stream().mapToDouble(
           no -> no.totalBundledRevenue).sum();
   o.totalBundledZeroRatedRevenue = networkOperators.stream().mapToDouble(
@@ -317,10 +350,14 @@ public Object getSummaryData() {
 
 
   // NSP revenues from Video IC
-  o.totalICFeesFromVideo = networkOperators.stream().mapToDouble(no -> no.totalInterconnectionPaymentsFromVideo).sum();
+  o.totalICFeesFromVideo = networkOperators.stream()
+                                           .mapToDouble(no -> no.totalInterconnectionPaymentsFromVideo)
+                                           .sum();
 
   // NSP revenues from Other IC
-  o.totalICFeesFromOther = networkOperators.stream().mapToDouble(no -> no.totalInterconnectionPaymentsFromOther).sum();
+  o.totalICFeesFromOther = networkOperators.stream()
+                                           .mapToDouble(no -> no.totalInterconnectionPaymentsFromOther)
+                                           .sum();
 
 
 
@@ -334,32 +371,49 @@ public Object getSummaryData() {
     ContentProvider cp = no.integratedContentProvider;
     o.nspVideoContentInvestment += cp.contentInvestment;
   }
-  o.cpVideoContentInvestment = videoContentProviders.stream().mapToDouble(cp -> cp.getInvestment()).sum();
-  o.cpOtherContentInvestment = otherContentProviders.stream().mapToDouble(cp -> cp.getInvestment()).sum();
-  o.totalContentInvestment = o.nspVideoContentInvestment + o.cpVideoContentInvestment + o.cpOtherContentInvestment;
+  o.cpVideoContentInvestment = videoContentProviders.stream()
+                                                    .mapToDouble(cp -> cp.getInvestment())
+                                                    .sum();
+  o.cpOtherContentInvestment = otherContentProviders.stream()
+                                                    .mapToDouble(cp -> cp.getInvestment())
+                                                    .sum();
+  o.totalContentInvestment = o.nspVideoContentInvestment +
+                             o.cpVideoContentInvestment +
+                             o.cpOtherContentInvestment;
 
 
   // Standalone Content Offers & HHI
   // These are by both NSPs and others
   o.numNSPStandaloneVideoOffersAccepted = networkOperators.stream()
-          .mapToInt(no -> no.getNumStandaloneContentOffersAccepted()).sum();
+                                                          .mapToInt(no -> no.getNumStandaloneContentOffersAccepted())
+                                                          .sum();
   o.numThirdPartyStandaloneVideoOffersAccepted = videoContentProviders.stream()
-          .mapToInt(vcp -> vcp.numAcceptedOffers).sum();
+                                                                      .mapToInt(
+                                                                              vcp -> vcp.numAcceptedOffers)
+                                                                      .sum();
   o.numStandaloneNetworkOffersAccepted = o.numNSPStandaloneVideoOffersAccepted
-          + o.numThirdPartyStandaloneVideoOffersAccepted;
+                                         +
+                                         o.numThirdPartyStandaloneVideoOffersAccepted;
   o.numStandaloneVideoOffersHHI = Statistics.HHI(
           Stream.concat(
                   networkOperators.stream()
-                          .map(no -> no.getNumStandaloneContentOffersAccepted()),
-                  videoContentProviders.stream().map(vcp -> vcp.numAcceptedOffers))
-                  .toArray(Integer[]::new));
+                                  .map(no -> no.getNumStandaloneContentOffersAccepted()),
+                  videoContentProviders.stream()
+                                       .map(vcp -> vcp.numAcceptedOffers))
+                .toArray(Integer[]::new));
 
 		/*
      * Data on standalone video content providers
 		 */
   o.numVideoContentProviders = videoContentProviders.size();
-  o.cpVideoProvderSurplus = videoContentProviders.stream().mapToDouble(cp -> cp.getFitness().getAverageFitness()).sum();
-  o.cpOtherProviderSurplus = otherContentProviders.stream().mapToDouble(cp -> cp.getFitness().getAverageFitness()).sum();
+  o.cpVideoProvderSurplus = videoContentProviders.stream()
+                                                 .mapToDouble(cp -> cp.getFitness()
+                                                                      .getAverageFitness())
+                                                 .sum();
+  o.cpOtherProviderSurplus = otherContentProviders.stream()
+                                                  .mapToDouble(cp -> cp.getFitness()
+                                                                       .getAverageFitness())
+                                                  .sum();
 
 		/*
      * Data on other content providers
@@ -384,7 +438,8 @@ public Object getSummaryData() {
   o.networkHHI = Statistics.HHI(salesArray);
 
   // Video Content Market
-  sales = new ArrayList<>(networkOperators.size() + videoContentProviders.size());
+  sales = new ArrayList<>(networkOperators.size() +
+                          videoContentProviders.size());
   for (NetworkOperator<?> no : networkOperators) {
     int totalSold = 0;
     totalSold += no.getNumStandaloneContentOffersAccepted();
@@ -427,6 +482,9 @@ public void enableDebug(PrintStream out) {
   debugOut = out;
 }
 
+public final double videoContentValue() {
+  return videoContentValue(this.alpha);
+}
 
 /**
  * @return the consumer valuation of video content.
@@ -438,8 +496,8 @@ public static final double videoContentValue(double alpha) {
   return videoContentValue;
 }
 
-public final double videoContentValue() {
-  return videoContentValue(this.alpha);
+public final double otherContentValue() {
+  return otherContentValue(this.alpha);
 }
 
 /**
@@ -449,8 +507,8 @@ public static final double otherContentValue(double alpha) {
   return (1 - videoContentValue(alpha));
 }
 
-public final double otherContentValue() {
-  return otherContentValue(this.alpha);
+public final double videoBWIntensity() {
+  return videoBWIntensity(this.beta);
 }
 
 /**
@@ -463,8 +521,8 @@ public static final double videoBWIntensity(double beta) {
   return videoBWIntensity;
 }
 
-public final double videoBWIntensity() {
-  return videoBWIntensity(this.beta);
+public final double otherBWIntensity() {
+  return otherBWIntensity(this.beta);
 }
 
 /**
@@ -477,24 +535,19 @@ public static final double otherBWIntensity(double beta) {
   return (1 - videoBWIntensity(beta));
 }
 
-public final double otherBWIntensity() {
-  return otherBWIntensity(this.beta);
-}
-
-
+/**
+ * This object gets translated directly into column headers and data
+ * values in output files. For this reason, it needs to be flattened and
+ * not hierarchical. Also, it will necessarily be somewhat repetitive
+ * because fields from other object cannot be re-used directly.
+ * <p>
+ * Notes to self:
+ * <p>
+ * (1) Use first class types to distinguish between null and default
+ * values. (2) Don't add values here faster than writing the code that
+ * calculates them, this helps to make sure nothing gets missed!  ;)
+ */
 public static class OutputData {
-    /*
-     * This object gets translated directly into column headers and data
-		 * values in output files. For this reason, it needs to be flattened and
-		 * not hierarchical. Also, it will necessarily be somewhat repetitive
-		 * because fields from other object cannot be re-used directly.
-		 *
-		 * Notes to self:
-		 *
-		 * (1) Use first class types to distinguish between null and default
-		 * values. (2) Don't add values here faster than populating them.
-		 *
-		 */
 
   // Use first class
 
@@ -562,73 +615,6 @@ public static class OutputData {
   Double videoHHI;
   Double otherHHI;
 
-//
-//  @Override
-//  public List<String> getHeaders() {
-//    List<String> headers = new ArrayList<>();
-//    headers.add("consumerSurplus");
-//    headers.add("numNetworkOperators");
-//    headers.add("networkOperatorSurplus");
-//    headers.add("networkOperatorInvestment");
-//    headers.add("totalICFeesFromVideo");
-//    headers.add("totalICFeesFromOther");
-//    headers.add("numStandaloneNetworkOffersAccepted");
-//    headers.add("numNSPStandaloneVideoOffersAccepted");
-//    headers.add("numThirdPartyStandaloneVideoOffersAccepted");
-//    headers.add("numStandaloneVideoOffersHHI");
-//    headers.add("numVideoContentProviders");
-//    headers.add("cpVideoProvderSurplus");
-//    headers.add("numOtherContentProvides");
-//    headers.add("cpOtherProviderSurplus");
-//    headers.add("nspVideoContentInvestment");
-//    headers.add("cpVideoContentInvestment");
-//    headers.add("cpOtherContentInvestment");
-//    headers.add("totalContentInvestment");
-//    headers.add("totalStandaloneNetworkRevenue");
-//    headers.add("numBundledNetworkOffersAccepted");
-//    headers.add("numBundledZeroRatedOffersAccepted");
-//    headers.add("totalBundledRevenue");
-//    headers.add("totalBundledZeroRatedRevenue");
-//    headers.add("networkHHI");
-//    headers.add("videoHHI");
-//    headers.add("otherHHI");
-//
-//    return headers;
-//  }
-
-//  @Override
-//  public List<Object> getValues() {
-//    List<Object> values = new ArrayList<>();
-//    values.add(consumerSurplus);
-//    values.add(numNetworkOperators);
-//    values.add(networkOperatorSurplus);
-//    values.add(networkOperatorInvestment);
-//    values.add(totalICFeesFromVideo);
-//    values.add(totalICFeesFromOther);
-//    values.add(numStandaloneNetworkOffersAccepted);
-//    values.add(numNSPStandaloneVideoOffersAccepted);
-//    values.add(numThirdPartyStandaloneVideoOffersAccepted);
-//    values.add(numStandaloneVideoOffersHHI);
-//    values.add(numVideoContentProviders);
-//    values.add(cpVideoProvderSurplus);
-//    values.add(numOtherContentProvides);
-//    values.add(cpOtherProviderSurplus);
-//    values.add(nspVideoContentInvestment);
-//    values.add(cpVideoContentInvestment);
-//    values.add(cpOtherContentInvestment);
-//    values.add(totalContentInvestment);
-//    values.add(totalStandaloneNetworkRevenue);
-//    values.add(numBundledNetworkOffersAccepted);
-//    values.add(numBundledZeroRatedOffersAccepted);
-//    values.add(totalBundledRevenue);
-//    values.add(totalBundledZeroRatedRevenue);
-//    values.add(networkHHI);
-//    values.add(videoHHI);
-//    values.add(otherHHI);
-//
-//
-//    return values;
-//  }
 }
 
 
