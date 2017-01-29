@@ -39,6 +39,7 @@ public Boolean bundlingAllowed;
 public Boolean zeroRatingAllowed;
 
 public Boolean integratedContentAllowed;
+public Boolean bankruptcyAllowed;
 
 public Integer maxSteps;
 
@@ -50,6 +51,8 @@ Consumers                consumers;
 boolean     firstStep = true;
 boolean     debug     = false;
 PrintStream debugOut  = null;
+
+int currentStep = 0;
 
 public NeutralityModel() {
   networkOperators = new ArrayList<>();
@@ -83,7 +86,8 @@ public Fitness getFitness(Agent<? extends Individual> agent) {
 
 @Override
 public void init() {
- // Currently, no additional initialization is required.
+  // Currently, no additional initialization is required.  It's all still in
+  // the step function from when this function wasn't here...
 }
 
 @Override
@@ -154,6 +158,11 @@ public boolean step() {
 
   // Network Operators
   for (NetworkOperator<?> no : networkOperators) {
+    // Ignore bankrupt network operators.
+    if (bankruptcyAllowed)
+      if (no.bankrupt)
+        continue;
+
     if (no.getNetworkOffer() != null)
       networkOnlyOffers.add(no.getNetworkOffer());
 
@@ -179,12 +188,22 @@ public boolean step() {
 
   // Video Content Providers
   for (ContentProvider<?> cp : videoContentProviders) {
+    // Ignore bankrupt content providers
+    if (bankruptcyAllowed)
+      if (cp.bankrupt)
+        continue;
+
     if (cp.getContentOffer() != null)
       videoContentOffers.add(cp.getContentOffer());
   }
 
   // Other Content Providers
   for (ContentProvider<?> cp : otherContentProviders) {
+    // Ignore bankrupt content providers
+    if (bankruptcyAllowed)
+      if (cp.bankrupt)
+        continue;
+
     if (cp.getContentOffer() != null)
       otherContentOffers.add(cp.getContentOffer());
   }
@@ -249,40 +268,72 @@ public boolean step() {
   // Details are specified in Consumers.procurementProcess
   consumers.procurementProcess(options);
 
+
+  // Finally, increment the step
+  currentStep++;
+
   // Don't terminate early.
   return false;
 }
 
 @Override
 public void finish() {
-  // TODO: Bankruptcy
-}
 
+  if (!bankruptcyAllowed)
+    return;
 
+  /*
+  Initial bankruptcy procedure:  If all of the network providers go bankrupt,
+  all of the content providers also go bankrupt, with fitness equal to their
+  total investment * -1.  If all of the content providers go bankrupt, then
+  all of the network providers go bankrupt too, with their fitness also equal
+  to their total investment * -1.
+   */
 
-/**
- *
- */
-private void spacePreferences() {
-  List<ContentProvider<?>> vidCPs = new ArrayList<>();
-  vidCPs.addAll(videoContentProviders);
-  for (NetworkOperator<?> netOp : networkOperators) {
-    ContentProvider<?> netOpCP = netOp.integratedContentProvider;
-    vidCPs.add(netOpCP);
+  // Detect if any agents have negative fitness.
+  boolean allNSPsBankrupt = true;
+  boolean allVCPsBankrupt = true;
+  boolean allOCPsBankrupt = true;
+  for (NetworkOperator networkOperator : networkOperators) {
+    if (networkOperator.account.getBalance() >= 0) {
+      allNSPsBankrupt = false;
+      if (networkOperator.integratedContentProvider != null)
+        allVCPsBankrupt = false;
+    }
   }
-  spacePreferences(vidCPs);
-  spacePreferences(otherContentProviders);
-}
-
-private void spacePreferences(List<ContentProvider<?>> providers) {
-  int numProviders = providers.size();
-  double interval = 1.0 / numProviders;
-  double startValue = interval / 2.0;
-  double accVal = startValue;
-  for (ContentProvider<?> provider : providers) {
-    provider.preference = accVal;
-    accVal += interval;
+  for (ContentProvider vcp : videoContentProviders) {
+    if (vcp.account.getBalance() >= 0)
+      allVCPsBankrupt = false;
   }
+  for (ContentProvider ocp : otherContentProviders) {
+    if (ocp.account.getBalance() >= 0)
+      allOCPsBankrupt = false;
+  }
+
+  if (allNSPsBankrupt) {
+    for (ContentProvider vcp : videoContentProviders) {
+      double totalInvested = 0.0;
+      totalInvested += vcp.contentInvestment;
+      vcp.account.forceBalance(-totalInvested);
+    }
+    for (ContentProvider ocp : otherContentProviders) {
+      double totalInvested = 0.0;
+      totalInvested += ocp.contentInvestment;
+      ocp.account.forceBalance(-totalInvested);
+    }
+  }
+
+  if (allVCPsBankrupt | allOCPsBankrupt) {
+    for (NetworkOperator no : networkOperators) {
+      double totalInvested = 0.0;
+      totalInvested += no.networkInvestment;
+      if (no.integratedContentProvider != null)
+        totalInvested += no.integratedContentProvider.contentInvestment;
+      no.account.forceBalance(-totalInvested);
+    }
+  }
+
+
 }
 
 @Override
@@ -384,16 +435,21 @@ public Object getSummaryData() {
 
   // Standalone Content Offers & HHI
   // These are by both NSPs and others
-  o.numNSPStandaloneVideoOffersAccepted = networkOperators.stream()
-                                                          .mapToInt(no -> no.getNumStandaloneContentOffersAccepted())
-                                                          .sum();
-  o.numThirdPartyStandaloneVideoOffersAccepted = videoContentProviders.stream()
-                                                                      .mapToInt(
-                                                                              vcp -> vcp.numAcceptedOffers)
-                                                                      .sum();
-  o.numStandaloneNetworkOffersAccepted = o.numNSPStandaloneVideoOffersAccepted
-                                         +
-                                         o.numThirdPartyStandaloneVideoOffersAccepted;
+  o.numNSPStandaloneVideoOffersAccepted =
+          networkOperators.stream()
+                          .mapToInt(no -> no.getNumStandaloneContentOffersAccepted())
+                          .sum();
+
+  o.numThirdPartyStandaloneVideoOffersAccepted =
+          videoContentProviders.stream()
+                               .mapToInt(vcp -> vcp.numAcceptedOffers)
+                               .sum();
+
+  o.numStandaloneNetworkOffersAccepted =
+          networkOperators.stream()
+                          .mapToInt(no -> no.numStandaloneNetworkOffersAccepted)
+                          .sum();
+
   o.numStandaloneVideoOffersHHI = Statistics.HHI(
           Stream.concat(
                   networkOperators.stream()
@@ -480,6 +536,31 @@ public AgencyData getStepData() {
 public void enableDebug(PrintStream out) {
   debug = true;
   debugOut = out;
+}
+
+/**
+ *
+ */
+private void spacePreferences() {
+  List<ContentProvider<?>> vidCPs = new ArrayList<>();
+  vidCPs.addAll(videoContentProviders);
+  for (NetworkOperator<?> netOp : networkOperators) {
+    ContentProvider<?> netOpCP = netOp.integratedContentProvider;
+    vidCPs.add(netOpCP);
+  }
+  spacePreferences(vidCPs);
+  spacePreferences(otherContentProviders);
+}
+
+private void spacePreferences(List<ContentProvider<?>> providers) {
+  int numProviders = providers.size();
+  double interval = 1.0 / numProviders;
+  double startValue = interval / 2.0;
+  double accVal = startValue;
+  for (ContentProvider<?> provider : providers) {
+    provider.preference = accVal;
+    accVal += interval;
+  }
 }
 
 public final double videoContentValue() {
