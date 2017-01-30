@@ -18,10 +18,39 @@ Double preference        = 0.0;
 int    numAcceptedOffers;
 double totalRevenue;
 double totalPaidForInterconnection;
+
+boolean bankrupt = false;
+
 // TODO: Constructor
 public ContentProvider() {
   super();
 }
+
+
+double getOperatingProfit() {
+  return totalRevenue - totalPaidForInterconnection;
+}
+
+boolean onTrackForPositiveFitness() {
+  NeutralityModel nm = (NeutralityModel) getModel();
+  // The first step is step 0, requiring the addition here for a ratio.
+  double perStepProfit = getOperatingProfit() / (nm.currentStep + 1);
+  double operatingProfitProjection = perStepProfit * nm.maxSteps;
+  double totalInvestment = contentInvestment;
+  if (operatingProfitProjection < totalInvestment)
+    return false;
+  else
+    return true;
+}
+
+
+public void step() {
+  NeutralityModel nm = (NeutralityModel) getModel();
+  if (nm.currentStep > 2) {
+    bankrupt = !onTrackForPositiveFitness();
+  }
+}
+
 
 @Override
 public String toString() {
@@ -97,6 +126,5 @@ void payInterconnectionBandwidth(NetworkOperator<?> toNetwork) {
 
 }
 
-public abstract void step();
 
 }

@@ -28,6 +28,8 @@ private double e(Position pos) {
 
 @Override
 public void step() {
+  super.step();
+
   if (firstStep) {
     makeContentInvestment(e(Position.ContentInvestment));
     firstStep = false;
