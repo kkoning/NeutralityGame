@@ -3,7 +3,6 @@ package neutrality;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import agency.Agent;
 import agency.AgentModel;
@@ -12,10 +11,11 @@ import agency.Individual;
 import agency.SimpleFirm;
 import agency.SimpleFitness;
 import agency.data.AgencyData;
-import agency.util.Statistics;
 import neutrality.Offers.BundledOffer;
 import neutrality.Offers.ContentOffer;
 import neutrality.Offers.NetworkOffer;
+
+import static agency.util.Statistics.HHI;
 
 public class NeutralityModel
         implements AgentModel {
@@ -113,7 +113,7 @@ public boolean step() {
       List<ContentProvider<?>> vidCPs = new ArrayList<>();
       vidCPs.addAll(videoContentProviders);
       for (NetworkOperator<?> netOp : networkOperators) {
-        ContentProvider<?> netOpCP = netOp.integratedContentProvider;
+        ContentProvider<?> netOpCP = netOp.icp;
         vidCPs.add(netOpCP);
       }
       for (ContentProvider<?> cp : vidCPs) {
@@ -297,7 +297,7 @@ public void finish() {
   for (NetworkOperator networkOperator : networkOperators) {
     if (networkOperator.account.getBalance() >= 0) {
       allNSPsBankrupt = false;
-      if (networkOperator.integratedContentProvider != null)
+      if (networkOperator.icp != null)
         allVCPsBankrupt = false;
     }
   }
@@ -327,8 +327,8 @@ public void finish() {
     for (NetworkOperator no : networkOperators) {
       double totalInvested = 0.0;
       totalInvested += no.networkInvestment;
-      if (no.integratedContentProvider != null)
-        totalInvested += no.integratedContentProvider.contentInvestment;
+      if (no.icp != null)
+        totalInvested += no.icp.contentInvestment;
       no.account.forceBalance(-totalInvested);
     }
   }
@@ -352,176 +352,156 @@ public int getMaxSteps() {
 public Object getSummaryData() {
   OutputData o = new OutputData();
 
-  /* Data on Consumers
-   */
-  o.consumerSurplus = consumers.getTotalSurplus();
-
-
   /*
-   * Data on network operators
-	 */
-  // How many network operators were there in the simulation?
-  o.numNetworkOperators = networkOperators.size();
-
-  // What was their total surplus
-  o.networkOperatorSurplus = networkOperators.stream()
-                                             .mapToDouble(no -> no.getFitness()
-                                                                  .getAverageFitness())
-                                             .sum();
-
-  // Total investment & HHI
-  o.networkOperatorInvestment = networkOperators.stream()
-                                                .mapToDouble(no -> no.networkInvestment)
-                                                .sum();
-
-  /*
-   * Standalone Network offers
+  Consumption Data
    */
-  // Num of offers
-  o.numStandaloneNetworkOffersAccepted = networkOperators.stream()
-                                                         .mapToInt(no -> no.numStandaloneNetworkOffersAccepted)
-                                                         .sum();
-  // Revenue
-  o.totalStandaloneNetworkRevenue = networkOperators.stream().mapToDouble(
-          no -> no.totalStandaloneNetworkRevenue).sum();
-
-  /*
-   * Bundled Offers
-   */
-  o.numBundledNetworkOffersAccepted = networkOperators.stream()
-                                                      .mapToInt(no -> no.numBundledOffersAccepted)
-                                                      .sum();
-  o.numBundledZeroRatedOffersAccepted = networkOperators.stream()
-                                                        .mapToInt(no -> no.numBundledZeroRatedOffersAccepted)
-                                                        .sum();
-  o.totalBundledRevenue = networkOperators.stream().mapToDouble(
-          no -> no.totalBundledRevenue).sum();
-  o.totalBundledZeroRatedRevenue = networkOperators.stream().mapToDouble(
-          no -> no.totalBundledZeroRatedRevenue).sum();
-
-
-  // NSP revenues from Video IC
-  o.totalICFeesFromVideo = networkOperators.stream()
-                                           .mapToDouble(no -> no.totalInterconnectionPaymentsFromVideo)
-                                           .sum();
-
-  // NSP revenues from Other IC
-  o.totalICFeesFromOther = networkOperators.stream()
-                                           .mapToDouble(no -> no.totalInterconnectionPaymentsFromOther)
-                                           .sum();
-
-
-
-  /*
-   * Data on Content Markets, in which both NSPs and some CPs participate.
-   */
-
-  // NSP Investment in Video Content
-  o.nspVideoContentInvestment = 0.0;
-  for (NetworkOperator no : networkOperators) {
-    ContentProvider cp = no.integratedContentProvider;
-    o.nspVideoContentInvestment += cp.contentInvestment;
-  }
-  o.cpVideoContentInvestment = videoContentProviders.stream()
-                                                    .mapToDouble(cp -> cp.getInvestment())
-                                                    .sum();
-  o.cpOtherContentInvestment = otherContentProviders.stream()
-                                                    .mapToDouble(cp -> cp.getInvestment())
-                                                    .sum();
-  o.totalContentInvestment = o.nspVideoContentInvestment +
-                             o.cpVideoContentInvestment +
-                             o.cpOtherContentInvestment;
-
-
-  // Standalone Content Offers & HHI
-  // These are by both NSPs and others
-  o.numNSPStandaloneVideoOffersAccepted =
+  // Standalone Offers
+  o.qty_NetworkOnly =
           networkOperators.stream()
-                          .mapToInt(no -> no.getNumStandaloneContentOffersAccepted())
+                          .mapToInt(no -> no.qty_NetworkOnly)
                           .sum();
-
-  o.numThirdPartyStandaloneVideoOffersAccepted =
+  o.qty_VideoOnlyNSP =
+          networkOperators
+                  .stream()
+                  .mapToInt(no -> no.getNumStandaloneContentOffersAccepted())
+                  .sum();
+  o.qty_VideoOnlyCP =
           videoContentProviders.stream()
                                .mapToInt(vcp -> vcp.numAcceptedOffers)
                                .sum();
-
-  o.numStandaloneNetworkOffersAccepted =
+  o.qty_OtherContent =
+          otherContentProviders.stream()
+                               .mapToInt(ocp -> ocp.numAcceptedOffers)
+                               .sum();
+  // Bundled offers
+  o.qty_Bundled = networkOperators.stream()
+                                  .mapToInt(no -> no.qty_Bundled)
+                                  .sum();
+  o.qty_BundledZeroRated =
           networkOperators.stream()
-                          .mapToInt(no -> no.numStandaloneNetworkOffersAccepted)
+                          .mapToInt(no -> no.qty_BundledZeroRated)
                           .sum();
 
-  o.numStandaloneVideoOffersHHI = Statistics.HHI(
-          Stream.concat(
-                  networkOperators.stream()
-                                  .map(no -> no.getNumStandaloneContentOffersAccepted()),
-                  videoContentProviders.stream()
-                                       .map(vcp -> vcp.numAcceptedOffers))
-                .toArray(Integer[]::new));
+  // Other
+  o.consumerSurplus = consumers.getTotalSurplus();
 
-		/*
-     * Data on standalone video content providers
-		 */
-  o.numVideoContentProviders = videoContentProviders.size();
-  o.cpVideoProvderSurplus = videoContentProviders.stream()
-                                                 .mapToDouble(cp -> cp.getFitness()
-                                                                      .getAverageFitness())
-                                                 .sum();
-  o.cpOtherProviderSurplus = otherContentProviders.stream()
-                                                  .mapToDouble(cp -> cp.getFitness()
-                                                                       .getAverageFitness())
-                                                  .sum();
 
-		/*
-     * Data on other content providers
-		 */
-  o.numOtherContentProvides = otherContentProviders.size();
 
 
   /*
-   * Market Concentration Figures
+  Network Operator Variables
    */
-  // Network Market
-  List<Integer> sales = new ArrayList<>(networkOperators.size());
-  for (NetworkOperator<?> no : networkOperators) {
-    int totalSold = 0;
-    totalSold += no.numStandaloneNetworkOffersAccepted;
-    totalSold += no.numBundledOffersAccepted;
-    totalSold += no.numBundledZeroRatedOffersAccepted;
-    sales.add(totalSold);
-  }
-  Integer[] salesArray = new Integer[sales.size()];
-  salesArray = sales.toArray(salesArray);
-  o.networkHHI = Statistics.HHI(salesArray);
+  // Investment
+  o.nsp_InvestmentNetwork =
+          networkOperators.stream()
+                          .mapToDouble(no -> no.networkInvestment)
+                          .sum();
+  o.nsp_InvestmentVideo =
+          networkOperators.stream()
+                          .mapToDouble(no -> no.icp
+                                  .contentInvestment)
+                          .sum();
+  // Revenue
+  o.nsp_RevenueNetworkOnly =
+          networkOperators.stream()
+                          .mapToDouble(no -> no.rev_NetworkOnly)
+                          .sum();
+  o.nsp_RevenueBundled =
+          networkOperators.stream()
+                          .mapToDouble(no -> no.rev_Bundled)
+                          .sum();
+  o.nsp_RevenueBundledZeroRated =
+          networkOperators.stream()
+                          .mapToDouble(no -> no.rev_BundledZeroRated)
+                          .sum();
+  o.nsp_RevenueVideoOnly =
+          networkOperators.stream()
+                          .mapToDouble(no -> no.icp.totalRevenue)
+                          .sum();
 
-  // Video Content Market
-  sales = new ArrayList<>(networkOperators.size() +
-                          videoContentProviders.size());
-  for (NetworkOperator<?> no : networkOperators) {
-    int totalSold = 0;
-    totalSold += no.getNumStandaloneContentOffersAccepted();
-    totalSold += no.numBundledOffersAccepted;
-    totalSold += no.numBundledZeroRatedOffersAccepted;
-    sales.add(totalSold);
-  }
-  for (ContentProvider<?> cp : videoContentProviders) {
-    int totalSold = 0;
-    totalSold += cp.numAcceptedOffers;
-    sales.add(totalSold);
-  }
-  salesArray = new Integer[sales.size()];
-  salesArray = sales.toArray(salesArray);
-  o.videoHHI = Statistics.HHI(salesArray);
+  // Other
+  o.nsp_Surplus =
+          networkOperators.stream()
+                          .mapToDouble(no -> no.account.getBalance())
+                          .sum();
 
-  // Other Content Market
-  sales = new ArrayList<>(otherContentProviders.size());
-  for (ContentProvider<?> cp : otherContentProviders) {
-    int totalSold = 0;
-    totalSold += cp.numAcceptedOffers;
-    sales.add(totalSold);
+  /*
+  Content Provider Variables
+   */
+  // Investment
+  o.cp_InvestmentVideo =
+          videoContentProviders.stream()
+                               .mapToDouble(cp -> cp.getInvestment())
+                               .sum();
+  o.cp_InvestmentOther =
+          otherContentProviders.stream()
+                               .mapToDouble(cp -> cp.getInvestment())
+                               .sum();
+  // Revenue
+  o.cp_RevenueVideo =
+          videoContentProviders.stream()
+                               .mapToDouble(vcp -> vcp.totalRevenue)
+                               .sum();
+  o.cp_RevenueOther =
+          otherContentProviders.stream()
+                               .mapToDouble(ocp -> ocp.totalRevenue)
+                               .sum();
+  // Other/Surplus
+  o.cp_SurplusVideo =
+          videoContentProviders.stream()
+                               .mapToDouble(cp -> cp.account.getBalance())
+                               .sum();
+  o.cp_SurplusOther =
+          otherContentProviders.stream()
+                               .mapToDouble(cp -> cp.account.getBalance())
+                               .sum();
+
+
+  /*
+  Market Variables
+   */
+  // Interconnection
+  o.ixc_VideoFees =
+          networkOperators.stream()
+                          .mapToDouble(no -> no.ixc_RevenueFromVideo)
+                          .sum();
+  o.ixc_OtherFees =
+          networkOperators.stream()
+                          .mapToDouble(no -> no.ixc_RevenueFromOther)
+                          .sum();
+
+  // Concentration
+  // Network HHI
+  int[] networkSales = new int[networkOperators.size()];
+  for (int i = 0; i < networkOperators.size(); i++) {
+    NetworkOperator no = networkOperators.get(i);
+    networkSales[i] = no.qty_NetworkOnly +
+                      no.qty_Bundled +
+                      no.qty_BundledZeroRated;
   }
-  salesArray = new Integer[sales.size()];
-  salesArray = sales.toArray(salesArray);
-  o.otherHHI = Statistics.HHI(salesArray);
+  o.hhi_Network = HHI(networkSales);
+
+  // Video Content HHI
+  List<Integer> videoSales = new ArrayList<>();
+  for (ContentProvider cp : videoContentProviders) {
+    videoSales.add(cp.numAcceptedOffers);
+  }
+  if (integratedContentAllowed) {
+    for (NetworkOperator no : networkOperators) {
+      videoSales.add(no.getNumStandaloneContentOffersAccepted() +
+                     no.qty_Bundled +
+                     no.qty_BundledZeroRated);
+    }
+  }
+  o.hhi_Video = HHI(videoSales);
+
+  // Other Content HHI
+  int[] otherSales = new int[otherContentProviders.size()];
+  for (int i = 0; i < otherContentProviders.size(); i++) {
+    otherSales[i] = otherContentProviders.get(i).numAcceptedOffers;
+  }
+  o.hhi_Other = HHI(otherSales);
+
 
   return o;
 }
@@ -545,7 +525,7 @@ private void spacePreferences() {
   List<ContentProvider<?>> vidCPs = new ArrayList<>();
   vidCPs.addAll(videoContentProviders);
   for (NetworkOperator<?> netOp : networkOperators) {
-    ContentProvider<?> netOpCP = netOp.integratedContentProvider;
+    ContentProvider<?> netOpCP = netOp.icp;
     vidCPs.add(netOpCP);
   }
   spacePreferences(vidCPs);
@@ -629,72 +609,59 @@ public static final double otherBWIntensity(double beta) {
  * calculates them, this helps to make sure nothing gets missed!  ;)
  */
 public static class OutputData {
-
-  // Use first class
-
   /*
-   * Consumer Variables
+  Consumption Variables
    */
-  Double consumerSurplus;
-
-  /*
-   * Network Operator Variables
-   */
-  Integer numNetworkOperators;
-  Double  networkOperatorSurplus;
-
-  Double networkOperatorInvestment;
-
-  Double totalICFeesFromVideo;
-  Double totalICFeesFromOther;
+  // Standalone offers
+  Integer qty_NetworkOnly; // Network
+  Integer qty_VideoOnlyNSP; // Content
+  Integer qty_VideoOnlyCP;
+  Integer qty_OtherContent;
+  // Bundled offers
+  Integer qty_Bundled;
+  Integer qty_BundledZeroRated;
+  // Other
+  Double  consumerSurplus;
 
 
   /*
-   * NSP Standalone Network Offers
+  Network Operator Variables
    */
-  Integer numStandaloneNetworkOffersAccepted;
-  Double  totalStandaloneNetworkRevenue;
-
-
-  // TODO
-  Integer numBundledNetworkOffersAccepted;
-  Integer numBundledZeroRatedOffersAccepted;
-  Double  totalBundledRevenue;
-  Double  totalBundledZeroRatedRevenue;
-
-
-  Integer numNSPStandaloneVideoOffersAccepted;
-  Integer numThirdPartyStandaloneVideoOffersAccepted;
-  Double  numStandaloneVideoOffersHHI;
-
-  /*
-   * Video Content Providers
-   */
-  Integer numVideoContentProviders;
-  Double  cpVideoProvderSurplus;
+  // Investment
+  Double nsp_InvestmentNetwork;
+  Double nsp_InvestmentVideo;
+  // Revenue from various type of offers
+  Double nsp_RevenueNetworkOnly;
+  Double nsp_RevenueBundled;
+  Double nsp_RevenueBundledZeroRated;
+  Double nsp_RevenueVideoOnly;
+  // Other
+  Double nsp_Surplus;
 
 
   /*
-   * Other Content Providers
+  Content Provider Variables
    */
-  Integer numOtherContentProvides;
-  Double  cpOtherProviderSurplus;
+  // Investment
+  Double cp_InvestmentVideo;
+  Double cp_InvestmentOther;
+  // Revenue
+  Double cp_RevenueVideo;
+  Double cp_RevenueOther;
+  // Other/Surplus
+  Double cp_SurplusVideo;
+  Double cp_SurplusOther;
 
   /*
-   * Content Market Variables
+  Market variables
    */
-  Double nspVideoContentInvestment;
-  Double cpVideoContentInvestment;
-  Double cpOtherContentInvestment;
-  Double totalContentInvestment;
-
-
-  /*
-   * Market Concentration
-   */
-  Double networkHHI;
-  Double videoHHI;
-  Double otherHHI;
+  // Interconnection
+  Double ixc_VideoFees;
+  Double ixc_OtherFees;
+  // Concentration
+  Double hhi_Network;
+  Double hhi_Video;
+  Double hhi_Other;
 
 }
 
