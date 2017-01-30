@@ -3,29 +3,17 @@ package neutrality;
 import java.util.List;
 
 /**
- * Calculates information about consumer value and consumption decisions.  This class
- * should be thoroughly debugged and tested because it contains much of the core
- * math of the model.
+ * Calculates information about consumer value and consumption decisions.  This
+ * class should be thoroughly debugged and tested because it contains much of
+ * the core math of the model.
  */
 public final class ConsumptionOptionSurplus {
-/**
- * Model Parameters
- */
-private double psi, tau, theta;
-
-/**
- * Functions of alpha and beta
- */
-private double videoValue, otherValue;
-
 /**
  * Contains a list of possible options for consumers to consider
  */
 List<ConsumptionOption> consumptionOptions;
-
 double[] consumerIncomes;
 double[] consumerPreferences;
-
 /**
  * Contains the surplus of each option for each consumer. The first
  * dimension represents the consumer#, such that surplus[n][m] corresponds
@@ -34,17 +22,24 @@ double[] consumerPreferences;
  * Or, in shorthand, surplus[option][consumer].
  */
 double[][] surplus;
-
 double[] bestValue;
 int[]    bestOption;
+/**
+ * Model Parameters
+ */
+private double psi, tau, theta;
+/**
+ * Functions of alpha and beta
+ */
+private double videoValue, otherValue;
 
 public ConsumptionOptionSurplus(NeutralityModel model, Consumers consumers) {
   this(model.alpha,
-          model.psi,
-          model.tau,
-          model.theta,
-          consumers.incomes,
-          consumers.preferenceFactors);
+       model.psi,
+       model.tau,
+       model.theta,
+       consumers.incomes,
+       consumers.preferenceFactors);
 }
 
 public ConsumptionOptionSurplus(
@@ -72,7 +67,11 @@ public ConsumptionOptionSurplus(
 }
 
 public void setConsumptionOptions(List<ConsumptionOption> options) {
-  // Need to manage the surplus field.
+  /*
+  The surplus matrix is of dimension options.size() *
+  consumerIncome.length.  This means that these arrays might need to change
+  if the # of options changes.  This is also where they'll be set initially.
+   */
   if (surplus == null) {
     // If null, allocate for the first time.
     surplus = new double[options.size()][consumerIncomes.length];
@@ -83,6 +82,7 @@ public void setConsumptionOptions(List<ConsumptionOption> options) {
       surplus = new double[options.size()][consumerIncomes.length];
     }
   }
+
   this.consumptionOptions = options;
 }
 
@@ -286,8 +286,9 @@ public String sales() {
   }
 
   int totalSales = 0;
-  for (int i = 0; i < numChosen.length; i++)
+  for (int i = 0; i < numChosen.length; i++) {
     totalSales += numChosen[i];
+  }
   int didntBuy = consumerIncomes.length - totalSales;
 
   sb.append("None\t" + didntBuy + "\n");

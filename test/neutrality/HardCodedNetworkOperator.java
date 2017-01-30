@@ -27,17 +27,17 @@ public void unitOffers() {
 
   // Vertically Integrated Content Provider, use corresponded hard coded
   // content provider
-  integratedContentProvider = new HardCodedContentProvider();
-  integratedContentProvider.isVideoProvider = true;
+  icp = new HardCodedContentProvider();
+  icp.isVideoProvider = true;
 
   // Network Offer
   fixedNetworkOffer = new NetworkOffer(this, 1, 1);
 
   // Content Offer
-  fixedVideoContentOffer = integratedContentProvider.getContentOffer();
+  fixedVideoContentOffer = icp.getContentOffer();
 
   // Bundled Offer
-  fixedBundledOffer = new BundledOffer(this, integratedContentProvider, 2, 1, false);
+  fixedBundledOffer = new BundledOffer(this, icp, 2, 1, false);
 
 }
 
@@ -45,7 +45,7 @@ public void unitOffers() {
 @Override
 public void setModel(AgentModel model) {
   super.setModel(model);
-  integratedContentProvider.setModel(model);
+  icp.setModel(model);
 }
 
 @Override
