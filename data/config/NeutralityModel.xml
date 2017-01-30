@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Warning: Used as template!  Make sure you're pointing at the correct file. -->
-<Environment checkpointEvery="100">
+<Environment checkpointEvery="10">
     <PopulationGroup id="nsp" totalSize="200">
-        <Population initialSize="20w0" id="DirectlyEncodedNetworkOperators">
-            <DefaultVectorIndividualData generations="10" file="deno.csv"/>
+        <Population initialSize="200" id="DirectlyEncodedNetworkOperators"  evolveCycle="40" evolveCycleStart="0" evolveCycleStop="19">
+            <DefaultVectorIndividualData generations="1" file="deno.csv"/>
             <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedNetworkOperator">
             </DefaultAgentFactory>
             <VectorIndividualFactory length="10">
@@ -42,8 +42,8 @@
     </PopulationGroup>
 
     <PopulationGroup id="videoContent" totalSize="200">
-        <Population initialSize="200" id="DirectlyEncodedVideoContentProviders">
-            <DefaultVectorIndividualData generations="10" file="devcp.csv"/>
+        <Population initialSize="200" id="DirectlyEncodedVideoContentProviders" evolveCycle="40" evolveCycleStart="20" evolveCycleStop="39">
+            <DefaultVectorIndividualData generations="1" file="devcp.csv"/>
             <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedContentProvider">
                 <Parameter name="isVideoProvider" value="true"/>
             </DefaultAgentFactory>
@@ -81,8 +81,8 @@
     </PopulationGroup>
 
     <PopulationGroup id="otherContent" totalSize="200">
-        <Population initialSize="200" id="DirectlyEncodedOtherContentProviders">
-            <DefaultVectorIndividualData generations="10" file="deocp.csv"/>
+        <Population initialSize="200" id="DirectlyEncodedOtherContentProviders" evolveCycle="40" evolveCycleStart="20" evolveCycleStop="39">
+            <DefaultVectorIndividualData generations="1" file="deocp.csv"/>
             <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedContentProvider">
                 <Parameter name="isVideoProvider" value="false"/>
             </DefaultAgentFactory>
@@ -133,7 +133,9 @@
         <Parameter name="beta" value="1.0"/> <!-- 1 for testing -->
         <Parameter name="psi" value="0.4"/>
         <Parameter name="tau" value="0.4"/>
-        <Parameter name="capitalCost" value="10"/>
+        <Parameter name="capitalCost" value="50"/>
+        <Parameter name="networkCapitalCostExponent" value="1.5"/>
+        <Parameter name="contentCapitalCostExponent" value="1.5"/>
         <Parameter name="theta" value="0.2"/>
         <Parameter name="maxSteps" value="10"/>
         <Parameter name="numConsumers" value="1000"/>
@@ -142,6 +144,7 @@
         <Parameter name="bundlingAllowed" value="false"/>
         <Parameter name="zeroRatingAllowed" value="false"/>
         <Parameter name="integratedContentAllowed" value="false"/>
+        <Parameter name="bankruptcyAllowed" value="true"/>
     </DefaultAgentModelFactory>
 
 
@@ -153,6 +156,6 @@
     <LocalParallelEvaluator/>
 
     <!-- Test out an DefaultAgentModelReporter -->
-    <DefaultModelSummaryData generations="100" file="summary.csv" format="csv"/>
+    <DefaultModelSummaryData generations="1" file="summary.csv" format="csv"/>
 
 </Environment>
