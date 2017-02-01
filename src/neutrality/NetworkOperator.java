@@ -38,7 +38,7 @@ ContentProvider<NullIndividual> icp;
 
 boolean bankrupt = false;
 
-boolean onTrackForPositiveFitness() {
+boolean onTrack() {
   NeutralityModel nm = (NeutralityModel) getModel();
   // The first step is step 0, requiring the addition here for a ratio.
   double perStepRevenue = totalRevenueAllSources()  / (nm.currentStep+1);
@@ -47,7 +47,9 @@ boolean onTrackForPositiveFitness() {
   if (icp != null) {
     totalInvestment += icp.contentInvestment;
   }
-  if (revenueProjection < totalInvestment)
+  double requiredTarget = totalInvestment * nm.requiredReturnOnCapital;
+
+  if (revenueProjection < requiredTarget)
     return false;
   else
     return true;
@@ -68,7 +70,7 @@ double totalRevenueAllSources() {
 void step() {
   NeutralityModel nm = (NeutralityModel) getModel();
   if (nm.currentStep > 2) {
-    bankrupt = !onTrackForPositiveFitness();
+    bankrupt = !onTrack();
   }
 }
 

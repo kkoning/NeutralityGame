@@ -31,13 +31,14 @@ double getOperatingProfit() {
   return totalRevenue - totalPaidForInterconnection;
 }
 
-boolean onTrackForPositiveFitness() {
+boolean onTrack() {
   NeutralityModel nm = (NeutralityModel) getModel();
   // The first step is step 0, requiring the addition here for a ratio.
   double perStepProfit = getOperatingProfit() / (nm.currentStep + 1);
-  double operatingProfitProjection = perStepProfit * nm.maxSteps;
+  double revenueProjection = perStepProfit * nm.maxSteps;
   double totalInvestment = contentInvestment;
-  if (operatingProfitProjection < totalInvestment)
+  double requiredTarget = totalInvestment * nm.requiredReturnOnCapital;
+  if (revenueProjection < requiredTarget)
     return false;
   else
     return true;
@@ -47,7 +48,7 @@ boolean onTrackForPositiveFitness() {
 public void step() {
   NeutralityModel nm = (NeutralityModel) getModel();
   if (nm.currentStep > 2) {
-    bankrupt = !onTrackForPositiveFitness();
+    bankrupt = !onTrack();
   }
 }
 

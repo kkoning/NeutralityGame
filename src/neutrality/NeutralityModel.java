@@ -30,6 +30,7 @@ public Double theta;
 
 public Double networkCapitalCostExponent;
 public Double contentCapitalCostExponent;
+public Double requiredReturnOnCapital;
 
 public Integer numConsumers;
 public Double  topIncome;
@@ -39,7 +40,8 @@ public Boolean bundlingAllowed;
 public Boolean zeroRatingAllowed;
 
 public Boolean integratedContentAllowed;
-public Boolean bankruptcyAllowed;
+public Boolean bankruptcyEnforced;
+public Boolean punishIfAllBankrupt;
 
 public Integer maxSteps;
 
@@ -159,7 +161,7 @@ public boolean step() {
   // Network Operators
   for (NetworkOperator<?> no : networkOperators) {
     // Ignore bankrupt network operators.
-    if (bankruptcyAllowed)
+    if (bankruptcyEnforced)
       if (no.bankrupt)
         continue;
 
@@ -189,7 +191,7 @@ public boolean step() {
   // Video Content Providers
   for (ContentProvider<?> cp : videoContentProviders) {
     // Ignore bankrupt content providers
-    if (bankruptcyAllowed)
+    if (bankruptcyEnforced)
       if (cp.bankrupt)
         continue;
 
@@ -200,7 +202,7 @@ public boolean step() {
   // Other Content Providers
   for (ContentProvider<?> cp : otherContentProviders) {
     // Ignore bankrupt content providers
-    if (bankruptcyAllowed)
+    if (bankruptcyEnforced)
       if (cp.bankrupt)
         continue;
 
@@ -279,7 +281,7 @@ public boolean step() {
 @Override
 public void finish() {
 
-  if (!bankruptcyAllowed)
+  if (!punishIfAllBankrupt)
     return;
 
   /*

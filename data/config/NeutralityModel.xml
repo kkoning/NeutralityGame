@@ -2,14 +2,14 @@
 <!-- Warning: Used as template!  Make sure you're pointing at the correct file. -->
 <Environment checkpointEvery="10">
     <PopulationGroup id="nsp" totalSize="200">
-        <Population initialSize="200" id="DirectlyEncodedNetworkOperators"  evolveCycle="40" evolveCycleStart="0" evolveCycleStop="19">
+        <Population initialSize="200" id="DirectlyEncodedNetworkOperators">
             <DefaultVectorIndividualData generations="1" file="deno.csv"/>
             <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedNetworkOperator">
             </DefaultAgentFactory>
             <VectorIndividualFactory length="10">
                 <GaussianRandomVectorRange start="0" end="9">
                     <Means type="DoubleList" start="0" end="9">3 3 0 0 0 0 0 0 0 0</Means>
-                    <Deviations type="DoubleList" start="0" end="9">1.5 1.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5</Deviations>
+                    <Deviations type="DoubleList" start="0" end="9">0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01</Deviations>
                 </GaussianRandomVectorRange>
             </VectorIndividualFactory>
             <VectorLimitationPipeline>
@@ -42,7 +42,7 @@
     </PopulationGroup>
 
     <PopulationGroup id="videoContent" totalSize="200">
-        <Population initialSize="200" id="DirectlyEncodedVideoContentProviders" evolveCycle="40" evolveCycleStart="20" evolveCycleStop="39">
+        <Population initialSize="200" id="DirectlyEncodedVideoContentProviders">
             <DefaultVectorIndividualData generations="1" file="devcp.csv"/>
             <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedContentProvider">
                 <Parameter name="isVideoProvider" value="true"/>
@@ -50,7 +50,7 @@
             <VectorIndividualFactory length="2">
                 <GaussianRandomVectorRange start="0" end="1">
                     <Means type="DoubleList" start="0" end="1">3.0 0.0</Means>
-                    <Deviations type="DoubleList" start="0" end="1">1 0.5</Deviations>
+                    <Deviations type="DoubleList" start="0" end="1">0.01 0.01</Deviations>
                 </GaussianRandomVectorRange>
             </VectorIndividualFactory>
             <VectorLimitationPipeline>
@@ -81,7 +81,7 @@
     </PopulationGroup>
 
     <PopulationGroup id="otherContent" totalSize="200">
-        <Population initialSize="200" id="DirectlyEncodedOtherContentProviders" evolveCycle="40" evolveCycleStart="20" evolveCycleStop="39">
+        <Population initialSize="200" id="DirectlyEncodedOtherContentProviders">
             <DefaultVectorIndividualData generations="1" file="deocp.csv"/>
             <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedContentProvider">
                 <Parameter name="isVideoProvider" value="false"/>
@@ -89,7 +89,7 @@
             <VectorIndividualFactory length="2">
                 <GaussianRandomVectorRange start="0" end="1">
                     <Means type="DoubleList" start="0" end="1">3.0 0.0</Means>
-                    <Deviations type="DoubleList" start="0" end="1">1 0.5</Deviations>
+                    <Deviations type="DoubleList" start="0" end="1">0.01 0.01</Deviations>
                 </GaussianRandomVectorRange>
             </VectorIndividualFactory>
             <VectorLimitationPipeline>
@@ -121,7 +121,7 @@
     </PopulationGroup>
 
     <!-- Need an EvaluationGroupFactory -->
-    <ShuffledEvaluationGroupFactory numGroups="2000">
+    <ShuffledEvaluationGroupFactory numGroups="220">
         <AgentSource populationGroup="nsp" numAgents="1"/>
         <AgentSource populationGroup="videoContent" numAgents="1"/>
         <AgentSource populationGroup="otherContent" numAgents="1"/>
@@ -133,18 +133,20 @@
         <Parameter name="beta" value="1.0"/> <!-- 1 for testing -->
         <Parameter name="psi" value="0.4"/>
         <Parameter name="tau" value="0.4"/>
-        <Parameter name="capitalCost" value="50"/>
-        <Parameter name="networkCapitalCostExponent" value="1.5"/>
-        <Parameter name="contentCapitalCostExponent" value="1.5"/>
+        <Parameter name="capitalCost" value="1"/>
+        <Parameter name="networkCapitalCostExponent" value="1.0"/>
+        <Parameter name="contentCapitalCostExponent" value="1.0"/>
+        <Parameter name="requiredReturnOnCapital" value="1.2"/>
         <Parameter name="theta" value="0.2"/>
         <Parameter name="maxSteps" value="10"/>
-        <Parameter name="numConsumers" value="1000"/>
+        <Parameter name="numConsumers" value="200"/>
         <Parameter name="topIncome" value="1.0"/>
-        <Parameter name="forceZeroPriceIC" value="true"/>
-        <Parameter name="bundlingAllowed" value="false"/>
+        <Parameter name="forceZeroPriceIC" value="false"/>
+        <Parameter name="bundlingAllowed" value="true"/>
         <Parameter name="zeroRatingAllowed" value="false"/>
-        <Parameter name="integratedContentAllowed" value="false"/>
-        <Parameter name="bankruptcyAllowed" value="true"/>
+        <Parameter name="integratedContentAllowed" value="true"/>
+        <Parameter name="bankruptcyEnforced" value="true"/>
+        <Parameter name="punishIfAllBankrupt" value="true"/>
     </DefaultAgentModelFactory>
 
 
@@ -152,10 +154,10 @@
     <DefaultEnvironmentStatistics file="DefaultEnvironmentStatistics.csv" format="csv"/>
 
     <!-- Need an Evaluator -->
-     <!--<LocalEvaluator/>-->
+    <!--<LocalEvaluator/>-->
     <LocalParallelEvaluator/>
 
     <!-- Test out an DefaultAgentModelReporter -->
-    <DefaultModelSummaryData generations="1" file="summary.csv" format="csv"/>
+    <DefaultModelSummaryData generations="10" file="summary.csv" format="csv"/>
 
 </Environment>
