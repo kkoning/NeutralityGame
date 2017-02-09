@@ -147,6 +147,10 @@
         <Parameter name="integratedContentAllowed" value="true"/>
         <Parameter name="bankruptcyEnforced" value="true"/>
         <Parameter name="punishIfAllBankrupt" value="true"/>
+
+        <Parameter name="analyticalConsumers" value="true"/>
+        <Parameter name="gamma" value="0.5"/>
+        <Parameter name="analyticalIncome" value="100000"/>
     </DefaultAgentModelFactory>
 
 

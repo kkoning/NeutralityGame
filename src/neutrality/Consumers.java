@@ -187,14 +187,9 @@ public void procurementProcess(List<ConsumptionOption> options) {
 public void consume(ConsumptionOption[] choices, double[] surplus) {
   for (int i = 0; i < choices.length; i++) {
     ConsumptionOption co = choices[i];
-    consume(co);
+    co.payProviders();
     runningSurplus[i] += surplus[i];
   }
-}
-
-void consume(ConsumptionOption co) {
-  if (co != null)
-    co.payProviders();
 }
 
 public double[] getSurplusses() {

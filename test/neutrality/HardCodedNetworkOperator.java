@@ -16,9 +16,10 @@ BundledOffer fixedBundledOffer;
 /**
  * A default constructor for debugging purposes. All values=1
  */
-public HardCodedNetworkOperator() {
+public HardCodedNetworkOperator(NeutralityModel model) {
+  super();
+  setModel(model);
   unitOffers();
-
 }
 
 public void unitOffers() {
@@ -27,7 +28,7 @@ public void unitOffers() {
 
   // Vertically Integrated Content Provider, use corresponded hard coded
   // content provider
-  icp = new HardCodedContentProvider();
+  icp = new HardCodedContentProvider((NeutralityModel) this.getModel());
   icp.isVideoProvider = true;
 
   // Network Offer
@@ -45,7 +46,8 @@ public void unitOffers() {
 @Override
 public void setModel(AgentModel model) {
   super.setModel(model);
-  icp.setModel(model);
+  if (icp != null)
+    icp.setModel(model);
 }
 
 @Override

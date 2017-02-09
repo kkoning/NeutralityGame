@@ -24,15 +24,15 @@ public class TestAgentModel {
 		 * be done by an evaluation group, so there are some extra steps to
 		 * remember here...
 		 */
-		HardCodedNetworkOperator hcno = new HardCodedNetworkOperator();
+		HardCodedNetworkOperator hcno = new HardCodedNetworkOperator(model);
 		hcno.setModel(model);
 		
-		HardCodedContentProvider hccpVideo = new HardCodedContentProvider();
+		HardCodedContentProvider hccpVideo = new HardCodedContentProvider(model);
 		hccpVideo.setModel(model);
 		hccpVideo.isVideoProvider = true;
 
 		hccpVideo.preference = 1.0;
-		HardCodedContentProvider hccpOther = new HardCodedContentProvider();
+		HardCodedContentProvider hccpOther = new HardCodedContentProvider(model);
 		hccpOther.setModel(model);
 		hccpOther.isVideoProvider = false;
 

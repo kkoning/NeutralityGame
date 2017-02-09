@@ -15,7 +15,7 @@ public Boolean isVideoProvider;
 Double contentInvestment = 0.0;
 Double preference        = 0.0;
 // Track the # of units sold, revenue, and $ for interconnection
-int    numAcceptedOffers;
+double numAcceptedOffers;
 double totalRevenue;
 double totalPaidForInterconnection;
 
@@ -84,19 +84,20 @@ public void makeContentInvestment(double amount) {
  * @param acceptedOffer
  */
 public void processAcceptedContentOffer(
+        double qty,
         ContentOffer acceptedOffer,
         NetworkOperator<?> onNetwork) {
   // Earn $
-  account.receive(acceptedOffer.contentPrice);
+  account.receive(acceptedOffer.contentPrice * qty);
 
   // Track total revenue
-  totalRevenue += acceptedOffer.contentPrice;
+  totalRevenue += acceptedOffer.contentPrice * qty;
 
   // Track total # of offers accepted.
-  numAcceptedOffers++;
+  numAcceptedOffers += qty;
 
   // Pay network provider for bandwidth use.
-  payInterconnectionBandwidth(onNetwork);
+  payInterconnectionBandwidth(qty, onNetwork);
 }
 
 /**
@@ -106,7 +107,8 @@ public void processAcceptedContentOffer(
  * @param toNetwork
  *         the consumer's network operator.
  */
-void payInterconnectionBandwidth(NetworkOperator<?> toNetwork) {
+void payInterconnectionBandwidth(double qty,
+                                 NetworkOperator<?> toNetwork) {
 
   NeutralityModel nm = (NeutralityModel) this.getModel();
   if (nm.forceZeroPriceIC)
@@ -118,9 +120,12 @@ void payInterconnectionBandwidth(NetworkOperator<?> toNetwork) {
     bwIntensity = ((NeutralityModel) getModel()).videoBWIntensity();
   else
     bwIntensity = ((NeutralityModel) getModel()).otherBWIntensity();
-  double paymentAmount = bwIntensity * toNetwork.getInterconnectionBandwidthPrice();
+
+  double paymentAmount =
+          qty * bwIntensity * toNetwork.getInterconnectionBandwidthPrice();
 
   // Pay and track.
+  // payment amount already includes quantity.
   account.pay(paymentAmount); // from us
   toNetwork.receiveInterconnectionPayment(this, paymentAmount); // to nsp
   totalPaidForInterconnection += paymentAmount;

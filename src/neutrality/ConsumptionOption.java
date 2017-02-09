@@ -176,25 +176,36 @@ public double getCost() {
  * should be the primary called of this function).
  */
 public void payProviders() {
+  payProviders(1);
+}
+
+/**
+ * Pay each firm and execute any side-effects of this consumption (currently
+ * none, as consumer surplus is added by Consumers.procurementProcess, which
+ * should be the primary called of this function).
+ */
+public void payProviders(double qty) {
   // Network and video can come from either bundled or standalone offers
   if (wasBundled()) {  // Video included in bundle
     network.processAcceptedBundledOffer(
+            qty,
             bundledOffer,
             (otherContent != null));
   } else {
     network.processAcceptedNetworkOffer(
+            qty,
             netOffer,
             (videoContent != null),
             (otherContent != null));
 
     // Video processed separately, if chosen.
     if (videoContent != null)
-      videoContent.processAcceptedContentOffer(videoOffer, network);
+      videoContent.processAcceptedContentOffer(qty, videoOffer, network);
   }
 
   // Other content always comes from the stand alone offer
   if (otherContent != null)
-    otherContent.processAcceptedContentOffer(otherOffer, network);
+    otherContent.processAcceptedContentOffer(qty, otherOffer, network);
 }
 
 /**

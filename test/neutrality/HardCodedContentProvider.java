@@ -10,12 +10,15 @@ ContentOffer fixedOffer;
 /**
  * Default constructor, all prices and investment have unit values (=1).
  */
-public HardCodedContentProvider() {
+public HardCodedContentProvider(NeutralityModel model) {
   super();
+  this.setModel(model);
   unitOfferings();
 }
 
-public HardCodedContentProvider(double investment, double price) {
+public HardCodedContentProvider(double investment, double price,
+                                NeutralityModel model) {
+  this(model);
   this.makeContentInvestment(investment);
   fixedOffer = new ContentOffer(this,price);
 }

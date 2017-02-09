@@ -11,7 +11,7 @@ public class DirectlyEncodedNetworkOperator
 boolean firstStep = true;
 
 public DirectlyEncodedNetworkOperator() {
-  this.icp = new PuppetContentProvider();
+  this.icp = new PuppetContentProvider(this.account);
 }
 
 @Override
@@ -61,7 +61,7 @@ public final double proportionB(double split) {
 @Override
 public ContentOffer getVideoContentOffer() {
   ContentOffer co = new ContentOffer(icp,
-                                     e(Position.standaloneContentOfferPrice));
+                                     e(Position.StandaloneContentOfferPrice));
   return co;
 }
 
@@ -107,7 +107,7 @@ private enum Position {
   ContentInvestment,
   NetStandalonePriceLevel,
   NetStandaloneConBwPriceBalance,
-  standaloneContentOfferPrice,
+  StandaloneContentOfferPrice,
   BundledOfferPriceLevel,
   BundledOfferConBwPriceBalance,
   BundledZeroRatedPriceLevel,

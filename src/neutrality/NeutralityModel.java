@@ -27,6 +27,9 @@ public Double psi;
 public Double tau;
 public Double capitalCost;
 public Double theta;
+public Double gamma;
+public Boolean analyticalConsumers;
+public Double analyticalIncome;
 
 public Double networkCapitalCostExponent;
 public Double contentCapitalCostExponent;
@@ -50,7 +53,6 @@ List<ContentProvider<?>> videoContentProviders;
 List<ContentProvider<?>> otherContentProviders;
 Consumers                consumers;
 
-boolean     firstStep = true;
 boolean     debug     = false;
 PrintStream debugOut  = null;
 
@@ -88,48 +90,53 @@ public Fitness getFitness(Agent<? extends Individual> agent) {
 
 @Override
 public void init() {
-  // Currently, no additional initialization is required.  It's all still in
-  // the step function from when this function wasn't here...
+  // Print notice, if debug enabled
+  if (debug)
+    debugOut.println("Executing first step of model");
+
+  // Initialize consumers, print information for debug
+  if (debug)
+    debugOut.println("Initializing Consumers");
+
+  if (analyticalConsumers) {
+    consumers = new AnalyticalConsumers(analyticalIncome,gamma,this);
+  } else {
+    consumers = new Consumers(numConsumers, topIncome, this);
+  }
+
+  if (debug) {
+    debugOut.println("Consumer properties follow:");
+    debugOut.println(consumers.printConsumerProperties());
+  }
+
+  // Space preferences of provider agents
+  if (debug)
+    debugOut.println("Spacing preferences of provider agents");
+  spacePreferences();
+
+  // If debug, print some information about
+  if (debug) {
+    debugOut.println("Content Provider Properties Follow:");
+    List<ContentProvider<?>> vidCPs = new ArrayList<>();
+    vidCPs.addAll(videoContentProviders);
+    for (NetworkOperator<?> netOp : networkOperators) {
+      ContentProvider<?> netOpCP = netOp.icp;
+      vidCPs.add(netOpCP);
+    }
+    for (ContentProvider<?> cp : vidCPs) {
+      debugOut.println(cp);
+    }
+    for (ContentProvider<?> cp : otherContentProviders) {
+      debugOut.println(cp);
+    }
+  }
+
+  if (debug)
+    debugOut.println("First step initialization completed.");
 }
 
 @Override
 public boolean step() {
-
-  if (firstStep) {
-    if (debug)
-      debugOut.println("Executing first step of model");
-
-    if (debug)
-      debugOut.println("Initializing Consumers");
-    consumers = new Consumers(numConsumers, topIncome, this);
-    if (debug) {
-      debugOut.println("Consumer properties follow:");
-      debugOut.println(consumers.printConsumerProperties());
-    }
-
-    if (debug)
-      debugOut.println("Spacing preferences of provider agents");
-    spacePreferences();
-    if (debug) {
-      debugOut.println("Content Provider Properties Follow:");
-      List<ContentProvider<?>> vidCPs = new ArrayList<>();
-      vidCPs.addAll(videoContentProviders);
-      for (NetworkOperator<?> netOp : networkOperators) {
-        ContentProvider<?> netOpCP = netOp.icp;
-        vidCPs.add(netOpCP);
-      }
-      for (ContentProvider<?> cp : vidCPs) {
-        debugOut.println(cp);
-      }
-      for (ContentProvider<?> cp : otherContentProviders) {
-        debugOut.println(cp);
-      }
-    }
-
-    firstStep = false;
-    if (debug)
-      debugOut.println("First step initialization completed.");
-  }
 
   if (debug)
     debugOut.println("Stepping Network Operators");
@@ -360,28 +367,28 @@ public Object getSummaryData() {
   // Standalone Offers
   o.qty_NetworkOnly =
           networkOperators.stream()
-                          .mapToInt(no -> no.qty_NetworkOnly)
+                          .mapToDouble(no -> no.qty_NetworkOnly)
                           .sum();
   o.qty_VideoOnlyNSP =
           networkOperators
                   .stream()
-                  .mapToInt(no -> no.getNumStandaloneContentOffersAccepted())
+                  .mapToDouble(no -> no.getNumStandaloneContentOffersAccepted())
                   .sum();
   o.qty_VideoOnlyCP =
           videoContentProviders.stream()
-                               .mapToInt(vcp -> vcp.numAcceptedOffers)
+                               .mapToDouble(vcp -> vcp.numAcceptedOffers)
                                .sum();
   o.qty_OtherContent =
           otherContentProviders.stream()
-                               .mapToInt(ocp -> ocp.numAcceptedOffers)
+                               .mapToDouble(ocp -> ocp.numAcceptedOffers)
                                .sum();
   // Bundled offers
   o.qty_Bundled = networkOperators.stream()
-                                  .mapToInt(no -> no.qty_Bundled)
+                                  .mapToDouble(no -> no.qty_Bundled)
                                   .sum();
   o.qty_BundledZeroRated =
           networkOperators.stream()
-                          .mapToInt(no -> no.qty_BundledZeroRated)
+                          .mapToDouble(no -> no.qty_BundledZeroRated)
                           .sum();
 
   // Other
@@ -474,7 +481,7 @@ public Object getSummaryData() {
 
   // Concentration
   // Network HHI
-  int[] networkSales = new int[networkOperators.size()];
+  double[] networkSales = new double[networkOperators.size()];
   for (int i = 0; i < networkOperators.size(); i++) {
     NetworkOperator no = networkOperators.get(i);
     networkSales[i] = no.qty_NetworkOnly +
@@ -484,7 +491,7 @@ public Object getSummaryData() {
   o.hhi_Network = HHI(networkSales);
 
   // Video Content HHI
-  List<Integer> videoSales = new ArrayList<>();
+  List<Double> videoSales = new ArrayList<>();
   for (ContentProvider cp : videoContentProviders) {
     videoSales.add(cp.numAcceptedOffers);
   }
@@ -498,7 +505,7 @@ public Object getSummaryData() {
   o.hhi_Video = HHI(videoSales);
 
   // Other Content HHI
-  int[] otherSales = new int[otherContentProviders.size()];
+  double[] otherSales = new double[otherContentProviders.size()];
   for (int i = 0; i < otherContentProviders.size(); i++) {
     otherSales[i] = otherContentProviders.get(i).numAcceptedOffers;
   }
@@ -615,13 +622,13 @@ public static class OutputData {
   Consumption Variables
    */
   // Standalone offers
-  Integer qty_NetworkOnly; // Network
-  Integer qty_VideoOnlyNSP; // Content
-  Integer qty_VideoOnlyCP;
-  Integer qty_OtherContent;
+  Double qty_NetworkOnly; // Network
+  Double qty_VideoOnlyNSP; // Content
+  Double qty_VideoOnlyCP;
+  Double qty_OtherContent;
   // Bundled offers
-  Integer qty_Bundled;
-  Integer qty_BundledZeroRated;
+  Double qty_Bundled;
+  Double qty_BundledZeroRated;
   // Other
   Double  consumerSurplus;
 

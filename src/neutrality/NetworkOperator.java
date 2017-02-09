@@ -14,9 +14,9 @@ public abstract class NetworkOperator<T extends Individual>
 double networkInvestment;
 
 // Track the # of different purchases of each type
-int qty_NetworkOnly;
-int qty_Bundled;
-int qty_BundledZeroRated;
+double qty_NetworkOnly;
+double qty_Bundled;
+double qty_BundledZeroRated;
 
 // Track the total income from different purchases of each type
 double rev_NetworkOnly;
@@ -38,10 +38,17 @@ ContentProvider<NullIndividual> icp;
 
 boolean bankrupt = false;
 
+void step() {
+  NeutralityModel nm = (NeutralityModel) getModel();
+  if (nm.currentStep > 2) {
+    bankrupt = !onTrack();
+  }
+}
+
 boolean onTrack() {
   NeutralityModel nm = (NeutralityModel) getModel();
   // The first step is step 0, requiring the addition here for a ratio.
-  double perStepRevenue = totalRevenueAllSources()  / (nm.currentStep+1);
+  double perStepRevenue = totalRevenueAllSources() / (nm.currentStep + 1);
   double revenueProjection = perStepRevenue * nm.maxSteps;
   double totalInvestment = networkInvestment;
   if (icp != null) {
@@ -65,13 +72,6 @@ double totalRevenueAllSources() {
   if (icp != null)
     toReturn += icp.totalRevenue;
   return toReturn;
-}
-
-void step() {
-  NeutralityModel nm = (NeutralityModel) getModel();
-  if (nm.currentStep > 2) {
-    bankrupt = !onTrack();
-  }
 }
 
 double getInvestment() {
@@ -128,19 +128,23 @@ public void receiveInterconnectionPayment(
  *         true if the consumer also purchased other content.
  */
 public void processAcceptedNetworkOffer(
+        double qty,
         NetworkOffer networkOffer,
         boolean videoUsed,
         boolean otherUsed) {
 
   // Track # of accepted standalone offers
-  qty_NetworkOnly++;
+  qty_NetworkOnly += qty;
 
   // Track total revenue received from connection fees
-  account.receive(networkOffer.connectionPrice);
-  rev_NetworkOnly += networkOffer.connectionPrice;
+  account.receive(networkOffer.connectionPrice * qty);
+  rev_NetworkOnly += networkOffer.connectionPrice * qty;
 
   // Track consumer bandwidth usage.
-  consumerBandwidthUsage(networkOffer.bandwidthPrice, videoUsed, otherUsed);
+  consumerBandwidthUsage(qty,
+                         networkOffer.bandwidthPrice,
+                         videoUsed,
+                         otherUsed);
 
 }
 
@@ -156,18 +160,22 @@ public void processAcceptedNetworkOffer(
  *         whether to charge for the use of other content
  */
 private void consumerBandwidthUsage(
+        double qty,
         double bandwidthPrice,
         boolean chargeVideoBandwidth,
         boolean chargeOtherBandwidth) {
 
-  double amount = 0;
   if (chargeVideoBandwidth) {
+    double amount = 0;
     amount = bandwidthPrice * ((NeutralityModel) getModel()).videoBWIntensity();
+    amount = amount * qty;
     rev_BandwidthVideo += amount;
     account.receive(amount);
   }
   if (chargeOtherBandwidth) {
+    double amount = 0;
     amount = bandwidthPrice * ((NeutralityModel) getModel()).otherBWIntensity();
+    amount = amount * qty;
     rev_BandwidthOther += amount;
     account.receive(amount);
   }
@@ -187,23 +195,26 @@ private void consumerBandwidthUsage(
  *         true if the consumer also purchased other content.
  */
 public void processAcceptedBundledOffer(
+        double qty,
         BundledOffer bundledOffer,
         boolean otherUsed) {
 
   // Earn the $
-  account.receive(bundledOffer.bundlePrice);
+  account.receive(bundledOffer.bundlePrice * qty);
 
   // Track # of accepted bundled offers accepted
   if (bundledOffer.contentZeroRated) {
-    qty_BundledZeroRated++;
-    rev_BundledZeroRated += bundledOffer.bundlePrice;
+    qty_BundledZeroRated += qty;
+    rev_BundledZeroRated += bundledOffer.bundlePrice * qty;
   } else {
-    qty_Bundled++;
-    rev_Bundled += bundledOffer.bundlePrice;
+    qty_Bundled += qty;
+    rev_Bundled += bundledOffer.bundlePrice * qty;
   }
 
   // Track consumer bandwidth usage.
+  // Charge _consumers_
   consumerBandwidthUsage(
+          qty,
           bundledOffer.bandwidthPrice,
           !bundledOffer.contentZeroRated, // if zero rated, don't charge
           otherUsed);
@@ -215,11 +226,10 @@ public SimpleFitness getFitness() {
     /*
      * In this case, the total fitness of the agent is equal to the sum of
 		 * the fitness for the network operator and content provider aspects of
-		 * the agent's business.
+		 * the agent's business.  However, the creation of an integrated content
+		 * provider now uses this agent's account directly.
 		 */
   double fitness = account.getBalance();
-  if (icp != null)
-    fitness += icp.account.getBalance();
 
   return new SimpleFitness(fitness);
 }
@@ -245,7 +255,7 @@ public String toString() {
          '}';
 }
 
-public int getNumStandaloneContentOffersAccepted() {
+public double getNumStandaloneContentOffersAccepted() {
   if (icp == null)
     return 0;
   else

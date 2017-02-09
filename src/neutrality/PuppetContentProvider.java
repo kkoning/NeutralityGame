@@ -1,5 +1,6 @@
 package neutrality;
 
+import agency.Account;
 import agency.NullIndividual;
 import neutrality.Offers.ContentOffer;
 
@@ -11,7 +12,8 @@ import neutrality.Offers.ContentOffer;
  */
 public class PuppetContentProvider extends ContentProvider<NullIndividual> {
 
-	public PuppetContentProvider() {
+	public PuppetContentProvider(Account account) {
+		this.account = account;
 		isVideoProvider = true;
 	}
 	

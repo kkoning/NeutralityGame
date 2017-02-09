@@ -1,14 +1,14 @@
 package neutrality;
 
-import java.util.ArrayList;
-
 import org.junit.Test;
 
-import neutrality.Offers.BundledOffer;
-import neutrality.Offers.ContentOffer;
-import neutrality.Offers.NetworkOffer;
+import java.util.ArrayList;
 
-public class TestConsumers {
+/**
+ * Created by liara on 2/7/17.
+ */
+public class TestAnalyticalConsumers {
+
 @Test
 public void testCreate() {
   NeutralityModel nm = new NeutralityModel();
@@ -17,12 +17,9 @@ public void testCreate() {
   nm.psi = 0.4;
   nm.tau = 0.4;
   nm.theta = 0.2;
-  Consumers c = new Consumers(100, 100, nm);
-  for (int i = 0; i < c.numConsumers; i++) {
-    System.out.println(
-            "Consumer " + i + "\tincome=" + c.incomes[i] + "\tpref="
-                    + c.preferenceFactors[i]);
-  }
+  nm.capitalCost = 1.0;
+  Consumers c = new AnalyticalConsumers(1000, 0.5, nm);
+
 }
 
 @Test
@@ -33,7 +30,8 @@ public void testEvaluateSurplus() {
   nm.psi = 0.4;
   nm.tau = 0.4;
   nm.theta = 0.2;
-  Consumers c = new Consumers(100, 100, nm);
+  nm.capitalCost = 1.0;
+  Consumers c = new AnalyticalConsumers(1000, 0.5, nm);
 
   // Create a group of standalone offers.
 
@@ -41,15 +39,15 @@ public void testEvaluateSurplus() {
   NetworkOperator<?> netOp = new HardCodedNetworkOperator(nm);
   netOp.setModel(nm);
   netOp.networkInvestment = 25;
-  NetworkOffer netOffer = new NetworkOffer(netOp, 3, 3);
+  Offers.NetworkOffer netOffer = new Offers.NetworkOffer(netOp, 3, 3);
 
   // Another network operator with K_n=60, P_n=9, and P_b=9.
   NetworkOperator<?> netOp2 = new HardCodedNetworkOperator(nm);
   netOp2.setModel(nm);
   netOp2.networkInvestment = 60;
-  NetworkOffer netOffer2 = new NetworkOffer(netOp2, 9, 9);
+  Offers.NetworkOffer netOffer2 = new Offers.NetworkOffer(netOp2, 9, 9);
 
-  ArrayList<NetworkOffer> netOffers = new ArrayList<>();
+  ArrayList<Offers.NetworkOffer> netOffers = new ArrayList<>();
   netOffers.add(netOffer);
   netOffers.add(netOffer2);
 
@@ -60,7 +58,7 @@ public void testEvaluateSurplus() {
   cp_A.isVideoProvider = true;
   cp_A.contentInvestment = 9.0;
   cp_A.preference = 0.0;
-  ContentOffer co_A = new ContentOffer(cp_A, 1);
+  Offers.ContentOffer co_A = new Offers.ContentOffer(cp_A, 1);
 
   // Content provider B with Q=16, P=5, pref=1
   ContentProvider<?> cp_B = new HardCodedContentProvider(nm);
@@ -68,11 +66,11 @@ public void testEvaluateSurplus() {
   cp_B.isVideoProvider = true;
   cp_B.contentInvestment = 16.0;
   cp_B.preference = 1.0;
-  ContentOffer co_B = new ContentOffer(cp_B, 5);
+  Offers.ContentOffer co_B = new Offers.ContentOffer(cp_B, 5);
 
   // Offerings for CP A and B are both in the vertically integrated
   // segment
-  ArrayList<ContentOffer> contentOffersIntegrated = new ArrayList<>();
+  ArrayList<Offers.ContentOffer> contentOffersIntegrated = new ArrayList<>();
   contentOffersIntegrated.add(co_A);
   contentOffersIntegrated.add(co_B);
 
@@ -82,19 +80,19 @@ public void testEvaluateSurplus() {
   cp_C.isVideoProvider = false;
   cp_C.contentInvestment = 19.0;
   cp_C.preference = 0.5;
-  ContentOffer co_C = new ContentOffer(cp_C, 13);
+  Offers.ContentOffer co_C = new Offers.ContentOffer(cp_C, 13);
 
   // Offerings for CP C in the other segment
-  ArrayList<ContentOffer> contentOffersOther = new ArrayList<>();
+  ArrayList<Offers.ContentOffer> contentOffersOther = new ArrayList<>();
   contentOffersOther.add(co_C);
 
   // Bundled offer of NetOp and CP A
-  BundledOffer bo1 = new BundledOffer(netOp, cp_A, 4, 1, false);
+  Offers.BundledOffer bo1 = new Offers.BundledOffer(netOp, cp_A, 4, 1, false);
 
   // Bundled offer of NetOp and CP A, zero rated
-  BundledOffer bo2 = new BundledOffer(netOp, cp_A, 6, 1, true);
+  Offers.BundledOffer bo2 = new Offers.BundledOffer(netOp, cp_A, 6, 1, true);
 
-  ArrayList<BundledOffer> bos = new ArrayList<>();
+  ArrayList<Offers.BundledOffer> bos = new ArrayList<>();
   bos.add(bo1);
   bos.add(bo2);
 
@@ -110,15 +108,7 @@ public void testEvaluateSurplus() {
     System.out.println(option);
   }
 
-  ConsumptionOptionSurplus cos = new ConsumptionOptionSurplus(nm, c);
-  cos.setConsumptionOptions(options);
-  cos.calculate();
-
-  System.out.println(cos.optionsTable());
-  System.out.println(cos.surplusTable());
-  System.out.println(cos.consumerChoicesTable());
-  System.out.println(cos.sales());
-
+  c.procurementProcess(options);
 
 }
 
