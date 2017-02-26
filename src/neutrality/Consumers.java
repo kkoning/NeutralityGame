@@ -64,8 +64,7 @@ public void consume(List<ConsumptionOption> options) {
 
     double vidCapTot = vidValue * netCapTerm * vidCapTerm;
     double othCapTot = othValue * netCapTerm * othCapTerm;
-    double capTot = model.videoContentValue * vidCapTot +
-                    model.otherContentValue * othCapTot;
+    double capTot = vidCapTot + othCapTot;
 
     capitalTerms_toBeta[i] = Math.pow(capTot, beta);
     capitalTerms_toNegBeta[i] = Math.pow(capTot, -beta);
