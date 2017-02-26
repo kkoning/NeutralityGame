@@ -6,38 +6,27 @@
             <DefaultVectorIndividualData generations="1" file="deno.csv"/>
             <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedNetworkOperator">
             </DefaultAgentFactory>
-            <VectorIndividualFactory length="10">
-                <GaussianRandomVectorRange start="0" end="9">
-                    <Means type="DoubleList" start="0" end="9">3 3 0 0 0 0 0 0 0 0</Means>
-                    <Deviations type="DoubleList" start="0" end="9">0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01</Deviations>
+            <VectorIndividualFactory length="8">
+                <GaussianRandomVectorRange start="0" end="7">
+                    <Means type="DoubleList" start="0" end="7">3 3 0 0 0 0 0 0</Means>
+                    <Deviations type="DoubleList" start="0" end="7">0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01</Deviations>
                 </GaussianRandomVectorRange>
             </VectorIndividualFactory>
-            <VectorLimitationPipeline>
-                <!-- Source -->
-                <VectorCrossoverPipeline crossoverProb="0.3">
-                    <VectorMutationPipeline>
-                        <WeightedBreedingPipeline>
-                            <TournamentSelector topIndividuals="2"
-                                                touramentSize="10" weight="4"/>
-                            <ElitismSelector proportionElites="0.1" weight="1"/>
-                        </WeightedBreedingPipeline>
-                        <VectorMutator length="10">
-                            <GaussianMutator start="0" end="9">
-                                <MutationProbability type="DoubleList" start="0" end="9">1 1 1 1 1 1 1 1 1 1</MutationProbability>
-                                <Deviations type="DoubleList" start="0" end="9">0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01</Deviations>
-                            </GaussianMutator>
-                        </VectorMutator>
-                    </VectorMutationPipeline>
-                </VectorCrossoverPipeline>
-                <!-- Limitations -->
-                <VectorLimiter length="2">
-                    <!-- Lower limits of 1 on network and content investment -->
-                    <RangeLimiter start="0" end="1">
-                        <Min type="DoubleList" start="0" end="0">0.0 0.0</Min>
-                    </RangeLimiter>
-                </VectorLimiter>
-            </VectorLimitationPipeline>
-
+            <VectorCrossoverPipeline crossoverProb="0.3">
+                <VectorMutationPipeline>
+                    <WeightedBreedingPipeline>
+                        <TournamentSelector topIndividuals="1"
+                                            touramentSize="2" weight="4"/>
+                        <ElitismSelector proportionElites="0.1" weight="1"/>
+                    </WeightedBreedingPipeline>
+                    <VectorMutator length="8">
+                        <GaussianMutator start="0" end="7">
+                            <MutationProbability type="DoubleList" start="0" end="7">1 1 1 1 1 1 1 1</MutationProbability>
+                            <Deviations type="DoubleList" start="0" end="7">0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01</Deviations>
+                        </GaussianMutator>
+                    </VectorMutator>
+                </VectorMutationPipeline>
+            </VectorCrossoverPipeline>
         </Population>
     </PopulationGroup>
 
@@ -53,30 +42,21 @@
                     <Deviations type="DoubleList" start="0" end="1">0.01 0.01</Deviations>
                 </GaussianRandomVectorRange>
             </VectorIndividualFactory>
-            <VectorLimitationPipeline>
-                <!-- Source -->
-                <VectorCrossoverPipeline crossoverProb="0.3">
-                    <VectorMutationPipeline>
-                        <WeightedBreedingPipeline>
-                            <TournamentSelector topIndividuals="2"
-                                                touramentSize="10" weight="4"/>
-                            <ElitismSelector proportionElites="0.1" weight="1"/>
-                        </WeightedBreedingPipeline>
-                        <VectorMutator length="2">
-                            <GaussianMutator start="0" end="1">
-                                <MutationProbability type="DoubleList" start="0" end="1">1 1</MutationProbability>
-                                <Deviations type="DoubleList" start="0" end="1">0.01 0.01</Deviations>
-                            </GaussianMutator>
-                        </VectorMutator>
-                    </VectorMutationPipeline>
-                </VectorCrossoverPipeline>
-                <!--Limits -->
-                <VectorLimiter length="2">
-                    <RangeLimiter start="0" end="0">
-                        <Min type="DoubleList" start="0" end="0">0.0</Min>
-                    </RangeLimiter>
-                </VectorLimiter>
-            </VectorLimitationPipeline>
+            <VectorCrossoverPipeline crossoverProb="0.3">
+                <VectorMutationPipeline>
+                    <WeightedBreedingPipeline>
+                        <TournamentSelector topIndividuals="2"
+                                            touramentSize="10" weight="4"/>
+                        <ElitismSelector proportionElites="0.1" weight="1"/>
+                    </WeightedBreedingPipeline>
+                    <VectorMutator length="2">
+                        <GaussianMutator start="0" end="1">
+                            <MutationProbability type="DoubleList" start="0" end="1">1 1</MutationProbability>
+                            <Deviations type="DoubleList" start="0" end="1">0.01 0.01</Deviations>
+                        </GaussianMutator>
+                    </VectorMutator>
+                </VectorMutationPipeline>
+            </VectorCrossoverPipeline>
         </Population>
     </PopulationGroup>
 
@@ -92,31 +72,21 @@
                     <Deviations type="DoubleList" start="0" end="1">0.01 0.01</Deviations>
                 </GaussianRandomVectorRange>
             </VectorIndividualFactory>
-            <VectorLimitationPipeline>
-                <!-- Source -->
-                <VectorCrossoverPipeline crossoverProb="0.3">
-                    <VectorMutationPipeline>
-                        <WeightedBreedingPipeline>
-                            <TournamentSelector topIndividuals="2"
-                                                touramentSize="10" weight="4"/>
-                            <ElitismSelector proportionElites="0.1" weight="1"/>
-                        </WeightedBreedingPipeline>
-                        <VectorMutator length="2">
-                            <GaussianMutator start="0" end="1">
-                                <MutationProbability type="DoubleList" start="0" end="1">1 1</MutationProbability>
-                                <Deviations type="DoubleList" start="0" end="1">0.01 0.01</Deviations>
-                            </GaussianMutator>
-                        </VectorMutator>
-                    </VectorMutationPipeline>
-                </VectorCrossoverPipeline>
-                <!--Limits -->
-                <VectorLimiter length="2">
-                    <RangeLimiter start="0" end="0">
-                        <Min type="DoubleList" start="0" end="0">0.0</Min>
-                    </RangeLimiter>
-                </VectorLimiter>
-
-            </VectorLimitationPipeline>
+            <VectorCrossoverPipeline crossoverProb="0.3">
+                <VectorMutationPipeline>
+                    <WeightedBreedingPipeline>
+                        <TournamentSelector topIndividuals="2"
+                                            touramentSize="10" weight="4"/>
+                        <ElitismSelector proportionElites="0.1" weight="1"/>
+                    </WeightedBreedingPipeline>
+                    <VectorMutator length="2">
+                        <GaussianMutator start="0" end="1">
+                            <MutationProbability type="DoubleList" start="0" end="1">1 1</MutationProbability>
+                            <Deviations type="DoubleList" start="0" end="1">0.01 0.01</Deviations>
+                        </GaussianMutator>
+                    </VectorMutator>
+                </VectorMutationPipeline>
+            </VectorCrossoverPipeline>
         </Population>
     </PopulationGroup>
 
@@ -133,24 +103,18 @@
         <Parameter name="beta" value="1.0"/> <!-- 1 for testing -->
         <Parameter name="psi" value="0.4"/>
         <Parameter name="tau" value="0.4"/>
-        <Parameter name="capitalCost" value="1"/>
-        <Parameter name="networkCapitalCostExponent" value="1.0"/>
-        <Parameter name="contentCapitalCostExponent" value="1.0"/>
-        <Parameter name="requiredReturnOnCapital" value="1.2"/>
-        <Parameter name="theta" value="0.2"/>
-        <Parameter name="maxSteps" value="10"/>
-        <Parameter name="numConsumers" value="200"/>
-        <Parameter name="topIncome" value="1.0"/>
-        <Parameter name="forceZeroPriceIC" value="false"/>
-        <Parameter name="bundlingAllowed" value="true"/>
-        <Parameter name="zeroRatingAllowed" value="false"/>
-        <Parameter name="integratedContentAllowed" value="true"/>
-        <Parameter name="bankruptcyEnforced" value="true"/>
-        <Parameter name="punishIfAllBankrupt" value="true"/>
-
-        <Parameter name="analyticalConsumers" value="true"/>
         <Parameter name="gamma" value="0.5"/>
-        <Parameter name="analyticalIncome" value="100000"/>
+        <Parameter name="demandPriceCoefficient" value="1"/>
+        <Parameter name="incomeVideoOnly" value="1000000"/>
+        <Parameter name="incomeOtherOnly" value="1000000"/>
+        <Parameter name="incomeBoth" value="1000000"/>
+        <Parameter name="firmEndowment" value="1000000"/>
+        <Parameter name="maxSteps" value="10"/>
+
+        <Parameter name="policy0PriceIXC" value="false"/>
+        <Parameter name="policyBundlingAllowed" value="true"/>
+        <Parameter name="policyZeroRated" value="false"/>
+        <Parameter name="policyNSPContentAllowed" value="true"/>
     </DefaultAgentModelFactory>
 
 

@@ -1,11 +1,13 @@
 package neutrality;
 
-import java.util.ArrayList;
-import java.util.List;
+import agency.Account;
+import neutrality.Offers.NetworkAndVideoBundleOffer;
+import neutrality.Offers.NetworkOnlyOffer;
 
-import neutrality.Offers.BundledOffer;
-import neutrality.Offers.ContentOffer;
-import neutrality.Offers.NetworkOffer;
+import java.util.Optional;
+
+import static agency.util.Misc.BUG;
+
 
 /**
  * This
@@ -14,223 +16,232 @@ import neutrality.Offers.NetworkOffer;
  */
 public class ConsumptionOption {
 
-/**
- * If sanity_checks is true, additional checks will be performed.
- */
-static final boolean sanity_checks = true;
+public final double  K_n;
+public final double  K_v;
+public final double  K_o;
+public final double  networkOnlyPrice;
+public final double  bundledPrice;
+public final double  bandwidthPrice;
+public final double  videoContentPrice;
+public final double  otherContentPrice;
+public final double  videoBWPrice;
+public final double  otherBWPrice;
+public final double  totalCostToConsumer;
+public final double  ixcBWPrice;
+public final boolean wasVideoBundled;
+public final boolean wasZeroRated;
 
-// The completed package considered by consumers
-NetworkOperator<?> network;
-ContentProvider<?> videoContent;
-ContentProvider<?> otherContent;
-double             cost;
+public final double utilityCoefficient;
 
-// The offers, for tracking purposes
-// may be null
-NetworkOffer netOffer;
-BundledOffer bundledOffer;
-ContentOffer videoOffer;
-ContentOffer otherOffer;
+public final NetworkOperator           network;
+public final Optional<ContentProvider> videoContent;
+public final Optional<ContentProvider> otherContent;
 
-/**
- * Put together a completed option with unbundled components.
- *
- * @param netOffer
- * @param videoContentOffer
- * @param otherContentOffer
- */
+NeutralityModel model;
+
+
 ConsumptionOption(
         NeutralityModel model,
-        NetworkOffer netOffer,
-        ContentOffer videoContentOffer,
-        ContentOffer otherContentOffer) {
+        NetworkOnlyOffer no,
+        NetworkAndVideoBundleOffer bo,
+        Offers.ContentOffer vco,
+        Offers.ContentOffer oco) {
 
-		/*
-     * There are three possible combinations here. (1) Network access and
-		 * video content, (2) Network access and other content, and (3) Network
-		 * access and both video and other content. Whether or not a component
-		 * is included depends on whether a parameter is null.
-		 */
-  if (sanity_checks) {
-    // Must have reference to a model
-    if (model == null)
-      throw new RuntimeException("ConsumptionOption missing reference to model");
+  this.model = model;
 
-    // Must have a network
-    if (netOffer == null)
-      throw new RuntimeException("Cannot create a ConsumptionOption w/o a network");
-
-    // Must have either video or other content offer, i.e., these
-    // parameters must not both be null.
-    if (videoContentOffer == null)
-      if (otherContentOffer == null)
-        throw new RuntimeException("ConsumptionOption must include _some_ content");
-  }
+  Optional<NetworkOnlyOffer> netOffer = Optional.ofNullable(no);
+  Optional<NetworkAndVideoBundleOffer> bundledOffer = Optional.ofNullable(bo);
+  Optional<Offers.ContentOffer> videoOffer = Optional.ofNullable(vco);
+  Optional<Offers.ContentOffer> otherOffer = Optional.ofNullable(oco);
 
   /*
-   * We have now guaranteed that the combination of consumption is valid.
-   * The main tasks to be accomplished now is allowing consumers to
-	 * determine the utility and preparing to track data if the consumption
-	 * offer is chosen.
-	 */
+  Perform some sanity checks during development and debugging.  These could
+  be removed for a (very minor) performance boost.
+   */
+  if (netOffer.isPresent() && bundledOffer.isPresent())
+    BUG("ConsumptionOption cannot have both a standalone and bundled " +
+        "network offer.");
 
-  // The cost will always include network access
-  this.netOffer = netOffer;
-  this.network = netOffer.network;
-  this.cost += netOffer.connectionPrice;
+  if (!netOffer.isPresent() && !bundledOffer.isPresent())
+    BUG("ConsumptionOption must have either a standalone or bundled " +
+        "network offer.");
 
-  // If a content option is included, the total cost will also include the
-  // subscription fee for that content, plus associated bandwidth.
-  // First, process the video content offer.
-  if (videoContentOffer != null) {
-    this.videoContent = videoContentOffer.content;
-    this.cost += videoContentOffer.contentPrice;
-    this.cost += netOffer.bandwidthPrice * NeutralityModel.videoBWIntensity(model.beta);
-    this.videoOffer = videoContentOffer;
+  if (bundledOffer.isPresent() && videoOffer.isPresent())
+    BUG("ConsumptionOption cannot have both a network/video bundled offer " +
+        "and a separate video content offer.");
 
-  }
-  // Then process the other content offer.
-  if (otherContentOffer != null) {
-    this.otherContent = otherContentOffer.content;
-    this.cost += otherContentOffer.contentPrice;
-    this.cost += netOffer.bandwidthPrice * NeutralityModel.otherBWIntensity(model.beta);
-    this.otherOffer = otherContentOffer;
-  }
-}
+  if (netOffer.isPresent()) {
+    network = netOffer.get().network;
+    K_n = netOffer.get().network.getKn(model.currentStep);
+    networkOnlyPrice = netOffer.get().connectionPrice;
+    bundledPrice = 0.0;
+    bandwidthPrice = netOffer.get().bandwidthPrice;
+    wasVideoBundled = false;
+    wasZeroRated = false;
 
-ConsumptionOption(
-        NeutralityModel model,
-        BundledOffer bundledOffer,
-        ContentOffer otherContentOffer) {
-
-  if (sanity_checks) {
-    // Must have reference to a model
-    if (model == null)
-      throw new RuntimeException("ConsumptionOption missing reference to model");
-
-    // Bundled offer must have been passed
-    if (bundledOffer == null)
-      throw new RuntimeException(
-              "Cannot create consumption option with null bundled offer");
-  }
-
-  // All bundled offers contain network access and video content.
-  this.bundledOffer = bundledOffer;
-  this.network = bundledOffer.network;
-  this.videoContent = bundledOffer.videoContent;
-
-  // Always pay the content + network price for the bundle
-  this.cost += bundledOffer.bundlePrice;
-  // if the bundled video content is not also zero rated, pay bandwidth
-  // costs for it.
-  if (!bundledOffer.contentZeroRated)
-    this.cost += bundledOffer.bandwidthPrice * model.videoBWIntensity();
-
-  // Bundled offers (net+video) may or may not be combined with other
-  // content
-  if (otherContentOffer != null) {
-    this.cost += otherContentOffer.contentPrice;
-    this.cost += bundledOffer.bandwidthPrice * model.otherBWIntensity();
-    this.otherOffer = otherContentOffer;
-    this.otherContent = otherContentOffer.content;
-  }
-}
-
-public double networkInvestment() {
-  return network.getInvestment();
-}
-
-public boolean hasVideo() {
-  return (videoContent != null);
-}
-
-public double videoInvestment() {
-  return videoContent.getInvestment();
-}
-
-public double videoPreference() {
-  return videoContent.getPreference();
-}
+    if (videoOffer.isPresent()) {
+      videoContent = Optional.of(videoOffer.get().contentProvider);
+      K_v = videoContent.get().getKa(model.currentStep);
+      videoContentPrice = videoOffer.get().price;
+    } else {
+      videoContent = Optional.empty();
+      K_v = 0.0d;
+      videoContentPrice = 0.0d;
+    }
 
 
-public boolean hasOther() {
-  return (otherContent != null);
-}
+  } else if (bundledOffer.isPresent()) {
+    network = bundledOffer.get().networkOperator;
+    videoContent = Optional.of(bundledOffer.get().networkOperator);
+    K_n = network.getKn(model.currentStep);
+    K_v = videoContent.get().getKa(model.currentStep);
+    wasVideoBundled = true;
 
+    bundledPrice = bundledOffer.get().bundlePrice;
+    networkOnlyPrice = 0.0;
+    videoContentPrice = 0.0d;
 
-public double otherInvestment() {
-  return otherContent.getInvestment();
-}
-
-public double otherPreference() {
-  return otherContent.getPreference();
-}
-
-public double getCost() {
-  return cost;
-}
-
-/**
- * Pay each firm and execute any side-effects of this consumption (currently
- * none, as consumer surplus is added by Consumers.procurementProcess, which
- * should be the primary called of this function).
- */
-public void payProviders() {
-  payProviders(1);
-}
-
-/**
- * Pay each firm and execute any side-effects of this consumption (currently
- * none, as consumer surplus is added by Consumers.procurementProcess, which
- * should be the primary called of this function).
- */
-public void payProviders(double qty) {
-  // Network and video can come from either bundled or standalone offers
-  if (wasBundled()) {  // Video included in bundle
-    network.processAcceptedBundledOffer(
-            qty,
-            bundledOffer,
-            (otherContent != null));
+    bandwidthPrice = bundledOffer.get().bandwidthPrice;
+    wasZeroRated = model.policyZeroRated;
   } else {
-    network.processAcceptedNetworkOffer(
-            qty,
-            netOffer,
-            (videoContent != null),
-            (otherContent != null));
-
-    // Video processed separately, if chosen.
-    if (videoContent != null)
-      videoContent.processAcceptedContentOffer(qty, videoOffer, network);
+    throw new RuntimeException("BUG: ConsumptionOption must have either a " +
+                               "standalone or bundled network offer.");
   }
 
-  // Other content always comes from the stand alone offer
-  if (otherContent != null)
-    otherContent.processAcceptedContentOffer(qty, otherOffer, network);
+  if (otherOffer.isPresent()) {
+    otherContent = Optional.of(otherOffer.get().contentProvider);
+    K_o = otherContent.get().getKa(model.currentStep);
+    otherContentPrice = otherOffer.get().price;
+  } else {
+    otherContent = Optional.empty();
+    K_o = 0.0;
+    otherContentPrice = 0.0;
+  }
+
+  // Calculate cost of bandwidth usage
+  if (videoContent.isPresent()) {
+    // If bundled and zero rated, then no cost.
+    if (bundledOffer.isPresent()) {
+      if (!wasZeroRated)
+        videoBWPrice = model.videoBWIntensity * bandwidthPrice;
+      else
+        videoBWPrice = 0.0;
+    } else {
+      videoBWPrice = model.videoBWIntensity * bandwidthPrice;
+    }
+  } else {
+    videoBWPrice = 0.0;
+  }
+
+  if (otherContent.isPresent()) {
+    otherBWPrice = model.otherBWIntensity * bandwidthPrice;
+  } else {
+    otherBWPrice = 0.0d;
+  }
+
+  // Total cost to consumer is sum of all costs; everything that isn't being
+  // used has been set to a price of zero.
+  totalCostToConsumer = networkOnlyPrice +
+                        bundledPrice +
+                        videoContentPrice +
+                        otherContentPrice +
+                        videoBWPrice +
+                        otherBWPrice;
+
+  // Determine utility
+  double contentCapitalTerm = 0.0;
+  double psi = network.getModel().psi;
+  if (videoContent.isPresent()) {
+    double videoValue = network.getModel().videoContentValue;
+    double videoCapitalTerm = Math.pow(K_v, psi);
+    contentCapitalTerm += videoValue * videoCapitalTerm;
+  }
+  if (otherContent.isPresent()) {
+    double otherValue = network.getModel().otherContentValue;
+    double otherCapitalTerm = Math.pow(K_o, psi);
+    contentCapitalTerm += otherValue * otherCapitalTerm;
+  }
+  double netCapitalTerm = Math.pow(K_n, psi);
+  utilityCoefficient = contentCapitalTerm * netCapitalTerm;
+
+  this.ixcBWPrice = network.getIXCPrice(model.currentStep);
 }
 
-/**
- * @return true if the option was created from a bundled offer of network
- * access and content.
- */
-public boolean wasBundled() {
-  // Should match this condition.
-  return (bundledOffer != null);
+static void payIXCFees(
+        int step,
+        ContentProvider cp,
+        NetworkOperator no,
+        double ixcBWPrice,
+        double bwIntensity,
+        double qty,
+        boolean forVideo) {
+  Account cpAccount = cp.getAccount();
+  Account noAccount = cp.getAccount();
+
+  double bill = ixcBWPrice * bwIntensity * qty;
+  try {
+    cpAccount.payTo(noAccount,bill);
+  } catch (Account.PaymentException e) {
+    cp.goBankrupt();
+    return;
+  }
+
+
+}
+
+public double getUtility(double qty) {
+  double gamma = network.getModel().gamma;
+  return utilityCoefficient * Math.pow(qty, gamma);
+}
+
+public void consume(double qty) {
+  // Consumer utility is recorded directly by Consumers.consume()
+
+  // Network or bundle consumption
+  network.processNetworkConsumption(model.currentStep, this, qty);
+
+  // Unbundled video content, if present
+  if (videoContent.isPresent()) {
+    videoContent.get().processContentConsumption(model.currentStep, this, qty);
+    payIXCFees(model.currentStep,
+               videoContent.get(),
+               network,
+               ixcBWPrice,
+               model.videoBWIntensity,
+               qty,
+               true);
+
+    network.trackIXC(model.currentStep,
+                       ixcBWPrice,
+                       model.videoBWIntensity * qty,
+                       true);
+  }
+
+  // Unbundled other content, if present
+  if (otherContent.isPresent()) {
+    otherContent.get().processContentConsumption(model.currentStep, this, qty);
+    payIXCFees(model.currentStep,
+               otherContent.get(),
+               network,
+               ixcBWPrice,
+               model.otherBWIntensity,
+               qty,
+               false);
+
+    network.trackIXC(model.currentStep,
+                       ixcBWPrice,
+                       model.videoBWIntensity * qty,
+                       false);
+  }
 }
 
 @Override
 public String toString() {
   StringBuffer sb = new StringBuffer();
-  sb.append("K_n=" + network.getInvestment() + ",");
-  if (videoContent != null) {
-    sb.append("K_{a,vid}=" + videoContent.getInvestment() + ",");
-    sb.append("Pref_{a,vid}=" + videoContent.preference + ",");
-  }
-  if (otherContent != null) {
-    sb.append("K_{a,oth}=" + otherContent.getInvestment() + ",");
-    sb.append("Pref_{a,oth}=" + otherContent.preference + ",");
-  }
-  sb.append("p=" + cost);
-
+  sb.append("Kn=" + K_n);
+  sb.append(",Kv=" + K_v);
+  sb.append(",Ko=" + K_o);
+  sb.append(",p=" + totalCostToConsumer);
   return sb.toString();
 }
 

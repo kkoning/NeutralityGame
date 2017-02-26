@@ -1,34 +1,59 @@
 package neutrality;
 
+import com.sun.istack.internal.NotNull;
+
+import static agency.util.Misc.BUG;
+
 public class Offers {
 
 public static class ContentOffer {
-  ContentProvider<?> content;
-  double             contentPrice;
+  final ContentProvider contentProvider;
+  final double          price;
+  final int             step;
 
-  public ContentOffer(ContentProvider<?> contentProvider, double contentPrice) {
-    this.content = contentProvider;
-    this.contentPrice = contentPrice;
+  public ContentOffer(
+          int step,
+          @NotNull ContentProvider contentProvider,
+          double price) {
+    if (contentProvider == null)
+      BUG("ContentOffer cannot have a null ContentProvider");
+    if (price <= 0)
+      BUG("ContentOffer must have a positive price");
+
+    this.step = step;
+    this.contentProvider = contentProvider;
+    this.price = price;
   }
 
   @Override
   public String toString() {
     return "ContentOffer{" +
-            "content=" + content +
-            ", contentPrice=" + contentPrice +
-            '}';
+           "Ka=" + contentProvider.getKa(step) +
+           ", p=" + price +
+           '}';
   }
 }
 
-public static class NetworkOffer {
-  NetworkOperator<?> network;
-  double             connectionPrice;
-  double             bandwidthPrice;
+public static class NetworkOnlyOffer {
+  final NetworkOperator network;
+  final double          connectionPrice;
+  final double          bandwidthPrice;
+  final int             step;
 
-  public NetworkOffer(
-          NetworkOperator<?> networkOperator,
+  public NetworkOnlyOffer(
+          int step,
+          @NotNull NetworkOperator networkOperator,
           double connectionPrice,
           double bandwidthPrice) {
+
+    if (networkOperator == null)
+      BUG("NetworkOnlyOffer created with null NetworkOperator");
+    if (connectionPrice <= 0)
+      BUG("NetworkOnlyOffer must have a positive connection price.");
+    if (bandwidthPrice <= 0)
+      BUG("NetworkOnlyOffer must have a positive bandwidth price.");
+
+    this.step = step;
     this.network = networkOperator;
     this.connectionPrice = connectionPrice;
     this.bandwidthPrice = bandwidthPrice;
@@ -36,56 +61,52 @@ public static class NetworkOffer {
 
   @Override
   public String toString() {
-    return "NetworkOffer{" +
-            "network=" + network +
-            ", connectionPrice=" + connectionPrice +
-            ", bandwidthPrice=" + bandwidthPrice +
-            '}';
+    return "NetworkOnlyOffer{" +
+           "Kn=" + network.getKn(step) +
+           ", Pn=" + connectionPrice +
+           ", Pbw=" + bandwidthPrice +
+           '}';
   }
 }
 
-public static class BundledOffer {
-  NetworkOperator<?> network;
-  ContentProvider<?> videoContent;
-  double             bundlePrice;
-  double             bandwidthPrice;
-  boolean            contentZeroRated;
+public static class NetworkAndVideoBundleOffer {
+  final NetworkOperator networkOperator;
+  final double          bundlePrice;
+  final double          bandwidthPrice;
+  final int             step;
 
-  /**
-   * If sanity_checks is true, additional checks will be performed.
-   */
-  static final boolean sanity_checks = true;
-
-  public BundledOffer(
-          NetworkOperator<?> networkOperator,
-          ContentProvider<?> videoContent,
+  public NetworkAndVideoBundleOffer(
+          int step,
+          @NotNull NetworkOperator networkOperator,
           double bundlePrice,
-          double bandwidthPrice,
-          boolean contentZeroRated) {
+          double bandwidthPrice) {
 
-    if (sanity_checks) {
-      if (networkOperator == null)
-        throw new RuntimeException("Cannot create bundled offer w/o a network");
-      if (videoContent == null)
-        throw new RuntimeException("Cannot create bundled offer w/o video content");
-    }
+    if (networkOperator == null)
+      BUG("NetworkAndVideoBundleOffer created with null NetworkOperator");
+    if (bundlePrice <= 0)
+      BUG("NetworkAndVideoBundleOffer must have a positive connection price.");
+    if (bandwidthPrice <= 0)
+      BUG("NetworkAndVideoBundleOffer must have a positive bandwidth price.");
+    if (!networkOperator.getModel().policyBundlingAllowed)
+      BUG("NetworkAndVideoBundleOffer made, but bundling not allowed.");
+    if (networkOperator.getModel().policyZeroRated)
+      BUG("NetworkAndVideoBundleOffer made with zero rating of video, but " +
+          "model parameters do not allow this.");
 
-    this.network = networkOperator;
-    this.videoContent = videoContent;
+    this.step = step;
+    this.networkOperator = networkOperator;
     this.bundlePrice = bundlePrice;
     this.bandwidthPrice = bandwidthPrice;
-    this.contentZeroRated = contentZeroRated;
   }
 
   @Override
   public String toString() {
-    return "BundledOffer{" +
-            "network=" + network +
-            ", videoContent=" + videoContent +
-            ", bundlePrice=" + bundlePrice +
-            ", bandwidthPrice=" + bandwidthPrice +
-            ", contentZeroRated=" + contentZeroRated +
-            '}';
+    return "NetworkAndVideoBundleOffer{" +
+           "Kn=" + networkOperator.getKn(step) +
+           ", Ka=" + networkOperator.getKa(step) +
+           ", Pb=" + bundlePrice +
+           ", Pbw=" + bandwidthPrice +
+           '}';
   }
 }
 
