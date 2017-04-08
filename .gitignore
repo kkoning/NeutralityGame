@@ -1,3 +1,5 @@
 /target/
 analysis/figure/**
 analysis/run/**
+**/.idea/**
+data/testing/**
