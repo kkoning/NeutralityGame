@@ -1,1 +1,3 @@
 /target/
+analysis/figure/**
+analysis/run/**

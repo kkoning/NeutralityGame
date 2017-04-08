@@ -1,0 +1,370 @@
+<html>
+
+<head>
+<title>Title</title>
+</head>
+
+<body>
+
+<p>This is an R HTML document. When you click the <b>Knit HTML</b> button a web page will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:</p>
+
+<!--begin.rcode
+require(ggplot2)
+require(data.table)
+
+setwd('/Users/liara/tmp/NeutralityGame')
+
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+
+setwd("/Users/liara/tmp/NeutralityGame")
+
+
+
+# Network Operators
+
+deno <- read.csv('deno.csv', header=TRUE)
+deno <- data.table(deno)
+summary(deno)
+
+fitness <- ggplot(deno[, .(agg = mean(fitness)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Average Fitness')
+
+g0 <- ggplot(deno[, .(agg = mean(loc_0)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[0]\nNetworkInvestment')
+
+g1 <- ggplot(deno[, .(agg = mean(loc_1)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[1]\nContentInvestment')
+
+g2 <- ggplot(deno[, .(agg = mean(loc_2)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[2]\nNetOfferConnectionPrice')
+
+g3 <- ggplot(deno[, .(agg = mean(loc_3)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[3]\nNetOfferBandwidthPrice')
+
+g4 <- ggplot(deno[, .(agg = mean(loc_4)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[4]\nContentOfferPrice')
+
+g5 <- ggplot(deno[, .(agg = mean(loc_5)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[5]\nBundledOfferPrice')
+
+g6 <- ggplot(deno[, .(agg = mean(loc_6)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[6]\nBundledBandwidthPrice')
+
+g7 <- ggplot(deno[, .(agg = mean(loc_7)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[7]\nBundledZeroRatedOfferPrice')
+
+g8 <- ggplot(deno[, .(agg = mean(loc_8)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[8]\nBundledZeroRatedBandwidthPrice')
+
+g9 <- ggplot(deno[, .(agg = mean(loc_9)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[9]\nInterconnectionBandwidthPrice')
+end.rcode-->
+
+<h1>Network Operators</h1>
+
+<!--begin.rcode fig.width=14, fig.height=12
+multiplot(fitness, g0, g1, g2, g3, g4, g5, g6, g7, g8, g9, cols=3)
+rm(fitness, g0, g1, g2, g3, g4, g5, g6, g7, g8, g9)
+end.rcode-->
+
+
+<!--     BLAHbegin.rcode
+
+# Video Content Providers
+setwd('/Users/liara/tmp/NeutralityGame')
+devcp <- read.csv('devcp.csv', header=TRUE)
+devcp <- data.table(devcp)
+summary(devcp)
+
+fitness <- ggplot(devcp[, .(agg = mean(fitness)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Average Fitness')
+
+g0 <- ggplot(devcp[, .(agg = mean(loc_0)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[0]\nContentInvestment')
+
+g1 <- ggplot(devcp[, .(agg = mean(loc_1)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[1]\nContentOfferPrice')
+
+g2 <- ggplot(devcp[, .(agg = mean(loc_2)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[2]\n(Unused)')
+
+end.rcode    BLAH-->
+
+<h1>Video Content Operators</h1>
+
+<!--BLAH   begin.rcode fig.width=14, fig.height=12
+multiplot(fitness, g0, g1, g2, cols=2)
+end.rcode   BLAH-->
+
+
+<h1>Model Parameters</h1>
+
+<!--begin.rcode
+
+# Other Content Providers
+setwd('/Users/liara/tmp/NeutralityGame')
+deocp <- read.csv('deocp.csv', header=TRUE)
+deocp <- data.table(deocp)
+summary(deocp)
+
+fitness <- ggplot(deocp[, .(agg = mean(fitness)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Average Fitness')
+
+g0 <- ggplot(deocp[, .(agg = mean(loc_0)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[0]\nContentInvestment')
+
+g1 <- ggplot(deocp[, .(agg = mean(loc_1)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[1]\nContentOfferPrice')
+
+
+
+end.rcode-->
+
+<h1>Other Content Operators</h1>
+
+<!--begin.rcode fig.width=14, fig.height=12
+multiplot(fitness, g0, g1, cols=2)
+end.rcode-->
+
+
+
+<!--begin.rcode
+
+# Model Results
+setwd('/Users/liara/tmp/NeutralityGame')
+models <- read.csv('summary.csv', header=TRUE, colClasses = c("integer", "character", rep("numeric",26)) )
+#models <- read.csv('sum2.csv', header=TRUE, colClasses = c("integer", "character", rep("numeric",26)) )
+models <- data.table(models)
+summary(models)
+
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(consumerSurplus)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Consumer Surplus')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+
+ 
+ggplot(models[, .(agg = mean(networkOperatorSurplus)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Network Operator Surplus')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(networkOperatorInvestment)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('networkOperatorInvestment')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(totalICFeesFromVideo)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('totalICFeesFromVideo')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(totalICFeesFromOther)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('totalICFeesFromOther')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(numStandaloneNetworkOffersAccepted)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('numStandaloneNetworkOffersAccepted')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(numNSPStandaloneVideoOffersAccepted)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('numNSPStandaloneVideoOffersAccepted')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(numThirdPartyStandaloneVideoOffersAccepted)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('numThirdPartyStandaloneVideoOffersAccepted')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(numStandaloneVideoOffersHHI)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('numStandaloneVideoOffersHHI')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(numVideoContentProviders)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('numVideoContentProviders')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(cpVideoProvderSurplus)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('cpVideoProvderSurplus')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(numOtherContentProvides)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('numOtherContentProvides')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(cpOtherProviderSurplus)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('cpOtherProviderSurplus')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(nspVideoContentInvestment)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('nspVideoContentInvestment')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(cpVideoContentInvestment)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('cpVideoContentInvestment')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(cpOtherContentInvestment)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('cpOtherContentInvestment')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(totalContentInvestment)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('totalContentInvestment')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(totalStandaloneNetworkRevenue)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('totalStandaloneNetworkRevenue')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(numBundledNetworkOffersAccepted)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('numBundledNetworkOffersAccepted')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(numBundledZeroRatedOffersAccepted)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('numBundledZeroRatedOffersAccepted')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(totalBundledRevenue)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('totalBundledRevenue')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(totalContentInvestment)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('totalBundledZeroRatedRevenue') +
+  ylab('totalBundledZeroRatedRevenue')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(networkHHI)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('networkHHI')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(videoHHI)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('videoHHI')
+end.rcode-->
+
+<!--begin.rcode fig.width=7, fig.height=6
+ggplot(models[, .(agg = mean(otherHHI)), by=Generation], aes(Generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('otherHHI')
+
+end.rcode-->
+
+
+
+
+<!--begin.rcode fig.width=14, fig.height=24
+#multiplot(p0, p1, p2, p4, p5, p6, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, cols=4)
+#rm(p0, p1, p2, p4, p5, p6, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26)
+end.rcode-->
+
+
+
+
+</body>
+</html>

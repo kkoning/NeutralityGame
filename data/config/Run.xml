@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Warning: Used as template!  Make sure you're pointing at the correct file. -->
+<Environment>
+    <PopulationGroup id="nsp" totalSize="200">
+        <Population initialSize="100" id="DirectlyEncodedNetworkOperators">
+            <DefaultVectorIndividualData file="deno.csv"/>
+            <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedNetworkOperator">
+            </DefaultAgentFactory>
+            <MeanSimpleFitnessAggregator/>
+            <VectorIndividualFactory length="10">
+                <GaussianRandomVectorRange start="0" end="9">
+                    <Means type="DoubleList" start="0" end="9">10 10 1.6 1.6 1.6 2.3 1.6 2.7 1.6 1.1</Means>
+                    <Deviations type="DoubleList" start="0" end="9">0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1</Deviations>
+                </GaussianRandomVectorRange>
+            </VectorIndividualFactory>
+            <VectorLimitationPipeline>
+                <!-- Source -->
+                <VectorCrossoverPipeline crossoverProb="0.3">
+                    <VectorMutationPipeline>
+                        <WeightedBreedingPipeline>
+                            <TournamentSelector topIndividuals="0"
+                                                touramentSize="2" weight="4.5"/>
+                        </WeightedBreedingPipeline>
+                        <VectorMutator length="10">
+                            <GaussianMutator start="0" end="9">
+                                <MutationProbability type="DoubleList" start="0" end="9">0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2 0.2</MutationProbability>
+                                <Deviations type="DoubleList" start="0" end="9">0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05</Deviations>
+                            </GaussianMutator>
+                        </VectorMutator>
+                    </VectorMutationPipeline>
+                </VectorCrossoverPipeline>
+                <!-- Limitations -->
+                <VectorLimiter length="2">
+                    <!-- Lower limits of 1 on network and content investment -->
+                    <RangeLimiter start="0" end="1">
+                        <Min type="DoubleList" start="0" end="1">0.0 0.0</Min>
+                    </RangeLimiter>
+                </VectorLimiter>
+            </VectorLimitationPipeline>
+
+        </Population>
+    </PopulationGroup>
+    <!--  <PopulationGroup id="videoContent" totalSize="200">
+          <Population initialSize="100" id="DirectlyEncodedVideoContentProviders">
+              <DefaultVectorIndividualData file="devcp.csv"/>
+              <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedContentProvider">
+                  <Parameter name="isVideoProvider" value="true"/>
+              </DefaultAgentFactory>
+              <MeanSimpleFitnessAggregator/>
+              <VectorIndividualFactory genomeSize="3">
+                  <FlatDoubleInitializer ceiling="3" end="2"
+                                         floor="-3" start="0"/>
+              </VectorIndividualFactory>
+              <VectorCrossoverPipeline crossoverProb="0.3">
+                  <VectorMutationPipeline>
+                      <WeightedBreedingPipeline>
+                          <TournamentSelector topIndividuals="1"
+                                              touramentSize="5" weight="4.5"/>
+                      </WeightedBreedingPipeline>
+                      <GaussianDoubleMutator end="2"
+                                             mutationProbability="0.07" dev="0.05" start="0"/>
+                  </VectorMutationPipeline>
+              </VectorCrossoverPipeline>
+          </Population>
+      </PopulationGroup> -->
+    <PopulationGroup id="otherContent" totalSize="200">
+        <Population initialSize="100" id="DirectlyEncodedOtherContentProviders">
+            <DefaultVectorIndividualData file="deocp.csv"/>
+            <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedContentProvider">
+                <Parameter name="isVideoProvider" value="false"/>
+            </DefaultAgentFactory>
+            <MeanSimpleFitnessAggregator/>
+            <VectorIndividualFactory length="2">
+                <GaussianRandomVectorRange start="0" end="1">
+                    <Means type="DoubleList" start="0" end="1">2.5 0</Means>
+                    <Deviations type="DoubleList" start="0" end="1">0.1 0.1</Deviations>
+                </GaussianRandomVectorRange>
+            </VectorIndividualFactory>
+            <VectorLimitationPipeline>
+                <!-- Source -->
+                <VectorCrossoverPipeline crossoverProb="0.3">
+                    <VectorMutationPipeline>
+                        <WeightedBreedingPipeline>
+                            <TournamentSelector topIndividuals="1"
+                                                touramentSize="2" weight="4.5"/>
+                        </WeightedBreedingPipeline>
+                        <VectorMutator length="2">
+                            <GaussianMutator start="0" end="1">
+                                <MutationProbability type="DoubleList" start="0" end="1">0.2 0.2</MutationProbability>
+                                <Deviations type="DoubleList" start="0" end="1">0.05 0.05</Deviations>
+                            </GaussianMutator>
+                        </VectorMutator>
+                    </VectorMutationPipeline>
+                </VectorCrossoverPipeline>
+                <!--Limits -->
+                <VectorLimiter length="2">
+                    <RangeLimiter start="0" end="0">
+                        <Min type="DoubleList" start="0" end="0">0.0</Min>
+                    </RangeLimiter>
+                </VectorLimiter>
+
+            </VectorLimitationPipeline>
+        </Population>
+    </PopulationGroup>
+
+    <!-- Need an EvaluationGroupFactory -->
+    <ShuffledEvaluationGroupFactory numGroups="1200">
+        <AgentSource populationGroup="nsp" numAgents="1"/>
+        <!--<AgentSource populationGroup="videoContent" numAgents="1"/> -->
+        <AgentSource populationGroup="otherContent" numAgents="1"/>
+    </ShuffledEvaluationGroupFactory>
+
+    <!-- Need an Agent Model Factory -->
+    <DefaultAgentModelFactory modelClass="neutrality.NeutralityModel">
+        <Parameter name="alpha" value="0.1"/> <!-- 0.01 for testing -->
+        <Parameter name="beta" value="0.1"/> <!-- 0.01 for testing -->
+        <Parameter name="psi" value="0.4"/>
+        <Parameter name="tau" value="0.4"/>
+        <Parameter name="theta" value="0.2"/>
+        <Parameter name="maxSteps" value="10"/>
+        <Parameter name="numConsumers" value="400"/>
+        <Parameter name="topIncome" value="10"/>
+        <Parameter name="forceZeroPriceIC" value="false"/>
+        <Parameter name="bundlingAllowed" value="false"/>
+        <Parameter name="zeroRatingAllowed" value="false"/>
+    </DefaultAgentModelFactory>
+    <!-- Environment Statistics -->
+    <DefaultEnvironmentStatistics file="DefaultEnvironmentStatistics.csv" format="csv"/>
+
+    <!-- Need an Evaluator -->
+    <!--<LocalEvaluator/>-->
+    <LocalParallelEvaluator/>
+
+    <!-- Test out an DefaultAgentModelReporter -->
+    <DefaultModelSummaryData file="summary.csv" format="csv"/>
+
+</Environment>

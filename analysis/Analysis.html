@@ -1,0 +1,601 @@
+<html>
+
+<head>
+<style type="text/css">
+.knitr .inline {
+  background-color: #f7f7f7;
+  border:solid 1px #B0B0B0;
+}
+.error {
+	font-weight: bold;
+	color: #FF0000;
+}
+.warning {
+	font-weight: bold;
+}
+.message {
+	font-style: italic;
+}
+.source, .output, .warning, .error, .message {
+	padding: 0 1em;
+  border:solid 1px #F7F7F7;
+}
+.source {
+  background-color: #f5f5f5;
+}
+.rimage .left {
+  text-align: left;
+}
+.rimage .right {
+  text-align: right;
+}
+.rimage .center {
+  text-align: center;
+}
+.hl.num {
+  color: #AF0F91;
+}
+.hl.str {
+  color: #317ECC;
+}
+.hl.com {
+  color: #AD95AF;
+  font-style: italic;
+}
+.hl.opt {
+  color: #000000;
+}
+.hl.std {
+  color: #585858;
+}
+.hl.kwa {
+  color: #295F94;
+  font-weight: bold;
+}
+.hl.kwb {
+  color: #B05A65;
+}
+.hl.kwc {
+  color: #55aa55;
+}
+.hl.kwd {
+  color: #BC5A65;
+  font-weight: bold;
+}
+</style>
+<title>Title</title>
+</head>
+
+<body>
+
+<p>This is an R HTML document. When you click the <b>Knit HTML</b> button a web page will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:</p>
+
+<div class="chunk" id="unnamed-chunk-1"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">require</span><span class="hl std">(ggplot2)</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## Loading required package: ggplot2
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">require</span><span class="hl std">(data.table)</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## Loading required package: data.table
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">setwd</span><span class="hl std">(</span><span class="hl str">'/Users/liara/tmp/NeutralityGame'</span><span class="hl std">)</span>
+
+<span class="hl com"># Multiple plot function</span>
+<span class="hl com">#</span>
+<span class="hl com"># ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)</span>
+<span class="hl com"># - cols:   Number of columns in layout</span>
+<span class="hl com"># - layout: A matrix specifying the layout. If present, 'cols' is ignored.</span>
+<span class="hl com">#</span>
+<span class="hl com"># If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),</span>
+<span class="hl com"># then plot 1 will go in the upper left, 2 will go in the upper right, and</span>
+<span class="hl com"># 3 will go all the way across the bottom.</span>
+<span class="hl com">#</span>
+<span class="hl std">multiplot</span> <span class="hl kwb">&lt;-</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">...</span><span class="hl std">,</span> <span class="hl kwc">plotlist</span><span class="hl std">=</span><span class="hl kwa">NULL</span><span class="hl std">,</span> <span class="hl kwc">file</span><span class="hl std">,</span> <span class="hl kwc">cols</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">,</span> <span class="hl kwc">layout</span><span class="hl std">=</span><span class="hl kwa">NULL</span><span class="hl std">) {</span>
+  <span class="hl kwd">library</span><span class="hl std">(grid)</span>
+
+  <span class="hl com"># Make a list from the ... arguments and plotlist</span>
+  <span class="hl std">plots</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl kwd">list</span><span class="hl std">(...), plotlist)</span>
+
+  <span class="hl std">numPlots</span> <span class="hl kwb">=</span> <span class="hl kwd">length</span><span class="hl std">(plots)</span>
+
+  <span class="hl com"># If layout is NULL, then use 'cols' to determine layout</span>
+  <span class="hl kwa">if</span> <span class="hl std">(</span><span class="hl kwd">is.null</span><span class="hl std">(layout)) {</span>
+    <span class="hl com"># Make the panel</span>
+    <span class="hl com"># ncol: Number of columns of plots</span>
+    <span class="hl com"># nrow: Number of rows needed, calculated from # of cols</span>
+    <span class="hl std">layout</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">matrix</span><span class="hl std">(</span><span class="hl kwd">seq</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl std">, cols</span> <span class="hl opt">*</span> <span class="hl kwd">ceiling</span><span class="hl std">(numPlots</span><span class="hl opt">/</span><span class="hl std">cols)),</span>
+                     <span class="hl kwc">ncol</span> <span class="hl std">= cols,</span> <span class="hl kwc">nrow</span> <span class="hl std">=</span> <span class="hl kwd">ceiling</span><span class="hl std">(numPlots</span><span class="hl opt">/</span><span class="hl std">cols))</span>
+  <span class="hl std">}</span>
+
+  <span class="hl kwa">if</span> <span class="hl std">(numPlots</span><span class="hl opt">==</span><span class="hl num">1</span><span class="hl std">) {</span>
+    <span class="hl kwd">print</span><span class="hl std">(plots[[</span><span class="hl num">1</span><span class="hl std">]])</span>
+
+  <span class="hl std">}</span> <span class="hl kwa">else</span> <span class="hl std">{</span>
+    <span class="hl com"># Set up the page</span>
+    <span class="hl kwd">grid.newpage</span><span class="hl std">()</span>
+    <span class="hl kwd">pushViewport</span><span class="hl std">(</span><span class="hl kwd">viewport</span><span class="hl std">(</span><span class="hl kwc">layout</span> <span class="hl std">=</span> <span class="hl kwd">grid.layout</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(layout),</span> <span class="hl kwd">ncol</span><span class="hl std">(layout))))</span>
+
+    <span class="hl com"># Make each plot, in the correct location</span>
+    <span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">numPlots) {</span>
+      <span class="hl com"># Get the i,j matrix positions of the regions that contain this subplot</span>
+      <span class="hl std">matchidx</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">as.data.frame</span><span class="hl std">(</span><span class="hl kwd">which</span><span class="hl std">(layout</span> <span class="hl opt">==</span> <span class="hl std">i,</span> <span class="hl kwc">arr.ind</span> <span class="hl std">=</span> <span class="hl num">TRUE</span><span class="hl std">))</span>
+
+      <span class="hl kwd">print</span><span class="hl std">(plots[[i]],</span> <span class="hl kwc">vp</span> <span class="hl std">=</span> <span class="hl kwd">viewport</span><span class="hl std">(</span><span class="hl kwc">layout.pos.row</span> <span class="hl std">= matchidx</span><span class="hl opt">$</span><span class="hl std">row,</span>
+                                      <span class="hl kwc">layout.pos.col</span> <span class="hl std">= matchidx</span><span class="hl opt">$</span><span class="hl std">col))</span>
+    <span class="hl std">}</span>
+  <span class="hl std">}</span>
+<span class="hl std">}</span>
+
+
+<span class="hl kwd">setwd</span><span class="hl std">(</span><span class="hl str">&quot;/Users/liara/tmp/NeutralityGame&quot;</span><span class="hl std">)</span>
+
+
+
+<span class="hl com"># Network Operators</span>
+
+<span class="hl std">deno</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">'deno.csv'</span><span class="hl std">,</span> <span class="hl kwc">header</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span>
+<span class="hl std">deno</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">data.table</span><span class="hl std">(deno)</span>
+<span class="hl kwd">summary</span><span class="hl std">(deno)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##    generation                           populationName  
+##  Min.   :   0   DirectlyEncodedNetworkOperators:500000  
+##  1st Qu.:1250                                           
+##  Median :2500                                           
+##  Mean   :2500                                           
+##  3rd Qu.:3749                                           
+##  Max.   :4999                                           
+##                                                         
+##                                 individual     parent1       
+##  63147c77-f20a-4b59-80d2-a08c6f7ffc9f:499881   Mode:logical  
+##  9e150f49-96f2-4dd3-90ff-9b5e5fb3da51:    21   NA's:500000   
+##  00485119-d38a-476b-b201-5f9520284995:     1                 
+##  031b669e-8a90-43f3-93b2-50a8244ad9dc:     1                 
+##  059f7039-a2aa-4c4a-b1d0-b5501b7d7231:     1                 
+##  07361501-92ca-4574-91a4-3a97f537db8d:     1                 
+##  (Other)                             :    94                 
+##  parent2           fitness             loc_0            loc_1       
+##  Mode:logical   Min.   :-3113865   Min.   : 1.598   Min.   : 1.245  
+##  NA's:500000    1st Qu.:   45362   1st Qu.: 8.798   1st Qu.: 8.281  
+##                 Median :  244077   Median :11.291   Median :10.674  
+##                 Mean   :  287381   Mean   :10.252   Mean   : 9.558  
+##                 3rd Qu.:  464149   3rd Qu.:11.782   3rd Qu.:11.210  
+##                 Max.   : 1833084   Max.   :13.303   Max.   :12.489  
+##                                                                     
+##      loc_2            loc_3             loc_4            loc_5       
+##  Min.   :-1.079   Min.   :-1.2609   Min.   :-1.181   Min.   :-1.094  
+##  1st Qu.: 5.985   1st Qu.: 0.3458   1st Qu.: 1.621   1st Qu.: 2.657  
+##  Median : 7.809   Median : 1.0230   Median : 2.010   Median : 3.345  
+##  Mean   : 6.894   Mean   : 1.1980   Mean   : 1.924   Mean   : 3.199  
+##  3rd Qu.: 8.251   3rd Qu.: 1.9261   3rd Qu.: 2.424   3rd Qu.: 3.964  
+##  Max.   : 9.726   Max.   : 4.6885   Max.   : 3.980   Max.   : 6.351  
+##                                                                      
+##      loc_6             loc_7            loc_8              loc_9       
+##  Min.   :-0.8918   Min.   :-1.230   Min.   :-3.26081   Min.   :-1.038  
+##  1st Qu.: 5.6324   1st Qu.: 6.087   1st Qu.:-0.02042   1st Qu.: 1.737  
+##  Median : 8.5774   Median : 7.854   Median : 2.35196   Median : 2.254  
+##  Mean   : 7.9099   Mean   : 7.048   Mean   : 1.82307   Mean   : 2.296  
+##  3rd Qu.:10.5169   3rd Qu.: 8.447   3rd Qu.: 3.36589   3rd Qu.: 2.847  
+##  Max.   :12.4313   Max.   :10.148   Max.   : 6.04344   Max.   : 4.818  
+## 
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">fitness</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">ggplot</span><span class="hl std">(deno[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(fitness)),</span> <span class="hl kwc">by</span><span class="hl std">=generation],</span> <span class="hl kwd">aes</span><span class="hl std">(generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Average Fitness'</span><span class="hl std">)</span>
+
+<span class="hl std">g0</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">ggplot</span><span class="hl std">(deno[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(loc_0)),</span> <span class="hl kwc">by</span><span class="hl std">=generation],</span> <span class="hl kwd">aes</span><span class="hl std">(generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Value of genome[0]\nNetworkInvestment'</span><span class="hl std">)</span>
+
+<span class="hl std">g1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">ggplot</span><span class="hl std">(deno[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(loc_1)),</span> <span class="hl kwc">by</span><span class="hl std">=generation],</span> <span class="hl kwd">aes</span><span class="hl std">(generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Value of genome[1]\nContentInvestment'</span><span class="hl std">)</span>
+
+<span class="hl std">g2</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">ggplot</span><span class="hl std">(deno[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(loc_2)),</span> <span class="hl kwc">by</span><span class="hl std">=generation],</span> <span class="hl kwd">aes</span><span class="hl std">(generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Value of genome[2]\nNetOfferConnectionPrice'</span><span class="hl std">)</span>
+
+<span class="hl std">g3</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">ggplot</span><span class="hl std">(deno[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(loc_3)),</span> <span class="hl kwc">by</span><span class="hl std">=generation],</span> <span class="hl kwd">aes</span><span class="hl std">(generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Value of genome[3]\nNetOfferBandwidthPrice'</span><span class="hl std">)</span>
+
+<span class="hl std">g4</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">ggplot</span><span class="hl std">(deno[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(loc_4)),</span> <span class="hl kwc">by</span><span class="hl std">=generation],</span> <span class="hl kwd">aes</span><span class="hl std">(generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Value of genome[4]\nContentOfferPrice'</span><span class="hl std">)</span>
+
+<span class="hl std">g5</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">ggplot</span><span class="hl std">(deno[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(loc_5)),</span> <span class="hl kwc">by</span><span class="hl std">=generation],</span> <span class="hl kwd">aes</span><span class="hl std">(generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Value of genome[5]\nBundledOfferPrice'</span><span class="hl std">)</span>
+
+<span class="hl std">g6</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">ggplot</span><span class="hl std">(deno[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(loc_6)),</span> <span class="hl kwc">by</span><span class="hl std">=generation],</span> <span class="hl kwd">aes</span><span class="hl std">(generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Value of genome[6]\nBundledBandwidthPrice'</span><span class="hl std">)</span>
+
+<span class="hl std">g7</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">ggplot</span><span class="hl std">(deno[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(loc_7)),</span> <span class="hl kwc">by</span><span class="hl std">=generation],</span> <span class="hl kwd">aes</span><span class="hl std">(generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Value of genome[7]\nBundledZeroRatedOfferPrice'</span><span class="hl std">)</span>
+
+<span class="hl std">g8</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">ggplot</span><span class="hl std">(deno[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(loc_8)),</span> <span class="hl kwc">by</span><span class="hl std">=generation],</span> <span class="hl kwd">aes</span><span class="hl std">(generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Value of genome[8]\nBundledZeroRatedBandwidthPrice'</span><span class="hl std">)</span>
+
+<span class="hl std">g9</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">ggplot</span><span class="hl std">(deno[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(loc_9)),</span> <span class="hl kwc">by</span><span class="hl std">=generation],</span> <span class="hl kwd">aes</span><span class="hl std">(generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Value of genome[9]\nInterconnectionBandwidthPrice'</span><span class="hl std">)</span>
+</pre></div>
+</div></div>
+
+<h1>Network Operators</h1>
+
+<div class="chunk" id="unnamed-chunk-2"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">multiplot</span><span class="hl std">(fitness, g0, g1, g2, g3, g4, g5, g6, g7, g8, g9,</span> <span class="hl kwc">cols</span><span class="hl std">=</span><span class="hl num">3</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-2-1.png" title="plot of chunk unnamed-chunk-2" alt="plot of chunk unnamed-chunk-2" class="plot" /></div><div class="rcode">
+<div class="source"><pre class="knitr r"><span class="hl kwd">rm</span><span class="hl std">(fitness, g0, g1, g2, g3, g4, g5, g6, g7, g8, g9)</span>
+</pre></div>
+</div></div>
+
+
+<!--     BLAHbegin.rcode
+
+# Video Content Providers
+setwd('/Users/liara/tmp/NeutralityGame')
+devcp <- read.csv('devcp.csv', header=TRUE)
+devcp <- data.table(deno)
+summary(devcp)
+
+fitness <- ggplot(devcp[, .(agg = mean(fitness)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Average Fitness')
+
+g0 <- ggplot(devcp[, .(agg = mean(loc_0)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[0]\nContentInvestment')
+
+g1 <- ggplot(devcp[, .(agg = mean(loc_1)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[1]\nContentOfferPrice')
+
+g2 <- ggplot(devcp[, .(agg = mean(loc_2)), by=generation], aes(generation,agg)) + 
+  geom_point() + xlab('Generation') +
+  ylab('Value of genome[2]\n(Unused)')
+
+end.rcode    BLAH-->
+
+<h1>Video Content Operators</h1>
+
+<!--BLAH   begin.rcode fig.width=14, fig.height=12
+multiplot(fitness, g0, g1, g2, cols=2)
+end.rcode   BLAH-->
+
+
+<h1>Model Parameters</h1>
+
+<div class="chunk" id="unnamed-chunk-3"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com"># Other Content Providers</span>
+<span class="hl kwd">setwd</span><span class="hl std">(</span><span class="hl str">'/Users/liara/tmp/NeutralityGame'</span><span class="hl std">)</span>
+<span class="hl std">deocp</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">'deocp.csv'</span><span class="hl std">,</span> <span class="hl kwc">header</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span>
+<span class="hl std">deocp</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">data.table</span><span class="hl std">(deocp)</span>
+<span class="hl kwd">summary</span><span class="hl std">(deocp)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##    generation                                populationName  
+##  Min.   :   0   DirectlyEncodedOtherContentProviders:500000  
+##  1st Qu.:1250                                                
+##  Median :2500                                                
+##  Mean   :2500                                                
+##  3rd Qu.:3749                                                
+##  Max.   :4999                                                
+##                                                              
+##                                 individual     parent1       
+##  ae319fd2-279e-44d4-8a5e-94eb96857b5e:499873   Mode:logical  
+##  60252bd9-a975-4209-b348-3aa893920c9c:    29   NA's:500000   
+##  00650f02-a1fc-4415-bdc5-72a1294d1deb:     1                 
+##  03fb7beb-af42-4332-8a86-021249860b7a:     1                 
+##  0c7159e8-c833-4b98-9e52-5923acc3a126:     1                 
+##  0d8ef04f-14b6-477d-9a4a-eae77712c491:     1                 
+##  (Other)                             :    94                 
+##  parent2           fitness             loc_0            loc_1       
+##  Mode:logical   Min.   :-2713300   Min.   : 1.669   Min.   :-1.134  
+##  NA's:500000    1st Qu.:   40344   1st Qu.: 8.700   1st Qu.: 5.182  
+##                 Median :  364944   Median :10.913   Median : 7.483  
+##                 Mean   :  574247   Mean   : 9.734   Mean   : 6.390  
+##                 3rd Qu.: 1043170   3rd Qu.:11.553   3rd Qu.: 7.989  
+##                 Max.   : 2953744   Max.   :13.031   Max.   : 9.395  
+## 
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">fitness</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">ggplot</span><span class="hl std">(deocp[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(fitness)),</span> <span class="hl kwc">by</span><span class="hl std">=generation],</span> <span class="hl kwd">aes</span><span class="hl std">(generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Average Fitness'</span><span class="hl std">)</span>
+
+<span class="hl std">g0</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">ggplot</span><span class="hl std">(deocp[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(loc_0)),</span> <span class="hl kwc">by</span><span class="hl std">=generation],</span> <span class="hl kwd">aes</span><span class="hl std">(generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Value of genome[0]\nContentInvestment'</span><span class="hl std">)</span>
+
+<span class="hl std">g1</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">ggplot</span><span class="hl std">(deocp[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(loc_1)),</span> <span class="hl kwc">by</span><span class="hl std">=generation],</span> <span class="hl kwd">aes</span><span class="hl std">(generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Value of genome[1]\nContentOfferPrice'</span><span class="hl std">)</span>
+</pre></div>
+</div></div>
+
+<h1>Other Content Operators</h1>
+
+<div class="chunk" id="unnamed-chunk-4"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">multiplot</span><span class="hl std">(fitness, g0, g1,</span> <span class="hl kwc">cols</span><span class="hl std">=</span><span class="hl num">2</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-4-1.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" class="plot" /></div></div>
+
+
+
+<div class="chunk" id="unnamed-chunk-5"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com"># Model Results</span>
+<span class="hl kwd">setwd</span><span class="hl std">(</span><span class="hl str">'/Users/liara/tmp/NeutralityGame'</span><span class="hl std">)</span>
+<span class="hl std">models</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">'summary.csv'</span><span class="hl std">,</span> <span class="hl kwc">header</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span> <span class="hl kwc">colClasses</span> <span class="hl std">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;integer&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;character&quot;</span><span class="hl std">,</span> <span class="hl kwd">rep</span><span class="hl std">(</span><span class="hl str">&quot;numeric&quot;</span><span class="hl std">,</span><span class="hl num">26</span><span class="hl std">)) )</span>
+<span class="hl com">#models &lt;- read.csv('sum2.csv', header=TRUE, colClasses = c(&quot;integer&quot;, &quot;character&quot;, rep(&quot;numeric&quot;,26)) )</span>
+<span class="hl std">models</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">data.table</span><span class="hl std">(models)</span>
+<span class="hl kwd">summary</span><span class="hl std">(models)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##    Generation      Model           consumerSurplus   numNetworkOperators
+##  Min.   :   0   Length:6000000     Min.   :      0   Min.   :1          
+##  1st Qu.:1250   Class :character   1st Qu.: 224412   1st Qu.:1          
+##  Median :2500   Mode  :character   Median : 954484   Median :1          
+##  Mean   :2500                      Mean   :1129252   Mean   :1          
+##  3rd Qu.:3749                      3rd Qu.:1794688   3rd Qu.:1          
+##  Max.   :4999                      Max.   :9005687   Max.   :1          
+##                                                                         
+##  networkOperatorSurplus networkOperatorInvestment totalICFeesFromVideo
+##  Min.   :-3491868       Min.   :     4.9          Min.   :0           
+##  1st Qu.:   41282       1st Qu.:  6623.8          1st Qu.:0           
+##  Median :  240487       Median : 80107.5          Median :0           
+##  Mean   :  287381       Mean   : 85905.2          Mean   :0           
+##  3rd Qu.:  470529       3rd Qu.:130831.0          3rd Qu.:0           
+##  Max.   : 2381713       Max.   :599127.4          Max.   :0           
+##                                                                       
+##  totalICFeesFromOther numStandaloneNetworkOffersAccepted
+##  Min.   :0            Min.   :   0.0                    
+##  1st Qu.:0            1st Qu.:   0.0                    
+##  Median :0            Median :   0.0                    
+##  Mean   :0            Mean   : 346.2                    
+##  3rd Qu.:0            3rd Qu.: 780.0                    
+##  Max.   :0            Max.   :1770.0                    
+##                                                         
+##  numNSPStandaloneVideoOffersAccepted
+##  Min.   :   0.0                     
+##  1st Qu.:   0.0                     
+##  Median :   0.0                     
+##  Mean   : 346.2                     
+##  3rd Qu.: 780.0                     
+##  Max.   :1770.0                     
+##                                     
+##  numThirdPartyStandaloneVideoOffersAccepted numStandaloneVideoOffersHHI
+##  Min.   :0.00e+00                           Min.   : 5069              
+##  1st Qu.:0.00e+00                           1st Qu.:10000              
+##  Median :0.00e+00                           Median :10000              
+##  Mean   :4.19e-02                           Mean   :10000              
+##  3rd Qu.:0.00e+00                           3rd Qu.:10000              
+##  Max.   :1.75e+03                           Max.   :10000              
+##                                             NA's   :3512466            
+##  numVideoContentProviders cpVideoProvderSurplus numOtherContentProvides
+##  Min.   :1                Min.   :-605.85       Min.   :1              
+##  1st Qu.:1                1st Qu.: -10.20       1st Qu.:1              
+##  Median :1                Median : -10.00       Median :1              
+##  Mean   :1                Mean   : -11.63       Mean   :1              
+##  3rd Qu.:1                3rd Qu.: -10.00       3rd Qu.:1              
+##  Max.   :1                Max.   :1839.92       Max.   :1              
+##                                                                        
+##  cpOtherProviderSurplus nspVideoContentInvestment cpVideoContentInvestment
+##  Min.   :-2737384       Min.   :     3.47         Min.   : 1.000          
+##  1st Qu.:   35398       1st Qu.:  3947.65         1st Qu.: 1.000          
+##  Median :  358127       Median : 43197.71         Median : 1.000          
+##  Mean   :  574247       Mean   : 44360.55         Mean   : 1.166          
+##  3rd Qu.: 1048025       3rd Qu.: 73836.92         3rd Qu.: 1.020          
+##  Max.   : 4063114       Max.   :265324.57         Max.   :60.585          
+##                                                                           
+##  cpOtherContentInvestment totalContentInvestment
+##  Min.   :     5.3         Min.   :    24.9      
+##  1st Qu.:  6004.6         1st Qu.: 10244.2      
+##  Median : 54877.8         Median :119025.6      
+##  Mean   : 64071.4         Mean   :108433.1      
+##  3rd Qu.:104049.8         3rd Qu.:180397.6      
+##  Max.   :456456.7         Max.   :513664.7      
+##                                                 
+##  totalStandaloneNetworkRevenue numBundledNetworkOffersAccepted
+##  Min.   :      0               Min.   :   0                   
+##  1st Qu.:      0               1st Qu.:   0                   
+##  Median :      0               Median :   0                   
+##  Mean   : 791265               Mean   : 313                   
+##  3rd Qu.:1914179               3rd Qu.: 520                   
+##  Max.   :5650502               Max.   :1780                   
+##                                                               
+##  numBundledZeroRatedOffersAccepted totalBundledRevenue
+##  Min.   :   0.0                    Min.   :     0     
+##  1st Qu.:   0.0                    1st Qu.:     0     
+##  Median :   0.0                    Median :     0     
+##  Mean   : 346.8                    Mean   :  8795     
+##  3rd Qu.: 790.0                    3rd Qu.:  6600     
+##  Max.   :1880.0                    Max.   :326179     
+##                                                       
+##  totalBundledZeroRatedRevenue   networkHHI       videoHHI    
+##  Min.   :      0              Min.   :10000   Min.   : 5000  
+##  1st Qu.:      0              1st Qu.:10000   1st Qu.:10000  
+##  Median :      0              Median :10000   Median :10000  
+##  Mean   : 552597              Mean   :10000   Mean   :10000  
+##  3rd Qu.:1047210              3rd Qu.:10000   3rd Qu.:10000  
+##  Max.   :6864788              Max.   :10000   Max.   :10000  
+##                               NA's   :11624   NA's   :11624  
+##     otherHHI    
+##  Min.   :10000  
+##  1st Qu.:10000  
+##  Median :10000  
+##  Mean   :10000  
+##  3rd Qu.:10000  
+##  Max.   :10000  
+##  NA's   :25881
+</pre></div>
+</div></div>
+
+<div class="chunk" id="unnamed-chunk-6"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(consumerSurplus)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Consumer Surplus'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-6-1.png" title="plot of chunk unnamed-chunk-6" alt="plot of chunk unnamed-chunk-6" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-7"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(networkOperatorSurplus)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'Network Operator Surplus'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-7-1.png" title="plot of chunk unnamed-chunk-7" alt="plot of chunk unnamed-chunk-7" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-8"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(networkOperatorInvestment)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'networkOperatorInvestment'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-8-1.png" title="plot of chunk unnamed-chunk-8" alt="plot of chunk unnamed-chunk-8" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-9"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(totalICFeesFromVideo)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'totalICFeesFromVideo'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-9-1.png" title="plot of chunk unnamed-chunk-9" alt="plot of chunk unnamed-chunk-9" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-10"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(totalICFeesFromOther)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'totalICFeesFromOther'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-10-1.png" title="plot of chunk unnamed-chunk-10" alt="plot of chunk unnamed-chunk-10" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-11"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(numStandaloneNetworkOffersAccepted)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'numStandaloneNetworkOffersAccepted'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-11-1.png" title="plot of chunk unnamed-chunk-11" alt="plot of chunk unnamed-chunk-11" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-12"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(numNSPStandaloneVideoOffersAccepted)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'numNSPStandaloneVideoOffersAccepted'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-12-1.png" title="plot of chunk unnamed-chunk-12" alt="plot of chunk unnamed-chunk-12" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-13"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(numThirdPartyStandaloneVideoOffersAccepted)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'numThirdPartyStandaloneVideoOffersAccepted'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-13-1.png" title="plot of chunk unnamed-chunk-13" alt="plot of chunk unnamed-chunk-13" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-14"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(numStandaloneVideoOffersHHI)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'numStandaloneVideoOffersHHI'</span><span class="hl std">)</span>
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning: Removed 3819 rows containing missing values (geom_point).
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-14-1.png" title="plot of chunk unnamed-chunk-14" alt="plot of chunk unnamed-chunk-14" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-15"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(numVideoContentProviders)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'numVideoContentProviders'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-15-1.png" title="plot of chunk unnamed-chunk-15" alt="plot of chunk unnamed-chunk-15" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-16"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(cpVideoProvderSurplus)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'cpVideoProvderSurplus'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-16-1.png" title="plot of chunk unnamed-chunk-16" alt="plot of chunk unnamed-chunk-16" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-17"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(numOtherContentProvides)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'numOtherContentProvides'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-17-1.png" title="plot of chunk unnamed-chunk-17" alt="plot of chunk unnamed-chunk-17" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-18"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(cpOtherProviderSurplus)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'cpOtherProviderSurplus'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-18-1.png" title="plot of chunk unnamed-chunk-18" alt="plot of chunk unnamed-chunk-18" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-19"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(nspVideoContentInvestment)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'nspVideoContentInvestment'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-19-1.png" title="plot of chunk unnamed-chunk-19" alt="plot of chunk unnamed-chunk-19" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-20"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(cpVideoContentInvestment)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'cpVideoContentInvestment'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-20-1.png" title="plot of chunk unnamed-chunk-20" alt="plot of chunk unnamed-chunk-20" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-21"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(cpOtherContentInvestment)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'cpOtherContentInvestment'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-21-1.png" title="plot of chunk unnamed-chunk-21" alt="plot of chunk unnamed-chunk-21" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-22"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(totalContentInvestment)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'totalContentInvestment'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-22-1.png" title="plot of chunk unnamed-chunk-22" alt="plot of chunk unnamed-chunk-22" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-23"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(totalStandaloneNetworkRevenue)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'totalStandaloneNetworkRevenue'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-23-1.png" title="plot of chunk unnamed-chunk-23" alt="plot of chunk unnamed-chunk-23" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-24"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(numBundledNetworkOffersAccepted)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'numBundledNetworkOffersAccepted'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-24-1.png" title="plot of chunk unnamed-chunk-24" alt="plot of chunk unnamed-chunk-24" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-25"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(numBundledZeroRatedOffersAccepted)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'numBundledZeroRatedOffersAccepted'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-25-1.png" title="plot of chunk unnamed-chunk-25" alt="plot of chunk unnamed-chunk-25" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-26"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(totalBundledRevenue)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'totalBundledRevenue'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-26-1.png" title="plot of chunk unnamed-chunk-26" alt="plot of chunk unnamed-chunk-26" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-27"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(totalContentInvestment)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'totalBundledZeroRatedRevenue'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'totalBundledZeroRatedRevenue'</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-27-1.png" title="plot of chunk unnamed-chunk-27" alt="plot of chunk unnamed-chunk-27" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-28"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(networkHHI)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'networkHHI'</span><span class="hl std">)</span>
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning: Removed 130 rows containing missing values (geom_point).
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-28-1.png" title="plot of chunk unnamed-chunk-28" alt="plot of chunk unnamed-chunk-28" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-29"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(videoHHI)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'videoHHI'</span><span class="hl std">)</span>
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning: Removed 130 rows containing missing values (geom_point).
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-29-1.png" title="plot of chunk unnamed-chunk-29" alt="plot of chunk unnamed-chunk-29" class="plot" /></div></div>
+
+<div class="chunk" id="unnamed-chunk-30"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">ggplot</span><span class="hl std">(models[,</span> <span class="hl kwd">.</span><span class="hl std">(</span><span class="hl kwc">agg</span> <span class="hl std">=</span> <span class="hl kwd">mean</span><span class="hl std">(otherHHI)),</span> <span class="hl kwc">by</span><span class="hl std">=Generation],</span> <span class="hl kwd">aes</span><span class="hl std">(Generation,agg))</span> <span class="hl opt">+</span>
+  <span class="hl kwd">geom_point</span><span class="hl std">()</span> <span class="hl opt">+</span> <span class="hl kwd">xlab</span><span class="hl std">(</span><span class="hl str">'Generation'</span><span class="hl std">)</span> <span class="hl opt">+</span>
+  <span class="hl kwd">ylab</span><span class="hl std">(</span><span class="hl str">'otherHHI'</span><span class="hl std">)</span>
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning: Removed 695 rows containing missing values (geom_point).
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-30-1.png" title="plot of chunk unnamed-chunk-30" alt="plot of chunk unnamed-chunk-30" class="plot" /></div></div>
+
+
+
+
+<div class="chunk" id="unnamed-chunk-31"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com">#multiplot(p0, p1, p2, p4, p5, p6, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, cols=4)</span>
+<span class="hl com">#rm(p0, p1, p2, p4, p5, p6, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26)</span>
+</pre></div>
+</div></div>
+
+
+
+
+</body>
+</html>
