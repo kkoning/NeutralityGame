@@ -45,7 +45,7 @@ public Offers.ContentOffer getContentOffer(int step) {
   Offers.ContentOffer vco =
           new Offers.ContentOffer(step,
                                   this,
-                                  1 + e(Position.StandaloneContentOfferPrice));
+                                  e(Position.StandaloneContentOfferPrice));
   return vco;
 }
 

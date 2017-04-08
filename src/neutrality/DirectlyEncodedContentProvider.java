@@ -18,7 +18,7 @@ public DirectlyEncodedContentProvider() {
 public Offers.ContentOffer getContentOffer(int step) {
   return new Offers.ContentOffer(step,
                                  this,
-                                 1 + e(Position.ContentOfferPrice));
+                                 e(Position.ContentOfferPrice));
 }
 
 @Override
