@@ -6,8 +6,8 @@ import agency.Individual;
 import static agency.util.Misc.BUG;
 
 public abstract class AbstractNetworkOperator<N extends Individual>
-        extends AbstractContentProvider<N>
-        implements NetworkOperator<N> {
+    extends AbstractContentProvider<N>
+    implements NetworkOperator<N> {
 
 double[] Kn;
 
@@ -31,7 +31,6 @@ double[] qtyIxcOther;
 double[] revIxcOther;
 
 double[] ixcPrice;
-
 
 public AbstractNetworkOperator() {
   this.isVideoProvider = true;
@@ -69,6 +68,17 @@ public void init() {
 }
 
 public void makeNetworkInvestment(int step, double amount) {
+
+  /*
+   * Since the investments are raised to powers <1, investment amounts less than
+   * 1 have paradoxical effects on the desirability vs cost ratio; in other
+   * words, the slope of the desirability/cost line is greater than 1, which can
+   * create an edge condition local maximum. To prevent this, the smallest
+   * investment amount allowed is 1.
+   */
+  if (amount < 1)
+    amount = 1;
+
   try {
     account.pay(amount);
   } catch (Account.PaymentException e) {
@@ -89,9 +99,9 @@ public double getKn(int step) {
 
 @Override
 public void processNetworkConsumption(
-        int step,
-        ConsumptionOption co,
-        double qty) {
+    int step,
+    ConsumptionOption co,
+    double qty) {
   // Connections / bundles
   if (co.wasVideoBundled) {
     double bunRev = co.bundledPrice * qty;
@@ -122,7 +132,7 @@ public void processNetworkConsumption(
 
   // Needs marginal costs, to address CES utility function issue; otherwise
   // profit maximization will have p -> zero and q-> infinity.
-  // TODO: This is just qty, MC=1 right now.  Think about this again later.
+  // TODO: This is just qty, MC=1 right now. Think about this again later.
   try {
     account.pay(qty);
   } catch (Account.PaymentException e) {
@@ -204,6 +214,5 @@ public double getNetOpData(NetOpData variable) {
 
   return amount;
 }
-
 
 }
