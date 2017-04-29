@@ -29,7 +29,7 @@ public final double  otherBWPrice;
 public final double  totalCostToConsumer;
 public final double  ixcBWPrice;
 public final boolean wasVideoBundled;
-public final boolean wasZeroRated;
+//public final boolean wasZeroRated;
 
 public final double utilityCoefficient;
 
@@ -77,7 +77,7 @@ ConsumptionOption(
     bundledPrice = 0.0;
     bandwidthPrice = netOffer.get().bandwidthPrice;
     wasVideoBundled = false;
-    wasZeroRated = false;
+//    wasZeroRated = false;
 
     if (videoOffer.isPresent()) {
       videoContent = Optional.of(videoOffer.get().contentProvider);
@@ -102,7 +102,7 @@ ConsumptionOption(
     videoContentPrice = 0.0d;
 
     bandwidthPrice = bundledOffer.get().bandwidthPrice;
-    wasZeroRated = model.policyZeroRated;
+//    wasZeroRated = model.policyZeroRated;
   } else {
     throw new RuntimeException("BUG: ConsumptionOption must have either a " +
                                "standalone or bundled network offer.");
@@ -120,13 +120,19 @@ ConsumptionOption(
 
   // Calculate cost of bandwidth usage
   if (videoContent.isPresent()) {
-    // If bundled and zero rated, then no cost.
-    if (bundledOffer.isPresent()) {
-      if (!wasZeroRated)
-        videoBWPrice = model.videoBWIntensity * bandwidthPrice;
-      else
+    // If zero rating is enabled, and offered by the same firm as the
+    // network operator, (either bundled or separately) then there is no cost.
+    if (model.policyZeroRated) {
+      if (videoContent.get() == network) {
+        // Zero rating is on, and the video and network providers are the
+        // same agent/firm.
         videoBWPrice = 0.0;
+      } else {
+        // Zero rating is on, but the video is offered by a different firm.
+        videoBWPrice = model.videoBWIntensity * bandwidthPrice;
+      }
     } else {
+      // Video is present, and zero rating is turned off.
       videoBWPrice = model.videoBWIntensity * bandwidthPrice;
     }
   } else {
@@ -167,28 +173,6 @@ ConsumptionOption(
   this.ixcBWPrice = network.getIXCPrice(model.currentStep);
 }
 
-static void payIXCFees(
-        int step,
-        ContentProvider cp,
-        NetworkOperator no,
-        double ixcBWPrice,
-        double bwIntensity,
-        double qty,
-        boolean forVideo) {
-  Account cpAccount = cp.getAccount();
-  Account noAccount = cp.getAccount();
-
-  double bill = ixcBWPrice * bwIntensity * qty;
-  try {
-    cpAccount.payTo(noAccount,bill);
-  } catch (Account.PaymentException e) {
-    cp.goBankrupt();
-    return;
-  }
-
-
-}
-
 public double getUtility(double qty) {
   double gamma = network.getModel().gamma;
   return utilityCoefficient * Math.pow(qty, gamma);
@@ -203,35 +187,53 @@ public void consume(double qty) {
   // Unbundled video content, if present
   if (videoContent.isPresent()) {
     videoContent.get().processContentConsumption(model.currentStep, this, qty);
-    payIXCFees(model.currentStep,
-               videoContent.get(),
-               network,
-               ixcBWPrice,
-               model.videoBWIntensity,
-               qty,
-               true);
+    if (!model.policy0PriceIXC) {
+      payIXCFees(videoContent.get(),
+                 network,
+                 ixcBWPrice,
+                 model.videoBWIntensity,
+                 qty);
 
-    network.trackIXC(model.currentStep,
+      network.trackIXC(model.currentStep,
                        ixcBWPrice,
                        model.videoBWIntensity * qty,
                        true);
+    }
   }
 
   // Unbundled other content, if present
   if (otherContent.isPresent()) {
     otherContent.get().processContentConsumption(model.currentStep, this, qty);
-    payIXCFees(model.currentStep,
-               otherContent.get(),
-               network,
-               ixcBWPrice,
-               model.otherBWIntensity,
-               qty,
-               false);
+    if (!model.policy0PriceIXC) {
+      payIXCFees(otherContent.get(),
+                 network,
+                 ixcBWPrice,
+                 model.otherBWIntensity,
+                 qty);
 
-    network.trackIXC(model.currentStep,
+      network.trackIXC(model.currentStep,
                        ixcBWPrice,
                        model.videoBWIntensity * qty,
                        false);
+    }
+  }
+}
+
+static void payIXCFees(
+        ContentProvider cp,
+        NetworkOperator no,
+        double ixcBWPrice,
+        double bwIntensity,
+        double qty) {
+  Account cpAccount = cp.getAccount();
+  Account noAccount = no.getAccount();
+
+  double bill = ixcBWPrice * bwIntensity * qty;
+  try {
+    cpAccount.payTo(noAccount, bill);
+  } catch (Account.PaymentException e) {
+    cp.goBankrupt();
+    return;
   }
 }
 

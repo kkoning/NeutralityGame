@@ -89,9 +89,6 @@ public static class NetworkAndVideoBundleOffer {
       BUG("NetworkAndVideoBundleOffer must have a positive bandwidth price.");
     if (!networkOperator.getModel().policyBundlingAllowed)
       BUG("NetworkAndVideoBundleOffer made, but bundling not allowed.");
-    if (networkOperator.getModel().policyZeroRated)
-      BUG("NetworkAndVideoBundleOffer made with zero rating of video, but " +
-          "model parameters do not allow this.");
 
     this.step = step;
     this.networkOperator = networkOperator;
