@@ -85,8 +85,15 @@ public void processContentConsumption(
 }
 
 public void makeContentInvestment(int step, double amount) {
+// This *used* to be a bug, but some representations can mutate to this.
+// Instead, we'll transform it to the smallest non-zero number possible in
+// the datatype.
+//  if (amount <= 0)
+//    BUG("Content investment must be >= 0. Was: " + amount);
+
   if (amount <= 0)
-    BUG("Content investment must be >= 0. Was: " + amount);
+    amount = Double.MIN_NORMAL;
+
 
   try {
     account.pay(amount);
