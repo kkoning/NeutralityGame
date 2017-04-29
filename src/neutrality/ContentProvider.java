@@ -32,6 +32,23 @@ void goBankrupt();
 
 double getContentData(ContentData data);
 
+default double getSectorInvestment(MarketInfo mi) {
+  if (isVideo()) {
+    return mi.getCpVideoInvestment();
+  } else {
+    return mi.getCpOtherInvestment();
+  }
+}
+
+default double getSectorPrice(MarketInfo mi) {
+  if (isVideo()) {
+    return mi.getCpVideoPrice();
+  } else {
+    return mi.getCpOtherPrice();
+  }
+}
+
+
 enum ContentData {
   QUANTITY,
   REVENUE,
