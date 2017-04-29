@@ -96,16 +96,21 @@ public void consume(List<ConsumptionOption> options) {
       den += orElse;
     }
 
-    double firstTerm = income / den;
+    double firstTerm = model.income / den;
 
     // Residual term for all other goods; quasi-linear demand.
-    double secondTerm = -prices[i] * model.demandPriceCoefficient;
+    double secondTerm = 0d;
+    if (model.linearDemandTerm)
+       secondTerm = -prices[i];
 
     double qty = firstTerm + secondTerm;
 
     // Quantity cannot be negative.
     if (qty <= 0)
       qty = 0d;
+
+    // Scale the size of the market based on the values
+    qty *= (income / model.income);
 
     quantities[i] = qty;
   }
