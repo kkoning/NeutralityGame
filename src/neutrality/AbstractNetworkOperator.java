@@ -83,19 +83,6 @@ public void setIxcPrice(int step, double price) {
 }
 
 @Override
-public void trackIXC(int step, double price, double qty, boolean video) {
-  double rev = price * qty;
-  if (video) {
-    qtyIxcVideo[step]+= qty;
-    revIxcVideo[step] += rev;
-  } else {
-    qtyIxcOther[step]+= qty;
-    revIxcOther[step] += rev;
-  }
-  // Actual amounts are transferred by ConsumptionOption.consume
-}
-
-@Override
 public double getKn(int step) {
   return Kn[step];
 }
@@ -121,12 +108,10 @@ public void processNetworkConsumption(
   // Bandwidth from content consumption
   // Content fees, if any, are processed in processVideoContentConsumption()
   if (co.videoContent.isPresent()) {
-    if (!co.wasZeroRated) {
-      double rev = co.videoBWPrice * qty;
-      qtyBandwidthVideo[step] += getModel().videoBWIntensity * qty;
-      revBandwidthVideo[step] += rev;
-      account.receive(rev);
-    }
+    double rev = co.videoBWPrice * qty;
+    qtyBandwidthVideo[step] += getModel().videoBWIntensity * qty;
+    revBandwidthVideo[step] += rev;
+    account.receive(rev);
   }
   if (co.otherContent.isPresent()) {
     double rev = co.otherBWPrice * qty;
@@ -149,6 +134,19 @@ public void processNetworkConsumption(
 @Override
 public double getIXCPrice(int step) {
   return ixcPrice[step];
+}
+
+@Override
+public void trackIXC(int step, double price, double qty, boolean video) {
+  double rev = price * qty;
+  if (video) {
+    qtyIxcVideo[step] += qty;
+    revIxcVideo[step] += rev;
+  } else {
+    qtyIxcOther[step] += qty;
+    revIxcOther[step] += rev;
+  }
+  // Actual amounts are transferred by ConsumptionOption.consume
 }
 
 @Override
