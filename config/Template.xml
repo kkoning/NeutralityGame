@@ -16,7 +16,7 @@
                 <VectorMutationPipeline>
                     <WeightedBreedingPipeline>
                         <TournamentSelector topIndividuals="1"
-                                            touramentSize="2" weight="4"/>
+                                            tournamentSize="2" weight="4"/>
                         <ElitismSelector proportionElites="0.1" weight="1"/>
                     </WeightedBreedingPipeline>
                     <VectorMutator length="8">
@@ -46,7 +46,7 @@
                 <VectorMutationPipeline>
                     <WeightedBreedingPipeline>
                         <TournamentSelector topIndividuals="2"
-                                            touramentSize="10" weight="4"/>
+                                            tournamentSize="10" weight="4"/>
                         <ElitismSelector proportionElites="0.1" weight="1"/>
                     </WeightedBreedingPipeline>
                     <VectorMutator length="2">
@@ -76,7 +76,7 @@
                 <VectorMutationPipeline>
                     <WeightedBreedingPipeline>
                         <TournamentSelector topIndividuals="2"
-                                            touramentSize="10" weight="4"/>
+                                            tournamentSize="10" weight="4"/>
                         <ElitismSelector proportionElites="0.1" weight="1"/>
                     </WeightedBreedingPipeline>
                     <VectorMutator length="2">
@@ -92,15 +92,15 @@
 
     <!-- Need an EvaluationGroupFactory -->
     <ShuffledEvaluationGroupFactory numGroups="220">
-        <AgentSource populationGroup="nsp" numAgents="1"/>
-        <AgentSource populationGroup="videoContent" numAgents="1"/>
-        <AgentSource populationGroup="otherContent" numAgents="1"/>
+        <AgentSource populationGroup="nsp" numAgents="__NUMNSPS__"/>
+        <AgentSource populationGroup="videoContent" numAgents="3"/>
+        <AgentSource populationGroup="otherContent" numAgents="3"/>
     </ShuffledEvaluationGroupFactory>
 
     <!-- Need an Agent Model Factory -->
     <DefaultAgentModelFactory modelClass="neutrality.NeutralityModel">
-        <Parameter name="alpha" value="1.0"/> <!-- 1 for testing -->
-        <Parameter name="beta" value="1.0"/> <!-- 1 for testing -->
+        <Parameter name="alpha" value="__ALPHA__"/> <!-- 1 for testing -->
+        <Parameter name="beta" value="__BETA__"/> <!-- 1 for testing -->
         <Parameter name="psi" value="0.4"/>
         <Parameter name="tau" value="0.4"/>
         <Parameter name="gamma" value="0.5"/>
@@ -108,10 +108,10 @@
         <Parameter name="firmEndowment" value="100000"/>
         <Parameter name="maxSteps" value="10"/>
 
-        <Parameter name="policy0PriceIXC" value="false"/>
-        <Parameter name="policyBundlingAllowed" value="false"/>
-        <Parameter name="policyZeroRated" value="true"/>
-        <Parameter name="policyNSPContentAllowed" value="true"/>
+        <Parameter name="policy0PriceIXC" value="__ZEROIXC__"/>
+        <Parameter name="policyBundlingAllowed" value="__BUNDLING__"/>
+        <Parameter name="policyZeroRated" value="__ZERORATING__"/>
+        <Parameter name="policyNSPContentAllowed" value="__ISP_CONTENT__"/>
     </DefaultAgentModelFactory>
 
 
@@ -119,10 +119,12 @@
     <DefaultEnvironmentStatistics file="DefaultEnvironmentStatistics.csv" format="csv"/>
 
     <!-- Need an Evaluator -->
-    <!--<LocalEvaluator/>-->
-    <LocalParallelEvaluator/>
+    <LocalEvaluator/>
+    <!-- <LocalParallelEvaluator/> -->
 
     <!-- Test out an DefaultAgentModelReporter -->
     <DefaultModelSummaryData generations="10" file="summary.csv" format="csv"/>
 
 </Environment>
+
+
