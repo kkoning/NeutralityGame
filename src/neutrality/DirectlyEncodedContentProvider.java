@@ -29,7 +29,7 @@ public void step(
 
 private double e(Position pos) {
   VectorIndividual<Double> ind = getManager();
-  Double genomeValue = ind.get(pos.ordinal());
+  Double genomeValue = ind.getGenomeAt(pos.ordinal());
   double toReturn = Math.exp(genomeValue);
   return toReturn;
 }
