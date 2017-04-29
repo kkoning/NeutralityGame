@@ -1,18 +1,18 @@
 package neutrality;
 
+import static agency.util.Misc.BUG;
+
 import agency.Account;
 import agency.Individual;
 import agency.SimpleFirm;
 
-import static agency.util.Misc.BUG;
-
 public abstract class AbstractContentProvider<N extends Individual>
-        extends SimpleFirm<N, NeutralityModel>
-        implements ContentProvider<N> {
+    extends SimpleFirm<N, NeutralityModel>
+    implements ContentProvider<N> {
 
 /**
  * True if this content provider is in the video market, false if it in the
- * other content market.  Set by the AgentFactory.
+ * other content market. Set by the AgentFactory.
  */
 public Boolean isVideoProvider;
 // Parameters relevant to consumer value; investment and preference.
@@ -54,10 +54,8 @@ public double getKa(int step) {
 }
 
 @Override
-public void processContentConsumption(
-        int step,
-        ConsumptionOption co,
-        double qty) {
+public void processContentConsumption(int step, ConsumptionOption co,
+    double qty) {
   double price;
   if (isVideoProvider)
     price = co.videoContentPrice;
@@ -76,7 +74,6 @@ public void processContentConsumption(
 
   // Don't count content separately if it's bundled.
 
-
   double revenue = price * qty;
   account.receive(revenue);
 
@@ -85,15 +82,16 @@ public void processContentConsumption(
 }
 
 public void makeContentInvestment(int step, double amount) {
-// This *used* to be a bug, but some representations can mutate to this.
-// Instead, we'll transform it to the smallest non-zero number possible in
-// the datatype.
-//  if (amount <= 0)
-//    BUG("Content investment must be >= 0. Was: " + amount);
 
-  if (amount <= 0)
-    amount = Double.MIN_NORMAL;
-
+  /*
+   * Since the investments are raised to powers <1, investment amounts less than
+   * 1 have paradoxical effects on the desirability vs cost ratio; in other
+   * words, the slope of the desirability/cost line is greater than 1, which can
+   * create an edge condition local maximum. To prevent this, the smallest
+   * investment amount allowed is 1.
+   */
+  if (amount <= 1)
+    amount = 1;
 
   try {
     account.pay(amount);
@@ -118,7 +116,7 @@ public void trackIXCFees(int step, double price, double qty) {
 @Override
 public double getContentData(ContentData data) {
   double amount = 0.0;
-  switch(data) {
+  switch (data) {
     case BALANCE:
       amount = account.getBalance();
       break;
@@ -139,6 +137,5 @@ public double getContentData(ContentData data) {
   }
   return amount;
 }
-
 
 }
