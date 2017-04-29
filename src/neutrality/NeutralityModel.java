@@ -31,6 +31,9 @@ public Boolean policyBundlingAllowed;
 public Boolean policyZeroRated;
 public Boolean policyNSPContentAllowed;
 
+// Quasi-parameters; model is broken-ish without them?
+public Boolean linearDemandTerm = true;
+
 public Integer maxSteps;
 
 // Some pre-computed intermediate variables
@@ -55,9 +58,110 @@ Consumers                  consumersOtherOnly;
 Consumers                  consumersBoth;
 
 List<Agent> bankruptAgents;
-
+MarketInfo[]  marketInformation;
 
 public NeutralityModel() {
+}
+
+/**
+ Given a list of different kinds of offers from network operators and
+ content providers, this function returns a list of all possible and
+ allowable combinations of consumption.
+
+ @param networkOnlyOffers
+ @param videoContentOffers
+ @param bundledOffers
+ @return  */
+public static final void determineOptions(
+        @NotNull NeutralityModel model,
+        @NotNull List<NetworkOnlyOffer> networkOnlyOffers,
+        @NotNull List<Offers.NetworkAndVideoBundleOffer> bundledOffers,
+        @NotNull List<Offers.ContentOffer> videoContentOffers,
+        @NotNull List<Offers.ContentOffer> otherContentOffers,
+        @NotNull List<ConsumptionOption> otherOnlyOptions,
+        @NotNull List<ConsumptionOption> videoOnlyOptions,
+        @NotNull List<ConsumptionOption> bothContentOptions
+) {
+
+  if (model == null)
+    BUG("model was null");
+  if (networkOnlyOffers == null)
+    BUG("networkOnlyOffers was null");
+  if (bundledOffers == null)
+    BUG("bundledOffers was null");
+  if (videoContentOffers == null)
+    BUG("videoContentOffers was null");
+  if (bundledOffers.size() > 0)
+    if (!model.policyBundlingAllowed)
+      BUG("Model disallowed bundling, but there are >0 bundled offers");
+
+  /*
+  With NetworkOnlyOffers, we need to put together all possible bundles of
+  consumption.
+   */
+  for (Offers.NetworkOnlyOffer networkOnlyOffer : networkOnlyOffers) {
+    // Video content but not other content
+    for (Offers.ContentOffer videoContentOffer : videoContentOffers) {
+      ConsumptionOption option =
+              new ConsumptionOption(model,
+                      networkOnlyOffer,
+                      null,
+                      videoContentOffer,
+                      null);
+      videoOnlyOptions.add(option);
+    }
+
+    // No video content, but other content
+    for (Offers.ContentOffer otherContentOffer : otherContentOffers) {
+      ConsumptionOption option =
+              new ConsumptionOption(model,
+                      networkOnlyOffer,
+                      null,
+                      null,
+                      otherContentOffer);
+      otherOnlyOptions.add(option);
+    }
+    // Both integrated and other content
+    for (Offers.ContentOffer videoContentOffer : videoContentOffers) {
+      for (Offers.ContentOffer otherContentOffer : otherContentOffers) {
+        ConsumptionOption option =
+                new ConsumptionOption(model,
+                        networkOnlyOffer,
+                        null,
+                        videoContentOffer,
+                        otherContentOffer);
+        bothContentOptions.add(option);
+      }
+    }
+
+  }
+
+  /*
+  Some offers will include network service bundled with the network
+  operator's own video content service.  Consumers have the option of either
+  adding other content services or not.
+   */
+  for (Offers.NetworkAndVideoBundleOffer bundledOffer : bundledOffers) {
+    // Create option without other content included.
+    ConsumptionOption option =
+            new ConsumptionOption(model,
+                    null,
+                    bundledOffer,
+                    null,
+                    null);
+    videoOnlyOptions.add(option);
+
+    // Create option with other content included.  There'll be one option
+    // for each other content offer.
+    for (Offers.ContentOffer otherContentOffer : otherContentOffers) {
+      option = new ConsumptionOption(model,
+              null,
+              bundledOffer,
+              null,
+              otherContentOffer);
+      bothContentOptions.add(option);
+    }
+  }
 }
 
 @Override
@@ -87,13 +191,18 @@ public Fitness getFitness(Agent agent) {
   return fitness;
 }
 
+@Override
+public Object getAgentDetails(Agent agent) {
+  return null;
+}
+
 /**
- * General order of events:
- * (1) Step agents.  Most won't need this, but in case some do...
- * (2) Collect Offers from Agents.
- * (3) Generate consumption options.
- * (4) Consume
- * (5) Repeat from 1 until maxSteps is reached.
+ General order of events:
+ (1) Step agents.  Most won't need this, but in case some do...
+ (2) Collect Offers from Agents.
+ (3) Generate consumption options.
+ (4) Consume
+ (5) Repeat from 1 until maxSteps is reached.
  */
 @Override
 public boolean step() {
@@ -286,13 +395,13 @@ public boolean step() {
 	 * consumption options for consumers to consider.
 	 */
   determineOptions(this,
-                   networkOnlyOffers,
-                   bundledOffers,
-                   videoContentOffers,
-                   otherContentOffers,
-                   otherOnlyOptions,
-                   videoOnlyOptions,
-                   bothContentOptions);
+          networkOnlyOffers,
+          bundledOffers,
+          videoContentOffers,
+          otherContentOffers,
+          otherOnlyOptions,
+          videoOnlyOptions,
+          bothContentOptions);
 
   // Debug for completed offers
   if (isDebugEnabled()) {
@@ -325,108 +434,6 @@ public boolean step() {
   //
   currentStep++;
   return false; // Don't end early
-}
-
-/**
- * Given a list of different kinds of offers from network operators and
- * content providers, this function returns a list of all possible and
- * allowable combinations of consumption.
- *
- * @param networkOnlyOffers
- * @param videoContentOffers
- * @param bundledOffers
- * @return
- */
-public static final void determineOptions(
-        @NotNull NeutralityModel model,
-        @NotNull List<NetworkOnlyOffer> networkOnlyOffers,
-        @NotNull List<Offers.NetworkAndVideoBundleOffer> bundledOffers,
-        @NotNull List<Offers.ContentOffer> videoContentOffers,
-        @NotNull List<Offers.ContentOffer> otherContentOffers,
-        @NotNull List<ConsumptionOption> otherOnlyOptions,
-        @NotNull List<ConsumptionOption> videoOnlyOptions,
-        @NotNull List<ConsumptionOption> bothContentOptions
-) {
-
-  if (model == null)
-    BUG("model was null");
-  if (networkOnlyOffers == null)
-    BUG("networkOnlyOffers was null");
-  if (bundledOffers == null)
-    BUG("bundledOffers was null");
-  if (videoContentOffers == null)
-    BUG("videoContentOffers was null");
-  if (bundledOffers.size() > 0)
-    if (!model.policyBundlingAllowed)
-      BUG("Model disallowed bundling, but there are >0 bundled offers");
-
-  /*
-  With NetworkOnlyOffers, we need to put together all possible bundles of
-  consumption.
-   */
-  for (Offers.NetworkOnlyOffer networkOnlyOffer : networkOnlyOffers) {
-    // Video content but not other content
-    for (Offers.ContentOffer videoContentOffer : videoContentOffers) {
-      ConsumptionOption option =
-              new ConsumptionOption(model,
-                                    networkOnlyOffer,
-                                    null,
-                                    videoContentOffer,
-                                    null);
-      videoOnlyOptions.add(option);
-    }
-
-    // No video content, but other content
-    for (Offers.ContentOffer otherContentOffer : otherContentOffers) {
-      ConsumptionOption option =
-              new ConsumptionOption(model,
-                                    networkOnlyOffer,
-                                    null,
-                                    null,
-                                    otherContentOffer);
-      otherOnlyOptions.add(option);
-    }
-    // Both integrated and other content
-    for (Offers.ContentOffer videoContentOffer : videoContentOffers) {
-      for (Offers.ContentOffer otherContentOffer : otherContentOffers) {
-        ConsumptionOption option =
-                new ConsumptionOption(model,
-                                      networkOnlyOffer,
-                                      null,
-                                      videoContentOffer,
-                                      otherContentOffer);
-        bothContentOptions.add(option);
-      }
-    }
-
-  }
-
-  /*
-  Some offers will include network service bundled with the network
-  operator's own video content service.  Consumers have the option of either
-  adding other content services or not.
-   */
-  for (Offers.NetworkAndVideoBundleOffer bundledOffer : bundledOffers) {
-    // Create option without other content included.
-    ConsumptionOption option =
-            new ConsumptionOption(model,
-                                  null,
-                                  bundledOffer,
-                                  null,
-                                  null);
-    videoOnlyOptions.add(option);
-
-    // Create option with other content included.  There'll be one option
-    // for each other content offer.
-    for (Offers.ContentOffer otherContentOffer : otherContentOffers) {
-      option = new ConsumptionOption(model,
-                                     null,
-                                     bundledOffer,
-                                     null,
-                                     otherContentOffer);
-      bothContentOptions.add(option);
-    }
-  }
 }
 
 @Override
@@ -523,7 +530,7 @@ public Object getSummaryData() {
   for (int i = 0; i < networkOperators.size(); i++) {
     NetworkOperator no = networkOperators.get(i);
     networkSales[i] = no.getNetOpData(QUANTITY_NETWORK) +
-                      no.getNetOpData(QUANTITY_BUNDLE);
+            no.getNetOpData(QUANTITY_BUNDLE);
   }
   o.hhiNetwork = HHI(networkSales);
 
@@ -535,7 +542,7 @@ public Object getSummaryData() {
   if (policyNSPContentAllowed) {
     for (NetworkOperator no : networkOperators) {
       videoSales.add(no.getContentData(QUANTITY) +
-                     no.getNetOpData(QUANTITY_BUNDLE));
+              no.getNetOpData(QUANTITY_BUNDLE));
     }
   }
   o.hhiVideo = HHI(videoSales);
@@ -555,6 +562,12 @@ public Object getSummaryData() {
 
   return o;
 }
+
+
+//
+// The following functions are used by agents to gather information about
+// their environment.
+//
 
 @Override
 public AgencyData getStepData() {
@@ -595,9 +608,23 @@ public void init() {
   consumersVideoOnly = new Consumers(this, incomeVideoOnly);
   consumersOtherOnly = new Consumers(this, incomeOtherOnly);
 
+  // Allocate array for market information.
+  marketInformation = new MarketInfo[maxSteps];
 
   if (isDebugEnabled())
     debugOut.println("Initialization completed.");
 }
+
+public MarketInfo getMarketInformation(int step) {
+  if (step >= this.currentStep)
+    BUG("Can only obtain market information for past steps");
+
+  // If already calculated, used cached copy.  Should never change anyway.
+  if (marketInformation[step] == null)
+    marketInformation[step] = new MarketInfo(this, step);
+
+  return marketInformation[step];
+}
+
 
 }
