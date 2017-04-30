@@ -4,7 +4,7 @@
     <PopulationGroup id="nsp" totalSize="200">
         <Population initialSize="200" id="DirectlyEncodedNetworkOperators">
             <DefaultVectorIndividualData generations="1" file="deno.csv"/>
-            <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedNetworkOperator">
+            <DefaultAgentFactory agentClass="neutrality.nsp.DirectlyEncodedNetworkOperator">
             </DefaultAgentFactory>
             <VectorIndividualFactory length="8">
                 <GaussianRandomVectorRange start="0" end="7">
@@ -37,7 +37,7 @@
         <Population initialSize="100"
                     id="ContingentLinearVideoContentProviders">
             <!--<DefaultVectorIndividualData generations="100" file="clvcp.csv"/>-->
-            <DefaultAgentFactory agentClass="neutrality.ContingentLinearContentProvider">
+            <DefaultAgentFactory agentClass="neutrality.cp.ContingentLinearContentProvider">
                 <Parameter name="isVideoProvider" value="true"/>
             </DefaultAgentFactory>
             <VectorIndividualFactory length="80">
@@ -69,7 +69,7 @@
 
         <Population initialSize="100" id="DirectlyEncodedVideoContentProviders">
             <DefaultVectorIndividualData generations="1" file="devcp.csv"/>
-            <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedContentProvider">
+            <DefaultAgentFactory agentClass="neutrality.cp.DirectlyEncodedContentProvider">
                 <Parameter name="isVideoProvider" value="true"/>
             </DefaultAgentFactory>
             <VectorIndividualFactory length="2">
@@ -99,7 +99,7 @@
     <PopulationGroup id="otherContent" totalSize="200">
         <Population initialSize="200" id="DirectlyEncodedOtherContentProviders">
             <DefaultVectorIndividualData generations="1" file="deocp.csv"/>
-            <DefaultAgentFactory agentClass="neutrality.DirectlyEncodedContentProvider">
+            <DefaultAgentFactory agentClass="neutrality.cp.DirectlyEncodedContentProvider">
                 <Parameter name="isVideoProvider" value="false"/>
             </DefaultAgentFactory>
             <VectorIndividualFactory length="2">
