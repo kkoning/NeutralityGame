@@ -3,6 +3,8 @@ package neutrality;
 import agency.Account;
 import neutrality.Offers.NetworkAndVideoBundleOffer;
 import neutrality.Offers.NetworkOnlyOffer;
+import neutrality.cp.ContentProvider;
+import neutrality.nsp.NetworkOperator;
 
 import java.util.Optional;
 
@@ -33,9 +35,9 @@ public final boolean wasVideoBundled;
 
 public final double utilityCoefficient;
 
-public final NetworkOperator           network;
-public final Optional<ContentProvider> videoContent;
-public final Optional<ContentProvider> otherContent;
+public final NetworkOperator<?>           network;
+public final Optional<ContentProvider<?>> videoContent;
+public final Optional<ContentProvider<?>> otherContent;
 
 NeutralityModel model;
 
@@ -220,8 +222,8 @@ public void consume(double qty) {
 }
 
 static void payIXCFees(
-        ContentProvider cp,
-        NetworkOperator no,
+        ContentProvider<?> cp,
+        NetworkOperator<?> no,
         double ixcBWPrice,
         double bwIntensity,
         double qty) {

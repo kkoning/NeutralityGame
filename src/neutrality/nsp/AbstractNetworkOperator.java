@@ -1,36 +1,38 @@
-package neutrality;
+package neutrality.nsp;
+
+import static agency.util.Misc.BUG;
 
 import agency.Account;
 import agency.Individual;
-
-import static agency.util.Misc.BUG;
+import neutrality.ConsumptionOption;
+import neutrality.cp.AbstractContentProvider;
 
 public abstract class AbstractNetworkOperator<N extends Individual>
     extends AbstractContentProvider<N>
     implements NetworkOperator<N> {
 
-double[] Kn;
+public double[] Kn;
 
 // Track the # of different sales and total revenue of each type
-double[] qtyNetwork;
-double[] revNetwork;
+public double[] qtyNetwork;
+public double[] revNetwork;
 
-double[] qtyBundle;
-double[] revBundle;
+public double[] qtyBundle;
+public double[] revBundle;
 
-double[] qtyBandwidthVideo;
-double[] revBandwidthVideo;
+public double[] qtyBandwidthVideo;
+public double[] revBandwidthVideo;
 
-double[] qtyBandwidthOther;
-double[] revBandwidthOther;
+public double[] qtyBandwidthOther;
+public double[] revBandwidthOther;
 
-double[] qtyIxcVideo;
-double[] revIxcVideo;
+public double[] qtyIxcVideo;
+public double[] revIxcVideo;
 
-double[] qtyIxcOther;
-double[] revIxcOther;
+public double[] qtyIxcOther;
+public double[] revIxcOther;
 
-double[] ixcPrice;
+public double[] ixcPrice;
 
 public AbstractNetworkOperator() {
   this.isVideoProvider = true;

@@ -1,18 +1,37 @@
 package neutrality;
 
+import static agency.util.Misc.BUG;
+import static agency.util.Statistics.HHI;
+import static neutrality.cp.ContentProvider.ContentData.BALANCE;
+import static neutrality.cp.ContentProvider.ContentData.INVESTMENT;
+import static neutrality.cp.ContentProvider.ContentData.QUANTITY;
+import static neutrality.cp.ContentProvider.ContentData.REVENUE;
+import static neutrality.nsp.NetworkOperator.NetOpData.INVESTMENT_NETWORK;
+import static neutrality.nsp.NetworkOperator.NetOpData.QUANTITY_BUNDLE;
+import static neutrality.nsp.NetworkOperator.NetOpData.QUANTITY_IXC_OTHER;
+import static neutrality.nsp.NetworkOperator.NetOpData.QUANTITY_IXC_VIDEO;
+import static neutrality.nsp.NetworkOperator.NetOpData.QUANTITY_NETWORK;
+import static neutrality.nsp.NetworkOperator.NetOpData.REVENUE_BUNDLE;
+import static neutrality.nsp.NetworkOperator.NetOpData.REVENUE_IXC_OTHER;
+import static neutrality.nsp.NetworkOperator.NetOpData.REVENUE_IXC_VIDEO;
+import static neutrality.nsp.NetworkOperator.NetOpData.REVENUE_NETWORK;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import agency.*;
-import agency.data.AgencyData;
 import com.sun.istack.internal.NotNull;
+
+import agency.AbstractAgentModel;
+import agency.Agent;
+import agency.Fitness;
+import agency.SimpleFirm;
+import agency.SimpleFitness;
+import agency.data.AgencyData;
 import neutrality.Offers.NetworkAndVideoBundleOffer;
 import neutrality.Offers.NetworkOnlyOffer;
-
-import static agency.util.Misc.BUG;
-import static agency.util.Statistics.HHI;
-import static neutrality.ContentProvider.ContentData.*;
-import static neutrality.NetworkOperator.NetOpData.*;
+import neutrality.cp.ContentProvider;
+import neutrality.nsp.AbstractNetworkOperator;
+import neutrality.nsp.NetworkOperator;
 
 public class NeutralityModel
         extends AbstractAgentModel {
@@ -50,14 +69,14 @@ int vcpBankruptcies;
 int ocpBankruptcies;
 
 // Operational Variables
-ArrayList<NetworkOperator> networkOperators;
-ArrayList<ContentProvider> videoContentProviders;
-ArrayList<ContentProvider> otherContentProviders;
+ArrayList<NetworkOperator<?>> networkOperators;
+ArrayList<ContentProvider<?>> videoContentProviders;
+ArrayList<ContentProvider<?>> otherContentProviders;
 Consumers                  consumersVideoOnly;
 Consumers                  consumersOtherOnly;
 Consumers                  consumersBoth;
 
-List<Agent> bankruptAgents;
+List<Agent<?,NeutralityModel>> bankruptAgents;
 MarketInfo[]  marketInformation;
 
 public NeutralityModel() {
@@ -165,11 +184,11 @@ public static final void determineOptions(
 }
 
 @Override
-public void addAgent(Agent agent) {
+public void addAgent(Agent<?,?> agent) {
   // Classify and track each agent into proper role within model
-  if (agent instanceof AbstractNetworkOperator)
+  if (agent instanceof AbstractNetworkOperator<?>)
     networkOperators.add((AbstractNetworkOperator<?>) agent);
-  else if (agent instanceof ContentProvider) {
+  else if (agent instanceof ContentProvider<?>) {
     ContentProvider<?> cp = (ContentProvider<?>) agent;
     if (cp.isVideoProvider())
       videoContentProviders.add(cp);
@@ -179,20 +198,20 @@ public void addAgent(Agent agent) {
     // We don't know what to do with this agent type
     throw new RuntimeException("Unsupported agent type: " + agent);
 
-  SimpleFirm sf = (SimpleFirm) agent;
+  SimpleFirm<?,?> sf = (SimpleFirm<?,?>) agent;
   sf.account.receive(firmEndowment);
 }
 
 @Override
-public Fitness getFitness(Agent agent) {
+public Fitness getFitness(Agent<?,?> agent) {
   // They should all be instances of SimpleFirm
-  SimpleFirm firm = (SimpleFirm) agent;
+  SimpleFirm<?,?> firm = (SimpleFirm<?,?>) agent;
   SimpleFitness fitness = firm.getFitness();
   return fitness;
 }
 
 @Override
-public Object getAgentDetails(Agent agent) {
+public Object getAgentDetails(Agent<?,?> agent) {
   return null;
 }
 

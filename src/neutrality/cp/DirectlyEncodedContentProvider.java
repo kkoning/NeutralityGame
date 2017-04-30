@@ -1,6 +1,9 @@
-package neutrality;
+package neutrality.cp;
 
 import agency.vector.VectorIndividual;
+import neutrality.NeutralityModel;
+import neutrality.Offers;
+import neutrality.Offers.ContentOffer;
 
 import java.util.Optional;
 

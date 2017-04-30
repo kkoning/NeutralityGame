@@ -2,6 +2,9 @@ package neutrality;
 
 import agency.eval.EvaluationGroup;
 import agency.vector.VectorIndividual;
+import neutrality.cp.DirectlyEncodedContentProvider;
+import neutrality.nsp.DirectlyEncodedNetworkOperator;
+
 import org.junit.Test;
 
 import java.util.Random;

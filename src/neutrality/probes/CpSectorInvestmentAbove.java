@@ -1,9 +1,9 @@
 package neutrality.probes;
 
 import agency.Agent;
-import neutrality.ContentProvider;
 import neutrality.MarketInfo;
 import neutrality.NeutralityModel;
+import neutrality.cp.ContentProvider;
 
 import static agency.util.Misc.BUG;
 

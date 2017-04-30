@@ -1,8 +1,13 @@
-package neutrality;
+package neutrality.cp;
 
 import agency.Account;
 import agency.Agent;
 import agency.Individual;
+import neutrality.ConsumptionOption;
+import neutrality.MarketInfo;
+import neutrality.NeutralityModel;
+import neutrality.Offers;
+import neutrality.Offers.ContentOffer;
 
 /**
  * Created by liara on 2/9/17.

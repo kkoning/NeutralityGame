@@ -2,6 +2,9 @@ package neutrality;
 
 import com.sun.istack.internal.NotNull;
 
+import neutrality.cp.ContentProvider;
+import neutrality.nsp.NetworkOperator;
+
 import static agency.util.Misc.BUG;
 
 public class Offers {

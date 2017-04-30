@@ -1,11 +1,13 @@
-package neutrality;
-
-import agency.vector.VectorIndividual;
+package neutrality.nsp;
 
 import java.util.Optional;
 
+import agency.vector.VectorIndividual;
+import neutrality.NeutralityModel;
+import neutrality.Offers;
+
 public class DirectlyEncodedNetworkOperator
-        extends AbstractNetworkOperator<VectorIndividual<Double>> {
+    extends AbstractNetworkOperator<VectorIndividual<Double>> {
 
 public DirectlyEncodedNetworkOperator() {
   super();
@@ -13,17 +15,16 @@ public DirectlyEncodedNetworkOperator() {
 
 @Override
 public void step(
-        NeutralityModel model, int step, Optional<Double> substep) {
+    NeutralityModel model, int step, Optional<Double> substep) {
 
   // Make investments
-  makeNetworkInvestment(step,1 + e(Position.NetworkInvestment));
-  makeContentInvestment(step,1 + e(Position.ContentInvestment));
+  makeNetworkInvestment(step, 1 + e(Position.NetworkInvestment));
+  makeContentInvestment(step, 1 + e(Position.ContentInvestment));
 
   // Decide on IXC Price
-  setIxcPrice(step,e(Position.InterconnectionBandwidthPrice));
+  setIxcPrice(step, e(Position.InterconnectionBandwidthPrice));
 
 }
-
 
 @Override
 public Offers.NetworkOnlyOffer getNetworkOffer(int step) {
@@ -32,20 +33,18 @@ public Offers.NetworkOnlyOffer getNetworkOffer(int step) {
   double conPrice = pl * proportionA(pr);
   double bwPrice = pl * proportionB(pr);
 
-  Offers.NetworkOnlyOffer noo =
-          new Offers.NetworkOnlyOffer(step,
-                                      this,
-                                      conPrice,
-                                      bwPrice);
+  Offers.NetworkOnlyOffer noo = new Offers.NetworkOnlyOffer(step,
+      this,
+      conPrice,
+      bwPrice);
   return noo;
 }
 
 @Override
 public Offers.ContentOffer getContentOffer(int step) {
-  Offers.ContentOffer vco =
-          new Offers.ContentOffer(step,
-                                  this,
-                                  e(Position.StandaloneContentOfferPrice));
+  Offers.ContentOffer vco = new Offers.ContentOffer(step,
+      this,
+      e(Position.StandaloneContentOfferPrice));
   return vco;
 }
 
@@ -56,11 +55,11 @@ public Offers.NetworkAndVideoBundleOffer getBundledOffer(int step) {
   double bunPrice = pl * proportionA(pr);
   double bwPrice = pl * proportionB(pr);
 
-  Offers.NetworkAndVideoBundleOffer bo =
-          new Offers.NetworkAndVideoBundleOffer(step,
-                                                this,
-                                                bunPrice,
-                                                bwPrice);
+  Offers.NetworkAndVideoBundleOffer bo = new Offers.NetworkAndVideoBundleOffer(
+      step,
+      this,
+      bunPrice,
+      bwPrice);
   return bo;
 }
 
@@ -88,14 +87,7 @@ private double e(Position pos) {
 }
 
 public enum Position {
-  NetworkInvestment,
-  ContentInvestment,
-  NetStandalonePriceLevel,
-  NetStandaloneConBwPriceBalance,
-  StandaloneContentOfferPrice,
-  BundledOfferPriceLevel,
-  BundledOfferConBwPriceBalance,
-  InterconnectionBandwidthPrice
+  NetworkInvestment, ContentInvestment, NetStandalonePriceLevel, NetStandaloneConBwPriceBalance, StandaloneContentOfferPrice, BundledOfferPriceLevel, BundledOfferConBwPriceBalance, InterconnectionBandwidthPrice
 }
 
 }

@@ -1,10 +1,12 @@
-package neutrality;
+package neutrality.cp;
 
 import static agency.util.Misc.BUG;
 
 import agency.Account;
 import agency.Individual;
 import agency.SimpleFirm;
+import neutrality.ConsumptionOption;
+import neutrality.NeutralityModel;
 
 public abstract class AbstractContentProvider<N extends Individual>
     extends SimpleFirm<N, NeutralityModel>
@@ -17,12 +19,12 @@ public abstract class AbstractContentProvider<N extends Individual>
 public Boolean isVideoProvider;
 // Parameters relevant to consumer value; investment and preference.
 
-double[] Ka;
+public double[] Ka;
 
 // Track the # of units sold, revenue, and $ for interconnection
-double[] qtyContent;
-double[] revContent;
-double[] ixcPaid;
+public double[] qtyContent;
+public double[] revContent;
+public double[] ixcPaid;
 
 public AbstractContentProvider() {
   super();

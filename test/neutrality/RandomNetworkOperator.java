@@ -1,6 +1,7 @@
 package neutrality;
 
 import agency.NullIndividual;
+import neutrality.nsp.AbstractNetworkOperator;
 
 import java.util.Optional;
 import java.util.Random;

@@ -1,6 +1,7 @@
 package neutrality;
 
 import agency.NullIndividual;
+import neutrality.cp.AbstractContentProvider;
 
 import java.util.Optional;
 import java.util.Random;

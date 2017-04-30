@@ -1,6 +1,9 @@
 package neutrality;
 
 import agency.eval.EvaluationGroup;
+import neutrality.cp.ContentProvider;
+import neutrality.nsp.NetworkOperator;
+
 import org.junit.Test;
 
 /**
