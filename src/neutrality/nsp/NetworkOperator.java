@@ -3,16 +3,13 @@ package neutrality.nsp;
 import agency.Individual;
 import neutrality.ConsumptionOption;
 import neutrality.Offers;
-import neutrality.Offers.ContentOffer;
-import neutrality.Offers.NetworkAndVideoBundleOffer;
-import neutrality.Offers.NetworkOnlyOffer;
 import neutrality.cp.ContentProvider;
 
 /**
  * Created by liara on 2/9/17.
  */
 public interface NetworkOperator<N extends Individual>
-        extends ContentProvider<N> {
+    extends ContentProvider<N> {
 
 double getKn(int step);
 

@@ -10,27 +10,25 @@ import java.util.List;
 import static agency.util.Misc.BUG;
 
 /**
- Created by liara on 4/18/17.
+ * Created by liara on 4/18/17.
  */
 public class ContingencyHelper<T> {
 
-final Agent<VectorIndividual, NeutralityModel> agent;
+final Agent<VectorIndividual<T>, NeutralityModel> agent;
 
 final int                            genomeStartPosition;
 final int                            outputMatrixStartPosition;
 final List<EnvironmentalContingency> contingencies;
-final List<Enum>                     outputVariables;
+final List<Enum<?>>                  outputVariables;
 final boolean[]                      contingencyTestResults;
 
 Object[] genome;
-int outputVectorGenomeOffset = 0;
+int      outputVectorGenomeOffset = 0;
 
-
-public ContingencyHelper(
-        Agent agent,
-        int genomeStartPosition,
-        List<EnvironmentalContingency> contingencies,
-        List<Enum> outputVariables) {
+public ContingencyHelper(Agent<VectorIndividual<T>, NeutralityModel> agent,
+                         int genomeStartPosition,
+                         List<EnvironmentalContingency> contingencies,
+                         List<Enum<?>> outputVariables) {
 
   this.agent = agent;
   this.contingencies = Collections.unmodifiableList(contingencies);
@@ -58,8 +56,8 @@ public static int intTranslate(boolean[] bits) {
 }
 
 /**
- Tests the environment and updates the objects in currentGenomeValues, which
- will be what is returned when getGenomeValueFor is called.
+ * Tests the environment and updates the objects in currentGenomeValues, which
+ * will be what is returned when getGenomeValueFor is called.
  */
 public void update() {
   // the genome won't be available at constructor time, but we'll want to
@@ -81,44 +79,42 @@ public void update() {
       parameter = (Number) genome[genomeStartPosition + i];
     } catch (ClassCastException cce) {
       BUG("Individual is assuming a numberic genome type, but actual data " +
-              "type cannot be cast to java.lang.Number");
+          "type cannot be cast to java.lang.Number");
     } catch (ArrayIndexOutOfBoundsException aioobe) {
       BUG("Attempt to access a parameter past the end of a genome");
     }
 
     contingencyTestResults[i] = ec.conditionMet(
-            model,
-            agent,
-            // Always look back exactly 1 step
-            model.getMarketInformation(model.currentStep - 1),
-            parameter
-    );
+        model,
+        agent,
+        // Always look back exactly 1 step
+        model.getMarketInformation(model.currentStep - 1),
+        parameter);
   }
 
   // Translate the contingencies into an index of the output vector within
   // the output matrix.
   int outputVectorIndex = intTranslate(contingencyTestResults);
   outputVectorGenomeOffset = genomeStartPosition + contingencies.size() +
-          (outputVectorIndex * outputVariables.size());
+      (outputVectorIndex * outputVariables.size());
 
-  // We should now be done.  outputVectorGenomeOffset plus the output enum
+  // We should now be done. outputVectorGenomeOffset plus the output enum
   // will provide us with the unique location on the genome to return.
 }
 
-public T getGenomeValueFor(Enum outVar) {
+public T getGenomeValueFor(Enum<?> outVar) {
   int outScalarIndex = outVar.ordinal();
   if (outScalarIndex > outputVariables.size())
     BUG("Attempt to get output value with enum.ordinal() = " + outScalarIndex
-            + ", but there were only " + outputVariables.size() + " output " +
-            "variables in the list at the creation of this ContingencyHelper");
+        + ", but there were only " + outputVariables.size() + " output " +
+        "variables in the list at the creation of this ContingencyHelper");
 
   return getGenomeValueForOffset(outScalarIndex);
 }
 
 private T getGenomeValueForOffset(int offset) {
   int genomePos = outputVectorGenomeOffset + offset;
-
-  T toReturn = (T) genome[genomePos];
+  T toReturn = agent.getManager().getGenomeAt(genomePos);
   return toReturn;
 }
 
@@ -130,11 +126,11 @@ public int getGenomeLengthUsed() {
 }
 
 /**
- Assumes the genome represents the coefficients of a linear equation.  The
- first loci is assumed to be a constant, and is used as e^loci.  The
- remaining loci are assumed to be coefficients fo the arguments in x_n.
- <p>
- x_n.length must be equal to outputVariables.size()-1
+ * Assumes the genome represents the coefficients of a linear equation. The
+ * first loci is assumed to be a constant, and is used as e^loci. The remaining
+ * loci are assumed to be coefficients fo the arguments in x_n.
+ * <p>
+ * x_n.length must be equal to outputVariables.size()-1
  */
 public double applyLinearEq(Number[] x_n) {
   if (x_n.length != outputVariables.size() - 1)

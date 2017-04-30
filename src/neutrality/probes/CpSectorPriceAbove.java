@@ -8,25 +8,28 @@ import neutrality.cp.ContentProvider;
 import static agency.util.Misc.BUG;
 
 /**
- Created by liara on 4/19/17.
+ * Created by liara on 4/19/17.
  */
 public class CpSectorPriceAbove implements EnvironmentalContingency {
 
-  EnvironmentalContingency ec = null;
+EnvironmentalContingency ec = null;
 
 @Override
-public boolean conditionMet(NeutralityModel model, Agent agent, MarketInfo mi, Number parameter) {
+public boolean conditionMet(NeutralityModel model,
+                            Agent<?, NeutralityModel> agent,
+                            MarketInfo mi,
+                            Number parameter) {
   if (ec != null)
-    return ec.conditionMet(model,agent,mi,parameter);
+    return ec.conditionMet(model, agent, mi, parameter);
 
   try {
-    ContentProvider cp = (ContentProvider) agent;
+    ContentProvider<?> cp = (ContentProvider<?>) agent;
     if (cp.isVideo())
       ec = new CpVideoPriceAbove();
     else
       ec = new CpOtherPriceAbove();
 
-    return ec.conditionMet(model,agent,mi,parameter);
+    return ec.conditionMet(model, agent, mi, parameter);
   } catch (Exception e) {
     BUG(e.getMessage());
   }

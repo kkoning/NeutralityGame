@@ -11,7 +11,7 @@ public class NspBundledPriceAbove implements EnvironmentalContingency {
 
 @Override
 public boolean conditionMet(NeutralityModel model,
-                            Agent agent,
+                            Agent<?,NeutralityModel> agent,
                             MarketInfo mi,
                             Number parameter) {
   return (mi.getNspBundledPrice() > parameter.doubleValue());

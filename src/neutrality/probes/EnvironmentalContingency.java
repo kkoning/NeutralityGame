@@ -10,7 +10,7 @@ import neutrality.NeutralityModel;
 public interface EnvironmentalContingency {
 
 boolean conditionMet(NeutralityModel model,
-                     Agent agent,
+                     Agent<?,NeutralityModel> agent,
                      MarketInfo mi,
                      Number parameter);
 

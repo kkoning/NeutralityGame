@@ -1,12 +1,11 @@
 package neutrality.cp;
 
+import java.util.Optional;
+
 import agency.vector.VectorIndividual;
 import neutrality.MarketInfo;
 import neutrality.NeutralityModel;
 import neutrality.Offers;
-import neutrality.Offers.ContentOffer;
-
-import java.util.Optional;
 
 /**
  * The LinearContentProvider makes investment and pricing decisions (in all but
@@ -25,7 +24,6 @@ private static final int INITIAL_PRICE_IDX           = 1;
 private static final int PRICING_COEFFICIENTS_IDX    = 2;
 private static final int INVESTMENT_COEFFICEINTS_IDX = PRICING_COEFFICIENTS_IDX
     + NUM_COEFFICIENTS + 1;
-
 
 @Override
 public Offers.ContentOffer getContentOffer(int step) {

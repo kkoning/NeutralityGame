@@ -7,7 +7,6 @@ import neutrality.ConsumptionOption;
 import neutrality.MarketInfo;
 import neutrality.NeutralityModel;
 import neutrality.Offers;
-import neutrality.Offers.ContentOffer;
 
 /**
  * Created by liara on 2/9/17.

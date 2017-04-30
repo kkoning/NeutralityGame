@@ -1,11 +1,10 @@
 package neutrality.cp;
 
+import java.util.Optional;
+
 import agency.vector.VectorIndividual;
 import neutrality.NeutralityModel;
 import neutrality.Offers;
-import neutrality.Offers.ContentOffer;
-
-import java.util.Optional;
 
 /**
  * Created by kkoning on 9/23/16.

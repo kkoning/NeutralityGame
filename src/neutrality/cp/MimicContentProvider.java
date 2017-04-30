@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import neutrality.NeutralityModel;
 import neutrality.Offers;
-import neutrality.Offers.ContentOffer;
 
 public class MimicContentProvider extends DirectlyEncodedContentProvider {
 @Override

@@ -17,6 +17,7 @@ import static neutrality.nsp.NetworkOperator.NetOpData.REVENUE_IXC_VIDEO;
 import static neutrality.nsp.NetworkOperator.NetOpData.REVENUE_NETWORK;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.sun.istack.internal.NotNull;
@@ -27,6 +28,7 @@ import agency.Fitness;
 import agency.SimpleFirm;
 import agency.SimpleFitness;
 import agency.data.AgencyData;
+import neutrality.Offers.ContentOffer;
 import neutrality.Offers.NetworkAndVideoBundleOffer;
 import neutrality.Offers.NetworkOnlyOffer;
 import neutrality.cp.ContentProvider;
@@ -34,7 +36,7 @@ import neutrality.nsp.AbstractNetworkOperator;
 import neutrality.nsp.NetworkOperator;
 
 public class NeutralityModel
-        extends AbstractAgentModel {
+    extends AbstractAgentModel {
 
 public Double alpha;
 public Double beta;
@@ -64,43 +66,43 @@ public double otherBWIntensity;
 public double incomeVideoOnly;
 public double incomeOtherOnly;
 
-int nspBankruptcies;
-int vcpBankruptcies;
-int ocpBankruptcies;
-
 // Operational Variables
 ArrayList<NetworkOperator<?>> networkOperators;
 ArrayList<ContentProvider<?>> videoContentProviders;
 ArrayList<ContentProvider<?>> otherContentProviders;
-Consumers                  consumersVideoOnly;
-Consumers                  consumersOtherOnly;
-Consumers                  consumersBoth;
 
-List<Agent<?,NeutralityModel>> bankruptAgents;
-MarketInfo[]  marketInformation;
+ArrayList<NetworkOperator<?>> bankruptNetworkOperators;
+ArrayList<ContentProvider<?>> bankruptVideoContentProviders;
+ArrayList<ContentProvider<?>> bankruptOtherContentProviders;
+
+Consumers consumersVideoOnly;
+Consumers consumersOtherOnly;
+Consumers consumersBoth;
+
+MarketInfo[] marketInformation;
 
 public NeutralityModel() {
 }
 
 /**
- Given a list of different kinds of offers from network operators and
- content providers, this function returns a list of all possible and
- allowable combinations of consumption.
-
- @param networkOnlyOffers
- @param videoContentOffers
- @param bundledOffers
- @return  */
+ * Given a list of different kinds of offers from network operators and content
+ * providers, this function returns a list of all possible and allowable
+ * combinations of consumption.
+ * 
+ * @param networkOnlyOffers
+ * @param videoContentOffers
+ * @param bundledOffers
+ * @return
+ */
 public static final void determineOptions(
-        @NotNull NeutralityModel model,
-        @NotNull List<NetworkOnlyOffer> networkOnlyOffers,
-        @NotNull List<Offers.NetworkAndVideoBundleOffer> bundledOffers,
-        @NotNull List<Offers.ContentOffer> videoContentOffers,
-        @NotNull List<Offers.ContentOffer> otherContentOffers,
-        @NotNull List<ConsumptionOption> otherOnlyOptions,
-        @NotNull List<ConsumptionOption> videoOnlyOptions,
-        @NotNull List<ConsumptionOption> bothContentOptions
-) {
+                                          @NotNull NeutralityModel model,
+                                          @NotNull List<NetworkOnlyOffer> networkOnlyOffers,
+                                          @NotNull List<Offers.NetworkAndVideoBundleOffer> bundledOffers,
+                                          @NotNull List<Offers.ContentOffer> videoContentOffers,
+                                          @NotNull List<Offers.ContentOffer> otherContentOffers,
+                                          @NotNull List<ConsumptionOption> otherOnlyOptions,
+                                          @NotNull List<ConsumptionOption> videoOnlyOptions,
+                                          @NotNull List<ConsumptionOption> bothContentOptions) {
 
   if (model == null)
     BUG("model was null");
@@ -115,40 +117,37 @@ public static final void determineOptions(
       BUG("Model disallowed bundling, but there are >0 bundled offers");
 
   /*
-  With NetworkOnlyOffers, we need to put together all possible bundles of
-  consumption.
+   * With NetworkOnlyOffers, we need to put together all possible bundles of
+   * consumption.
    */
   for (Offers.NetworkOnlyOffer networkOnlyOffer : networkOnlyOffers) {
     // Video content but not other content
     for (Offers.ContentOffer videoContentOffer : videoContentOffers) {
-      ConsumptionOption option =
-              new ConsumptionOption(model,
-                      networkOnlyOffer,
-                      null,
-                      videoContentOffer,
-                      null);
+      ConsumptionOption option = new ConsumptionOption(model,
+          networkOnlyOffer,
+          null,
+          videoContentOffer,
+          null);
       videoOnlyOptions.add(option);
     }
 
     // No video content, but other content
     for (Offers.ContentOffer otherContentOffer : otherContentOffers) {
-      ConsumptionOption option =
-              new ConsumptionOption(model,
-                      networkOnlyOffer,
-                      null,
-                      null,
-                      otherContentOffer);
+      ConsumptionOption option = new ConsumptionOption(model,
+          networkOnlyOffer,
+          null,
+          null,
+          otherContentOffer);
       otherOnlyOptions.add(option);
     }
     // Both integrated and other content
     for (Offers.ContentOffer videoContentOffer : videoContentOffers) {
       for (Offers.ContentOffer otherContentOffer : otherContentOffers) {
-        ConsumptionOption option =
-                new ConsumptionOption(model,
-                        networkOnlyOffer,
-                        null,
-                        videoContentOffer,
-                        otherContentOffer);
+        ConsumptionOption option = new ConsumptionOption(model,
+            networkOnlyOffer,
+            null,
+            videoContentOffer,
+            otherContentOffer);
         bothContentOptions.add(option);
       }
     }
@@ -156,35 +155,34 @@ public static final void determineOptions(
   }
 
   /*
-  Some offers will include network service bundled with the network
-  operator's own video content service.  Consumers have the option of either
-  adding other content services or not.
+   * Some offers will include network service bundled with the network
+   * operator's own video content service. Consumers have the option of either
+   * adding other content services or not.
    */
   for (Offers.NetworkAndVideoBundleOffer bundledOffer : bundledOffers) {
     // Create option without other content included.
-    ConsumptionOption option =
-            new ConsumptionOption(model,
-                    null,
-                    bundledOffer,
-                    null,
-                    null);
+    ConsumptionOption option = new ConsumptionOption(model,
+        null,
+        bundledOffer,
+        null,
+        null);
     videoOnlyOptions.add(option);
 
-    // Create option with other content included.  There'll be one option
+    // Create option with other content included. There'll be one option
     // for each other content offer.
     for (Offers.ContentOffer otherContentOffer : otherContentOffers) {
       option = new ConsumptionOption(model,
-              null,
-              bundledOffer,
-              null,
-              otherContentOffer);
+          null,
+          bundledOffer,
+          null,
+          otherContentOffer);
       bothContentOptions.add(option);
     }
   }
 }
 
 @Override
-public void addAgent(Agent<?,?> agent) {
+public void addAgent(Agent<?, ?> agent) {
   // Classify and track each agent into proper role within model
   if (agent instanceof AbstractNetworkOperator<?>)
     networkOperators.add((AbstractNetworkOperator<?>) agent);
@@ -198,104 +196,106 @@ public void addAgent(Agent<?,?> agent) {
     // We don't know what to do with this agent type
     throw new RuntimeException("Unsupported agent type: " + agent);
 
-  SimpleFirm<?,?> sf = (SimpleFirm<?,?>) agent;
+  SimpleFirm<?, ?> sf = (SimpleFirm<?, ?>) agent;
   sf.account.receive(firmEndowment);
 }
 
 @Override
-public Fitness getFitness(Agent<?,?> agent) {
+public Fitness getFitness(Agent<?, ?> agent) {
   // They should all be instances of SimpleFirm
-  SimpleFirm<?,?> firm = (SimpleFirm<?,?>) agent;
+  SimpleFirm<?, ?> firm = (SimpleFirm<?, ?>) agent;
   SimpleFitness fitness = firm.getFitness();
   return fitness;
 }
 
 @Override
-public Object getAgentDetails(Agent<?,?> agent) {
+public Object getAgentDetails(Agent<?, ?> agent) {
   return null;
 }
 
 /**
- General order of events:
- (1) Step agents.  Most won't need this, but in case some do...
- (2) Collect Offers from Agents.
- (3) Generate consumption options.
- (4) Consume
- (5) Repeat from 1 until maxSteps is reached.
+ * General order of events: (1) Step agents. Most won't need this, but in case
+ * some do... (2) Collect Offers from Agents. (3) Generate consumption options.
+ * (4) Consume (5) Repeat from 1 until maxSteps is reached.
  */
 @Override
 public boolean step() {
-  //
-  // (1) Step agents.
-  //
+  /*
+   * (1) Step agents.
+   */
   if (isDebugEnabled())
     debugOut.println("Stepping Network Operators");
   // Step each agent; allow them to generate and update offers.
-  for (NetworkOperator no : networkOperators) {
+  for (NetworkOperator<?> no : networkOperators) {
     no.step(this, currentStep, null); // Network Operators
   }
   if (isDebugEnabled())
     debugOut.println("Stepping Independent Video Content Providers");
-  for (ContentProvider cp : videoContentProviders) {
+  for (ContentProvider<?> cp : videoContentProviders) {
     cp.step(this, currentStep, null); // Video Content Providers
   }
   if (isDebugEnabled())
     debugOut.println("Stepping Independent Other Content Providers");
-  for (ContentProvider cp : otherContentProviders) {
+  for (ContentProvider<?> cp : otherContentProviders) {
     cp.step(this, currentStep, null); // Other Content Providers
   }
 
-  //
-  // (1.5) Check for bankruptcy & remove bankrupt agents.
-  //
-  List<NetworkOperator> tmp4 =
-          (List<NetworkOperator>) networkOperators.clone();
-  for (NetworkOperator no : tmp4) {
+  // Consumers do not need to be stepped; behavior is specified.
+
+  /*
+   * (1.5) Check for bankruptcy & remove bankrupt agents.
+   */
+
+  // NSPs
+  Iterator<NetworkOperator<?>> nspIt = networkOperators.iterator();
+  while (nspIt.hasNext()) {
+    NetworkOperator<?> no = nspIt.next();
     if (no.isBankrupt()) {
       if (isDebugEnabled())
         debugOut.println(no + " is bankrupt, removing");
-      networkOperators.remove(no);
-      nspBankruptcies++;
-      bankruptAgents.add(no);
-    }
-  }
-  List<ContentProvider> tmp5 =
-          (List<ContentProvider>) videoContentProviders.clone();
-  for (ContentProvider cp : tmp5) {
-    if (cp.isBankrupt()) {
-      if (isDebugEnabled())
-        debugOut.println(cp + " is bankrupt, removing");
-      videoContentProviders.remove(cp);
-      vcpBankruptcies++;
-      bankruptAgents.add(cp);
-    }
-  }
-  tmp5 = (List<ContentProvider>) otherContentProviders.clone();
-  for (ContentProvider cp : tmp5) {
-    if (cp.isBankrupt()) {
-      if (isDebugEnabled())
-        debugOut.println(cp + " is bankrupt, removing");
-      otherContentProviders.remove(cp);
-      ocpBankruptcies++;
-      bankruptAgents.add(cp);
+      nspIt.remove(); // Works concurrently, unlike list.remove()
+      bankruptNetworkOperators.add(no);
     }
   }
 
-  // Consumers do not need to be stepped; behavior is specified.
-  if (isDebugEnabled())
-    debugOut.println("Collecting offers from networks and providers");
+  // VCPs
+  Iterator<ContentProvider<?>> vcpIt = videoContentProviders.iterator();
+  while (vcpIt.hasNext()) {
+    ContentProvider<?> cp = vcpIt.next();
+    if (cp.isBankrupt()) {
+      if (isDebugEnabled())
+        debugOut.println(cp + " is bankrupt, removing");
+      vcpIt.remove();
+      bankruptVideoContentProviders.add(cp);
+    }
+  }
 
-  //
-  // (2) Collect offers from Agents
-  //
+  // OCPs
+  Iterator<ContentProvider<?>> ocpIt = otherContentProviders.iterator();
+  while (ocpIt.hasNext()) {
+    ContentProvider<?> cp = ocpIt.next();
+    if (cp.isBankrupt()) {
+      if (isDebugEnabled())
+        debugOut.println(cp + " is bankrupt, removing");
+      ocpIt.remove();
+      bankruptVideoContentProviders.add(cp);
+    }
+  }
+
+  /*
+   * (2) Collect offers from Agents
+   */
   // Agents generate offers, add them to these lists.
   ArrayList<NetworkOnlyOffer> networkOnlyOffers = new ArrayList<>();
   ArrayList<Offers.ContentOffer> videoContentOffers = new ArrayList<>();
   ArrayList<Offers.ContentOffer> otherContentOffers = new ArrayList<>();
   ArrayList<NetworkAndVideoBundleOffer> bundledOffers = new ArrayList<>();
 
+  if (isDebugEnabled())
+    debugOut.println("Collecting offers from networks and providers");
+
   // Network Operators
-  for (NetworkOperator no : networkOperators) {
+  for (NetworkOperator<?> no : networkOperators) {
     NetworkOnlyOffer noo = no.getNetworkOffer(currentStep);
     if (noo != null)
       networkOnlyOffers.add(noo);
@@ -316,56 +316,57 @@ public boolean step() {
   }
 
   // 3rd Party Video Content
-  for (ContentProvider vcp : videoContentProviders) {
+  for (ContentProvider<?> vcp : videoContentProviders) {
     Offers.ContentOffer vco = vcp.getContentOffer(currentStep);
     videoContentOffers.add(vco);
   }
 
   // 3rd Party Other Content
-  for (ContentProvider ocp : otherContentProviders) {
+  for (ContentProvider<?> ocp : otherContentProviders) {
     Offers.ContentOffer oco = ocp.getContentOffer(currentStep);
     otherContentOffers.add(oco);
   }
-
-  // Remove offers with zero capital
-  List<NetworkOnlyOffer> tmp1 =
-          (List<NetworkOnlyOffer>) networkOnlyOffers.clone();
-  for (NetworkOnlyOffer noo : tmp1) {
+  /*
+   * Remove offers with zero capital
+   */
+  // Network Only Offers
+  Iterator<NetworkOnlyOffer> nooIt = networkOnlyOffers.iterator();
+  while (nooIt.hasNext()) {
+    NetworkOnlyOffer noo = nooIt.next();
     if (noo.network.getKn(currentStep) <= 0) {
       if (isDebugEnabled())
         debugOut.println("Removing offer " + noo + " for zero capital");
-      networkOnlyOffers.remove(noo);
+      nooIt.remove();
     }
   }
-  List<NetworkAndVideoBundleOffer> tmp2 =
-          (List<NetworkAndVideoBundleOffer>) bundledOffers.clone();
-  for (NetworkAndVideoBundleOffer nvbo : tmp2) {
-    if (nvbo.networkOperator.getKn(currentStep) <= 0) {
+  // Bundled Offers
+  Iterator<NetworkAndVideoBundleOffer> boIt = bundledOffers.iterator();
+  while (boIt.hasNext()) {
+    NetworkAndVideoBundleOffer bo = boIt.next();
+    if (bo.networkOperator.getKn(currentStep) <= 0) {
       if (isDebugEnabled())
-        debugOut.println("Removing offer " + nvbo + " for zero capital");
-      bundledOffers.remove(nvbo);
-    }
-    if (nvbo.networkOperator.getKa(currentStep) <= 0) {
-      if (isDebugEnabled())
-        debugOut.println("Removing offer " + nvbo + " for zero capital");
-      bundledOffers.remove(nvbo);
+        debugOut.println("Removing offer " + bo + " for zero capital");
+      boIt.remove();
     }
   }
-  List<Offers.ContentOffer> tmp3 =
-          (List<Offers.ContentOffer>) videoContentOffers.clone();
-  for (Offers.ContentOffer co : tmp3) {
+  // Video Content Offers
+  Iterator<ContentOffer> vcoIt = videoContentOffers.iterator();
+  while (vcoIt.hasNext()) {
+    ContentOffer co = vcoIt.next();
     if (co.contentProvider.getKa(currentStep) <= 0) {
       if (isDebugEnabled())
         debugOut.println("Removing offer " + co + " for zero capital");
-      videoContentOffers.remove(co);
+      vcoIt.remove();
     }
   }
-  tmp3 = (List<Offers.ContentOffer>) otherContentOffers.clone();
-  for (Offers.ContentOffer co : tmp3) {
+  // Other Content Offers
+  Iterator<ContentOffer> ocoIt = videoContentOffers.iterator();
+  while (ocoIt.hasNext()) {
+    ContentOffer co = ocoIt.next();
     if (co.contentProvider.getKa(currentStep) <= 0) {
       if (isDebugEnabled())
         debugOut.println("Removing offer " + co + " for zero capital");
-      otherContentOffers.remove(co);
+      ocoIt.remove();
     }
   }
 
@@ -374,29 +375,23 @@ public boolean step() {
    */
   if (isDebugEnabled()) {
     debugOut.println("Details of offers follows:");
-
     debugOut.println("Network Only Offers:");
     for (NetworkOnlyOffer noo : networkOnlyOffers) {
       debugOut.println(noo);
     }
-
     debugOut.println("Unbundled Video Content Offers:");
     for (Offers.ContentOffer vco : videoContentOffers) {
       debugOut.println(vco);
     }
-
     debugOut.println("Other Content Offers:");
     for (Offers.ContentOffer oco : otherContentOffers) {
       debugOut.println(oco);
     }
-
     debugOut.println("Bundled Network and Video Offers:");
     for (NetworkAndVideoBundleOffer nvbo : bundledOffers) {
       debugOut.println(nvbo);
     }
-
   }
-
 
   //
   // (3) Generate Consumption Options
@@ -409,18 +404,18 @@ public boolean step() {
   ArrayList<ConsumptionOption> bothContentOptions = new ArrayList<>();
 
   /*
-   * Now that we have a list of all the offers made by network operators
-   * and content providers, we need to generate a list of possible
-	 * consumption options for consumers to consider.
-	 */
+   * Now that we have a list of all the offers made by network operators and
+   * content providers, we need to generate a list of possible consumption
+   * options for consumers to consider.
+   */
   determineOptions(this,
-          networkOnlyOffers,
-          bundledOffers,
-          videoContentOffers,
-          otherContentOffers,
-          otherOnlyOptions,
-          videoOnlyOptions,
-          bothContentOptions);
+      networkOnlyOffers,
+      bundledOffers,
+      videoContentOffers,
+      otherContentOffers,
+      otherOnlyOptions,
+      videoOnlyOptions,
+      bothContentOptions);
 
   // Debug for completed offers
   if (isDebugEnabled()) {
@@ -439,14 +434,12 @@ public boolean step() {
     }
   }
 
-
   //
   // (4) Consumers consume!
   //
   consumersOtherOnly.consume(otherOnlyOptions);
   consumersVideoOnly.consume(videoOnlyOptions);
   consumersBoth.consume(bothContentOptions);
-
 
   //
   // (5) Repeat until out of steps
@@ -477,32 +470,26 @@ public Object getSummaryData() {
   OutputData o = new OutputData();
 
   /*
-  Put bankrupt agents back into their lists for stats processing.
+   * Put bankrupt agents back into their lists for stats processing.
    */
-  for (Agent a : bankruptAgents) {
-    if (a instanceof NetworkOperator) {
-      networkOperators.add((NetworkOperator) a);
-    } else {
-      ContentProvider cp = (ContentProvider) a;
-      if (cp.isVideo()) {
-        videoContentProviders.add(cp);
-      } else {
-        otherContentProviders.add(cp);
-      }
-    }
-  }
+  for (NetworkOperator<?> no : bankruptNetworkOperators)
+    networkOperators.add(no);
+  for (ContentProvider<?> cp : bankruptVideoContentProviders)
+    videoContentProviders.add(cp);
+  for (ContentProvider<?> cp : bankruptOtherContentProviders)
+    otherContentProviders.add(cp);
 
   /*
-  Consumption Data
+   * Consumption Data
    */
   o.utilityVideoOnly = consumersVideoOnly.accumulatedUtility;
   o.utilityOtherOnly = consumersOtherOnly.accumulatedUtility;
   o.utilityBoth = consumersBoth.accumulatedUtility;
 
   /*
-  Data from Network Operators
+   * Data from Network Operators
    */
-  for (NetworkOperator no : networkOperators) {
+  for (NetworkOperator<?> no : networkOperators) {
     o.nspQtyNetworkOnly += no.getNetOpData(QUANTITY_NETWORK);
     o.nspRevNetworkOnly += no.getNetOpData(REVENUE_NETWORK);
 
@@ -525,43 +512,42 @@ public Object getSummaryData() {
   }
 
   /*
-  Data from Content Providers
+   * Data from Content Providers
    */
-  for (ContentProvider vcp : videoContentProviders) {
+  for (ContentProvider<?> vcp : videoContentProviders) {
     o.vcpQty += vcp.getContentData(QUANTITY);
     o.vcpRev += vcp.getContentData(REVENUE);
     o.vcpKa += vcp.getContentData(INVESTMENT);
     o.vcpBalance += vcp.getContentData(BALANCE);
   }
-  for (ContentProvider ocp : otherContentProviders) {
+  for (ContentProvider<?> ocp : otherContentProviders) {
     o.ocpQty += ocp.getContentData(QUANTITY);
     o.ocpRev += ocp.getContentData(REVENUE);
     o.ocpKa += ocp.getContentData(INVESTMENT);
     o.ocpBalance += ocp.getContentData(BALANCE);
   }
 
-
   /*
-  Market Information
+   * Market Information
    */
   // Network HHI
   double[] networkSales = new double[networkOperators.size()];
   for (int i = 0; i < networkOperators.size(); i++) {
-    NetworkOperator no = networkOperators.get(i);
+    NetworkOperator<?> no = networkOperators.get(i);
     networkSales[i] = no.getNetOpData(QUANTITY_NETWORK) +
-            no.getNetOpData(QUANTITY_BUNDLE);
+        no.getNetOpData(QUANTITY_BUNDLE);
   }
   o.hhiNetwork = HHI(networkSales);
 
   // Video Content HHI
   List<Double> videoSales = new ArrayList<>();
-  for (ContentProvider cp : videoContentProviders) {
+  for (ContentProvider<?> cp : videoContentProviders) {
     videoSales.add(cp.getContentData(QUANTITY));
   }
   if (policyNSPContentAllowed) {
-    for (NetworkOperator no : networkOperators) {
+    for (NetworkOperator<?> no : networkOperators) {
       videoSales.add(no.getContentData(QUANTITY) +
-              no.getNetOpData(QUANTITY_BUNDLE));
+          no.getNetOpData(QUANTITY_BUNDLE));
     }
   }
   o.hhiVideo = HHI(videoSales);
@@ -569,19 +555,18 @@ public Object getSummaryData() {
   // Other Content HHI
   double[] otherSales = new double[otherContentProviders.size()];
   for (int i = 0; i < otherContentProviders.size(); i++) {
-    ContentProvider vcp = otherContentProviders.get(i);
+    ContentProvider<?> vcp = otherContentProviders.get(i);
     otherSales[i] = vcp.getContentData(QUANTITY);
   }
   o.hhiOther = HHI(otherSales);
 
   // Bankruptcies
-  o.nspBankruptcies = nspBankruptcies;
-  o.vcpBankruptcies = vcpBankruptcies;
-  o.ocpBankruptcies = ocpBankruptcies;
+  o.nspBankruptcies = bankruptNetworkOperators.size();
+  o.vcpBankruptcies = bankruptVideoContentProviders.size();
+  o.ocpBankruptcies = bankruptOtherContentProviders.size();
 
   return o;
 }
-
 
 //
 // The following functions are used by agents to gather information about
@@ -604,7 +589,9 @@ public void init() {
   videoContentProviders = new ArrayList<>();
   otherContentProviders = new ArrayList<>();
 
-  bankruptAgents = new ArrayList<>();
+  bankruptNetworkOperators = new ArrayList<>();
+  bankruptVideoContentProviders = new ArrayList<>();
+  bankruptOtherContentProviders = new ArrayList<>();
 
   // Pre-calculating some common intermediate variables.
   videoContentValue = alpha / (1.0d + alpha);
@@ -638,12 +625,11 @@ public MarketInfo getMarketInformation(int step) {
   if (step >= this.currentStep)
     BUG("Can only obtain market information for past steps");
 
-  // If already calculated, used cached copy.  Should never change anyway.
+  // If already calculated, used cached copy. Should never change anyway.
   if (marketInformation[step] == null)
     marketInformation[step] = new MarketInfo(this, step);
 
   return marketInformation[step];
 }
-
 
 }
