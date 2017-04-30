@@ -49,6 +49,11 @@ public void setVideo(boolean video) {
 }
 
 @Override
+public boolean isVideoProvider() {
+  return isVideoProvider;
+}
+
+@Override
 public double getKa(int step) {
   return Ka[step];
 }

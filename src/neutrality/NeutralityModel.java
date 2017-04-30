@@ -169,9 +169,9 @@ public void addAgent(Agent agent) {
   // Classify and track each agent into proper role within model
   if (agent instanceof AbstractNetworkOperator)
     networkOperators.add((AbstractNetworkOperator<?>) agent);
-  else if (agent instanceof AbstractContentProvider) {
-    AbstractContentProvider<?> cp = (AbstractContentProvider<?>) agent;
-    if (cp.isVideoProvider)
+  else if (agent instanceof ContentProvider) {
+    ContentProvider<?> cp = (ContentProvider<?>) agent;
+    if (cp.isVideoProvider())
       videoContentProviders.add(cp);
     else
       otherContentProviders.add(cp);

@@ -28,6 +28,8 @@ Account getAccount();
 
 boolean isBankrupt();
 
+boolean isVideoProvider();
+
 void goBankrupt();
 
 double getContentData(ContentData data);
