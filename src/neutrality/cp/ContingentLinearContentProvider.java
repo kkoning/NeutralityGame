@@ -94,10 +94,10 @@ public Offers.ContentOffer getContentOffer(int step) {
   pch.update();
   MarketInfo mi = getModel().getMarketInformation(step - 1);
   Double[] x_n = new Double[PricingOutputs.values().length - 1];
-  x_n[0] = mi.getNspIXCPrice();
-  x_n[1] = mi.getNspUnbundledPrice();
-  x_n[2] = mi.getNspBundlePremium();
-  x_n[3] = mi.getNspVideoPrice();
+  x_n[0] = mi.nspIXCPrice;
+  x_n[1] = mi.nspUnbundledPrice;
+  x_n[2] = mi.nspBundlePremium;
+  x_n[3] = mi.nspVideoPrice;
 
   double price = pch.applyLinearEq(x_n);
 
@@ -131,9 +131,9 @@ public void step(
     ich.update();
     MarketInfo mi = getModel().getMarketInformation(step - 1);
     Double[] x_n = new Double[InvestmentOutputs.values().length - 1];
-    x_n[0] = mi.getNspNetworkInvestment();
-    x_n[1] = mi.getNspUnbundledPrice();
-    x_n[2] = mi.getNspIXCPrice();
+    x_n[0] = mi.nspNetworkInvestment;
+    x_n[1] = mi.nspUnbundledPrice;
+    x_n[2] = mi.nspIXCPrice;
 
     investment = ich.applyLinearEq(x_n);
   }

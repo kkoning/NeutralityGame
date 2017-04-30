@@ -40,17 +40,17 @@ double getContentData(ContentData data);
 
 default double getSectorInvestment(MarketInfo mi) {
   if (isVideo()) {
-    return mi.getCpVideoInvestment();
+    return mi.cpVideoInvestment;
   } else {
-    return mi.getCpOtherInvestment();
+    return mi.cpOtherInvestment;
   }
 }
 
 default double getSectorPrice(MarketInfo mi) {
   if (isVideo()) {
-    return mi.getCpVideoPrice();
+    return mi.cpVideoPrice;
   } else {
-    return mi.getCpOtherPrice();
+    return mi.cpOtherPrice;
   }
 }
 

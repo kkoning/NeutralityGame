@@ -14,7 +14,7 @@ public boolean conditionMet(NeutralityModel model,
                             Agent<?, NeutralityModel> agent,
                             MarketInfo mi,
                             Number parameter) {
-  return (mi.getNspNetworkInvestment() > parameter.doubleValue());
+  return (mi.nspNetworkInvestment > parameter.doubleValue());
 }
 
 }

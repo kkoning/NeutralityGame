@@ -5,16 +5,16 @@ import neutrality.MarketInfo;
 import neutrality.NeutralityModel;
 
 /**
- Created by liara on 4/19/17.
+ * Created by liara on 4/19/17.
  */
 public class IxcPriceAbove implements EnvironmentalContingency {
 
 @Override
 public boolean conditionMet(NeutralityModel model,
-                            Agent<?,NeutralityModel> agent,
+                            Agent<?, NeutralityModel> agent,
                             MarketInfo mi,
                             Number parameter) {
-  return (mi.getNspIXCPrice() > parameter.doubleValue());
+  return (mi.nspIXCPrice > parameter.doubleValue());
 }
 
 }

@@ -5,7 +5,7 @@ import neutrality.MarketInfo;
 import neutrality.NeutralityModel;
 
 /**
- Created by liara on 4/19/17.
+ * Created by liara on 4/19/17.
  */
 public class CpVideoPriceAbove implements EnvironmentalContingency {
 
@@ -14,7 +14,7 @@ public boolean conditionMet(NeutralityModel model,
                             Agent<?, NeutralityModel> agent,
                             MarketInfo mi,
                             Number parameter) {
-  return (mi.getCpVideoPrice() > parameter.doubleValue());
+  return (mi.cpVideoPrice > parameter.doubleValue());
 }
 
 }

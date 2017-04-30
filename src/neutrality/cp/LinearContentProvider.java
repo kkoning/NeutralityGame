@@ -62,10 +62,10 @@ private double[] getEnvironmentVariables(int step) {
   MarketInfo mi = getModel().getMarketInformation(step - 1);
   toReturn[0] = getSectorInvestment(mi);
   toReturn[1] = getSectorPrice(mi);
-  toReturn[2] = mi.getNspNetworkInvestment();
-  toReturn[3] = mi.getNspBundledPrice();
-  toReturn[4] = mi.getNspBundlePremium();
-  toReturn[5] = mi.getNspIXCPrice();
+  toReturn[2] = mi.nspNetworkInvestment;
+  toReturn[3] = mi.nspBundledPrice;
+  toReturn[4] = mi.nspBundlePremium;
+  toReturn[5] = mi.nspIXCPrice;
   return toReturn;
 }
 

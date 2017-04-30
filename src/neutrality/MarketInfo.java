@@ -13,110 +13,106 @@ public class MarketInfo {
 /**
  * Components/individual
  */
-private final double nspNetworkInvestment;
-private final double nspVideoInvestment;
-private final double nspVideoPrice;
-private final double nspUnbundledPrice;
-private final double nspBundledPrice;
-private final double nspBundlePremium;
-private final double nspIXCPrice;
-private final double cpVideoInvestment;
-private final double cpVideoPrice;
-private final double cpOtherInvestment;
-private final double cpOtherPrice;
+public final double nspNetworkInvestment;
+public final double nspVideoInvestment;
+public final double nspVideoPrice;
+public final double nspUnbundledPrice;
+public final double nspBundledPrice;
+public final double nspBundlePremium;
+public final double nspBandwidthPrice;
+public final double nspIXCPrice;
+public final double cpVideoInvestment;
+public final double cpVideoPrice;
+public final double cpOtherInvestment;
+public final double cpOtherPrice;
 
 public MarketInfo(NeutralityModel model, int step) {
-  nspNetworkInvestment = calcAverageNspInvestment(model, step);
-  nspVideoInvestment = calcAverageNspVideoInvestment(model, step);
-  nspVideoPrice = calcAverageNspVideoPrice(model, step);
-  nspUnbundledPrice = calcAverageUnbundledPrice(model, step);
-  nspBundledPrice = calcAverageBundledPrice(model, step);
-  nspIXCPrice = calcAverageIXCPrice(model, step);
-  cpVideoInvestment = calcAverageCpVideoInvestment(model, step);
-  cpVideoPrice = calcAverageCpVideoPrice(model, step);
-  cpOtherInvestment = calcAverageCpOtherInvestment(model, step);
-  cpOtherPrice = calcAverageCpOtherPrice(model, step);
+  
+  double tmp = 0; // Can just use one declaration
+  
+  // nspNetworkInvestment
+  tmp = calcAverageNspInvestment(model, step);
+  if (tmp == Double.NaN)
+    nspNetworkInvestment = 0d;
+  else
+    nspNetworkInvestment = tmp;
+    
+  // nspVideoInvestment
+  tmp = calcAverageNspVideoInvestment(model, step);
+  if (tmp == Double.NaN)
+    nspVideoInvestment = 0d;
+  else
+    nspVideoInvestment = tmp;
+  
+  // nspVideoPrice
+  tmp = calcAverageNspVideoPrice(model, step);
+  if (tmp == Double.NaN)
+    nspVideoPrice = 0d;
+  else
+    nspVideoPrice = tmp;
+  
+  // nspUnbundledPrice
+  tmp = calcAverageUnbundledPrice(model, step);
+  if (tmp == Double.NaN)
+    nspUnbundledPrice = 0d;
+  else
+    nspUnbundledPrice = tmp;
+  
+  // nspBundledPrice
+  tmp = calcAverageBundledPrice(model, step);
+  if (tmp == Double.NaN)
+    nspBundledPrice = 0d;
+  else
+    nspBundledPrice = tmp;
+  
+  // nspIXCPrice
+  tmp = calcAverageIXCPrice(model, step);
+  if (tmp == Double.NaN)
+    nspIXCPrice = 0d;
+  else
+    nspIXCPrice = tmp;
+  
+  // cpVideoInvestment
+  tmp = calcAverageCpVideoInvestment(model, step);
+  if (tmp == Double.NaN)
+    cpVideoInvestment = 0d;
+  else
+    cpVideoInvestment = tmp;
+  
+  // cpVideoPrice
+  tmp = calcAverageCpVideoPrice(model, step);
+  if (tmp == Double.NaN)
+    cpVideoPrice = 0d;
+  else
+    cpVideoPrice = tmp;
+  
+  // cpOtherInvestment
+  tmp = calcAverageCpOtherInvestment(model, step);
+  if (tmp == Double.NaN)
+    cpOtherInvestment = 0d;
+  else
+    cpOtherInvestment = tmp;
+  
+  // cpOtherPrice
+  tmp = calcAverageCpOtherPrice(model, step);
+  if (tmp == Double.NaN)
+    cpOtherPrice = 0d;
+  else
+    cpOtherPrice = tmp;
+  
+  // nspBandwidthPrice
+  tmp = calcAverageNspBandwidthPrice(model, step);
+  if (tmp == Double.NaN)
+    nspBandwidthPrice = 0d;
+  else
+    nspBandwidthPrice = tmp;
 
   // Secondary values
-  nspBundlePremium = nspBundledPrice - nspUnbundledPrice;
-
-}
-
-public double getNspNetworkInvestment() {
-  if (Double.isNaN(nspNetworkInvestment))
-    return 0;
+  tmp = nspBundledPrice - nspUnbundledPrice;
+  if (tmp == Double.NaN)
+    nspBundlePremium = 0d;
   else
-    return nspNetworkInvestment;
-}
-
-public double getNspVideoInvestment() {
-  if (Double.isNaN(nspVideoInvestment))
-    return 0;
-  else
-    return nspVideoInvestment;
-}
-
-public double getNspVideoPrice() {
-  if (Double.isNaN(nspVideoPrice))
-    return 0;
-  else
-    return nspVideoPrice;
-}
-
-public double getNspUnbundledPrice() {
-  if (Double.isNaN(nspUnbundledPrice))
-    return 0;
-  else
-    return nspUnbundledPrice;
-}
-
-public double getNspBundledPrice() {
-  if (Double.isNaN(nspBundledPrice))
-    return 0;
-  else
-    return nspBundledPrice;
-}
-
-public double getNspBundlePremium() {
-  if (Double.isNaN(nspBundlePremium))
-    return 0;
-  else
-    return nspBundlePremium;
-}
-
-public double getNspIXCPrice() {
-  if (Double.isNaN(nspIXCPrice))
-    return 0;
-  else
-    return nspIXCPrice;
-}
-
-public double getCpVideoInvestment() {
-  if (Double.isNaN(cpVideoInvestment))
-    return 0;
-  else
-    return cpVideoInvestment;
-}
-
-public double getCpVideoPrice() {
-  if (Double.isNaN(cpVideoPrice))
-    return 0;
-  else
-    return cpVideoPrice;
-}
-
-public double getCpOtherInvestment() {
-  if (Double.isNaN(cpOtherInvestment))
-    return 0;
-  else
-    return cpOtherInvestment;
-}
-
-public double getCpOtherPrice() {
-  if (Double.isNaN(cpOtherPrice))
-    return 0;
-  else
-    return cpOtherPrice;
+    nspBundlePremium = tmp;
 }
 
 private double calcAverageNspInvestment(NeutralityModel model, int step) {
@@ -227,6 +223,21 @@ private double calcAverageCpOtherPrice(NeutralityModel model, int step) {
     totalSales += acp.qtyContent[step];
   }
   return totalRevenue / totalSales;
+}
+
+private double calcAverageNspBandwidthPrice(NeutralityModel model, int step) {
+  double revBW = 0d;
+  double qtyBW = 0d;
+
+  for (NetworkOperator<?> no : model.networkOperators) {
+    AbstractNetworkOperator<?> ano = (AbstractNetworkOperator<?>) no;
+    revBW += ano.revBandwidthOther[step];
+    revBW += ano.revBandwidthVideo[step];
+    qtyBW += ano.qtyBandwidthOther[step];
+    qtyBW += ano.qtyBandwidthVideo[step];
+  }
+
+  return revBW / qtyBW;
 }
 
 }
