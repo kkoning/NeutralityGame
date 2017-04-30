@@ -14,10 +14,14 @@ public class LinearContentProvider
     extends
     AbstractContentProvider<VectorIndividual<Double>> {
 
+private static final int NUM_COEFFICIENTS = 6;
+
 private static final int INITIAL_INVESTMENT_IDX      = 0;
 private static final int INITIAL_PRICE_IDX           = 1;
 private static final int PRICING_COEFFICIENTS_IDX    = 2;
-private static final int INVESTMENT_COEFFICEINTS_IDX = 9;
+private static final int INVESTMENT_COEFFICEINTS_IDX = PRICING_COEFFICIENTS_IDX
+    + NUM_COEFFICIENTS + 1;
+
 
 @Override
 public Offers.ContentOffer getContentOffer(int step) {
@@ -52,7 +56,7 @@ public void step(NeutralityModel model, int step, Optional<Double> substep) {
 }
 
 private double[] getEnvironmentVariables(int step) {
-  double[] toReturn = new double[6];
+  double[] toReturn = new double[NUM_COEFFICIENTS];
   MarketInfo mi = getModel().getMarketInformation(step - 1);
   toReturn[0] = getSectorInvestment(mi);
   toReturn[1] = getSectorPrice(mi);
