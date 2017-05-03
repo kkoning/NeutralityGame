@@ -40,10 +40,10 @@
             <DefaultAgentFactory agentClass="neutrality.cp.ContingentLinearContentProvider">
                 <Parameter name="isVideoProvider" value="true"/>
             </DefaultAgentFactory>
-            <VectorIndividualFactory length="80">
-                <GaussianRandomVectorRange start="0" end="79">
-                    <Means type="RepeatingDouble" start="0" end="79" value="0"/>
-                    <Deviations type="RepeatingDouble" start="0" end="79"
+            <VectorIndividualFactory length="158">
+                <GaussianRandomVectorRange start="0" end="157">
+                    <Means type="RepeatingDouble" start="0" end="157" value="0"/>
+                    <Deviations type="RepeatingDouble" start="0" end="157"
                                 value="0.01"/>
                 </GaussianRandomVectorRange>
             </VectorIndividualFactory>
@@ -54,13 +54,13 @@
                                             tournamentSize="2" weight="4"/>
                         <ElitismSelector proportionElites="0.1" weight="1"/>
                     </WeightedBreedingPipeline>
-                    <VectorMutator length="80">
-                        <GaussianMutator start="0" end="79">
+                    <VectorMutator length="158">
+                        <GaussianMutator start="0" end="157">
                             <MutationProbability type="RepeatingDouble"
-                                                 start="0" end="79"
+                                                 start="0" end="157"
                                                  value="0.1"/>
                             <Deviations type="RepeatingDouble" start="0"
-                                        end="79" value="0.01"/>
+                                        end="157" value="0.01"/>
                         </GaussianMutator>
                     </VectorMutator>
                 </VectorMutationPipeline>
@@ -87,7 +87,7 @@
                                             tournamentSize="2" weight="4"/>
                         <ElitismSelector proportionElites="0.1" weight="1"/>
                     </WeightedBreedingPipeline>
-                    <VectorMutator length="80">
+                    <VectorMutator length="30">
                         <GaussianMutator start="0" end="29">
                             <MutationProbability type="RepeatingDouble"
                                                  start="0" end="29"

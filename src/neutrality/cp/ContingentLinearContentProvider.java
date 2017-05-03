@@ -24,96 +24,93 @@ import neutrality.probes.NspVideoPriceAbove;
  * individual's genome. Each is a separate binary condition, and may therefore
  * be set to correspond to a binary digit that, taken together with the
  * evaluation of other conditions, determines a market condition index.
- * <p>
+ * 
  * For each value of this index, the genome encodes a constant and coefficient
  * vector that are used, in combination with observations from the environment,
  * to determine investment and pricing decisions.
- * <p>
- * This strategy requires rather sizable genome. Specifically:
- * <p>
- * (#conditions) + 2^(#conditions) * (#Output Variables) for each contingency
- * set. This means that the investment contingencies section requires
- * <p>
- * 3 positions for the condition levels, and 2^3 = 8; 8 * 4 = 32 positions for
- * the output matrix for a total of 35.
- * <p>
- * The pricing section requires 3 positions for the condition levels, and 2^3 =
- * 8; 8 * 5 = 40 positions for the output matrix for a total of 43.
- * <p>
- * That puts the total size of the genome at 2 for the initial decisions, 35 for
- * the subsequent investment decisions, and 43 for the subsequent pricing
- * decisions, for a grant total of: 80 Loci.
+ * 
+ * This strategy requires rather sizable genome. The exact size can be found either
+ * by calculating by hand or by running a debugger and examining the value of
+ * TOTAL_GENOME_LENGTH.  It's currently 158.
+ * 
  */
 public class ContingentLinearContentProvider
     extends
     AbstractContentProvider<VectorIndividual<Double>> {
 
-private static final int INITIAL_INVESTMENT_IDX       = 0;
-private static final int INITIAL_PRICE_IDX            = 1;
-private static final int INVESTMENT_CONTINGENCIES_IDX = 2;
+private static final int INVESTMENT_NUM_CONDITIONS = 3;
+private static final int INVESTMENT_NUM_VARIABLES  = 3;
 
-// Investment contingency helper.
-private final ContingencyHelper<Double> ich;
-// Pricing contingency helper.
-private final ContingencyHelper<Double> pch;
+private static final int PRICING_NUM_CONDITIONS = 3;
+private static final int PRICING_NUM_VARIABLES  = 4;
 
-public ContingentLinearContentProvider() {
+private static final int INITIAL_INVESTMENT_IDX = 0;
+private static final int INITIAL_PRICE_IDX      = 1;
+private static final int INVESTMENT_BLOCK_IDX   = 2;
 
-  // Investment Contingenices (ics)
-  List<EnvironmentalContingency> ics = new ArrayList<>();
-  ics.add(new NspNetworkInvestmentAbove());
-  ics.add(new IxcPriceAbove());
-  ics.add(new NspBundlePremiumAbove());
+private static final int INVESTMENT_LOCI_PER_COND = VectorIndividual
+    .linearEqExpGenomeLength(INVESTMENT_NUM_VARIABLES);
+private static final int INVESTMENT_GENOME_SIZE   = VectorIndividual
+    .conditionIndexHelperExpGenomeLength(INVESTMENT_NUM_CONDITIONS,
+                                         INVESTMENT_LOCI_PER_COND);
 
-  // Pricing Contingencies (pcs)
-  List<EnvironmentalContingency> pcs = new ArrayList<>();
-  pcs.add(new NspBundlePremiumAbove());
-  pcs.add(new NspVideoPriceAbove()); // only useful for video providers?
-  pcs.add(new CpSectorPriceAbove());
+private static final int PRICING_BLOCK_IDX = INVESTMENT_BLOCK_IDX + INVESTMENT_GENOME_SIZE;
 
-  ich = new ContingencyHelper<Double>(this,
-      INVESTMENT_CONTINGENCIES_IDX,
-      ics,
-      Arrays.asList(InvestmentOutputs.values()));
+private static final int PRICING_LOCI_PER_COND = VectorIndividual
+    .linearEqExpGenomeLength(PRICING_NUM_VARIABLES);
+private static final int PRICING_GENOME_SIZE   = VectorIndividual
+    .conditionIndexHelperExpGenomeLength(PRICING_NUM_CONDITIONS,
+                                         PRICING_LOCI_PER_COND);
 
-  pch = new ContingencyHelper<>(this,
-      ich.nextAvailableLoci(),
-      pcs,
-      Arrays.asList(PricingOutputs.values()));
+@SuppressWarnings("unused")
+private static final int TOTAL_GENOME_LENGTH = PRICING_BLOCK_IDX + PRICING_GENOME_SIZE;
+// Debug says 158.
 
-}
+
 
 @Override
 public Offers.ContentOffer getContentOffer(int step) {
+
   // First step, no data on past steps available.
   if (step == 0)
-    return new Offers.ContentOffer(step,
-        this,
-        g_e(INITIAL_PRICE_IDX));
+    return new Offers.ContentOffer(step, this, getManager().e(INITIAL_PRICE_IDX));
 
-  pch.update();
+  /*
+   * In all subsequent steps, use the condition system and the linearEqExp
+   * system to determine the price.
+   */
+
+  // We'll need market information for this...
   MarketInfo mi = getModel().getMarketInformation(step - 1);
-  Double[] x_n = new Double[PricingOutputs.values().length - 1];
-  x_n[0] = mi.nspIXCPrice;
-  x_n[1] = mi.nspUnbundledPrice;
-  x_n[2] = mi.nspBundlePremium;
-  x_n[3] = mi.nspVideoPrice;
 
-  double price = pch.applyLinearEq(x_n);
+  // First, put together the environment conditions
+  double[] pricingConditions = new double[PRICING_NUM_CONDITIONS];
+  pricingConditions[0] = mi.nspBundlePremium;
+  pricingConditions[1] = mi.nspVideoPrice; // only useful for video providers?
+  pricingConditions[2] = getSectorPrice(mi);
 
-  // Now we've got the price, we need to make sure it is >0, as some
-  // representations may attempt to evolve a negative price (there is no way
-  // to limit this with some representations, such as a linear equation on
-  // environmental variables.
-  if (price <= Double.MIN_NORMAL)
-    price = Double.MIN_NORMAL;
+  // Then collect the observations we'll use for the linear equation for price
+  // (remember, coefficients come from the genome).
+  double[] pricingVars = new double[PRICING_NUM_VARIABLES];
+  pricingVars[0] = mi.nspIXCPrice;
+  pricingVars[1] = mi.nspUnbundledPrice;
+  pricingVars[2] = mi.nspBundlePremium;
+  pricingVars[3] = mi.nspVideoPrice;
 
+  // Compare the observations against the genome to determine which section
+  // of the genome to use for coefficients.
+  int linearEqPos = getManager().conditionIndexHelper(pricingConditions,
+                                                      PRICING_BLOCK_IDX,
+                                                      PRICING_LOCI_PER_COND);
+
+  // The price will be determined by that linear equation
+  double price = getManager().linearEqExp(linearEqPos, pricingVars);
   return new Offers.ContentOffer(step, this, price);
 }
 
 @Override
 public void step(
-    NeutralityModel model, int step, Optional<Double> substep) {
+                 NeutralityModel model, int step, Optional<Double> substep) {
 
   /*
    * For the first step, we have no environmental information on which to base
@@ -122,35 +119,44 @@ public void step(
    */
   double investment = Double.NaN;
 
+  // First step, no data on past steps available.
   if (step == 0) {
-    investment = g_e(INITIAL_INVESTMENT_IDX);
+    investment = getManager().e(INITIAL_INVESTMENT_IDX);
     makeContentInvestment(step, investment);
-  }
+  } else {
 
-  if (step > 0) {
-    ich.update();
+    /*
+     * In all subsequent steps, use the condition system and the linearEqExp
+     * system to determine the investment level.
+     */
+
+    // We'll need market information for this.
     MarketInfo mi = getModel().getMarketInformation(step - 1);
-    Double[] x_n = new Double[InvestmentOutputs.values().length - 1];
-    x_n[0] = mi.nspNetworkInvestment;
-    x_n[1] = mi.nspUnbundledPrice;
-    x_n[2] = mi.nspIXCPrice;
 
-    investment = ich.applyLinearEq(x_n);
+    // First, put together the environment conditions
+    double[] investConditions = new double[INVESTMENT_NUM_CONDITIONS];
+    investConditions[0] = mi.nspNetworkInvestment;
+    investConditions[1] = mi.nspIXCPrice;
+    investConditions[2] = mi.nspBundlePremium;
+
+    // Then collect the observations we'll use for the linear equation for
+    // investment.
+    double[] investVars = new double[INVESTMENT_NUM_VARIABLES];
+    investVars[0] = mi.nspNetworkInvestment;
+    investVars[1] = mi.nspUnbundledPrice;
+    investVars[2] = mi.nspIXCPrice;
+
+    // Use the conditions to get the genome position
+    int pos = getManager().conditionIndexHelperExp(investConditions,
+                                                   INVESTMENT_BLOCK_IDX,
+                                                   INVESTMENT_LOCI_PER_COND);
+
+    // The investment amount will be determined by the linear equation
+    investment = getManager().linearEqExp(pos, investVars);
+    makeContentInvestment(step, investment);
+
   }
 
-  makeContentInvestment(step, investment);
-}
-
-private final double g_e(int genome_position) {
-  return Math.exp(getManager().getGenomeAt(genome_position));
-}
-
-enum InvestmentOutputs {
-  CONSTANT, NSP_NETWORK_INVESTMENT_COEF, NSP_UNBUNDLED_PRICE_COEF, IXC_PRICE_COEF
-}
-
-enum PricingOutputs {
-  CONSTANT, IXC_PRICE_COEF, NSP_UNBUNDLED_PRICE_COEF, NSP_BUNDLING_PREMIUM_COEF, NSP_VIDEO_PRICE_COEF
 }
 
 }
