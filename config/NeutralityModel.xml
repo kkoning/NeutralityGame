@@ -30,7 +30,7 @@
         </Population>
     </PopulationGroup>
 
-    <PopulationGroup id="videoContent" totalSize="200">
+    <PopulationGroup id="videoContent" totalSize="300">
 
         <TournamentBalancer tournamentSize="2" topIndividuals="1"/>
 
@@ -66,6 +66,40 @@
                 </VectorMutationPipeline>
             </VectorCrossoverPipeline>
         </Population>
+
+        <Population initialSize="100"
+                    id="LinearVideoContentProviders">
+            <!--<DefaultVectorIndividualData generations="100" file="clvcp.csv"/>-->
+            <DefaultAgentFactory agentClass="neutrality.cp.LinearContentProvider">
+                <Parameter name="isVideoProvider" value="true"/>
+            </DefaultAgentFactory>
+            <VectorIndividualFactory length="30">
+                <GaussianRandomVectorRange start="0" end="29">
+                    <Means type="RepeatingDouble" start="0" end="29" value="0"/>
+                    <Deviations type="RepeatingDouble" start="0" end="29"
+                                value="0.01"/>
+                </GaussianRandomVectorRange>
+            </VectorIndividualFactory>
+            <VectorCrossoverPipeline crossoverProb="0.3">
+                <VectorMutationPipeline>
+                    <WeightedBreedingPipeline>
+                        <TournamentSelector topIndividuals="1"
+                                            tournamentSize="2" weight="4"/>
+                        <ElitismSelector proportionElites="0.1" weight="1"/>
+                    </WeightedBreedingPipeline>
+                    <VectorMutator length="80">
+                        <GaussianMutator start="0" end="29">
+                            <MutationProbability type="RepeatingDouble"
+                                                 start="0" end="29"
+                                                 value="0.1"/>
+                            <Deviations type="RepeatingDouble" start="0"
+                                        end="29" value="0.01"/>
+                        </GaussianMutator>
+                    </VectorMutator>
+                </VectorMutationPipeline>
+            </VectorCrossoverPipeline>
+        </Population>
+
 
         <Population initialSize="100" id="DirectlyEncodedVideoContentProviders">
             <DefaultVectorIndividualData generations="1" file="devcp.csv"/>
@@ -155,9 +189,8 @@
     <DefaultEnvironmentStatistics file="DefaultEnvironmentStatistics.csv" format="csv"/>
 
     <!-- Need an Evaluator -->
-    <!-- <LocalEvaluator/> -->
-    <LocalParallelEvaluator/>
-
+    <LocalEvaluator/>
+<!--     <LocalParallelEvaluator/> -->
     <!-- Test out an DefaultAgentModelReporter -->
     <DefaultModelSummaryData generations="10" file="summary.csv" format="csv"/>
 
