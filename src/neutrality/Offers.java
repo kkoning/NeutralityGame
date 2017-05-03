@@ -20,8 +20,8 @@ public ContentOffer(
     double price) {
   if (contentProvider == null)
     BUG("ContentOffer cannot have a null ContentProvider");
-  if (price <= 0)
-    BUG("ContentOffer must have a positive price");
+  if (price < Double.MIN_NORMAL)
+    price = Double.MIN_NORMAL;
 
   this.step = step;
   this.contentProvider = contentProvider;
