@@ -217,4 +217,15 @@ public double getNetOpData(NetOpData variable) {
   return amount;
 }
 
+public static double proportionA(double split) {
+  // Make calculations of bw intensity based on beta
+  double videoBWIntensity;
+  videoBWIntensity = split / (1.0 + split);
+  return videoBWIntensity;
+}
+
+public static double proportionB(double split) {
+  return 1.0d - AbstractNetworkOperator.proportionA(split);
+}
+
 }

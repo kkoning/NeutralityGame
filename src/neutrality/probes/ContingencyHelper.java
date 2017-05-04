@@ -114,7 +114,7 @@ public T getGenomeValueFor(Enum<?> outVar) {
 
 private T getGenomeValueForOffset(int offset) {
   int genomePos = outputVectorGenomeOffset + offset;
-  T toReturn = agent.getManager().getGenomeAt(genomePos);
+  T toReturn = agent.getManager().gene(genomePos);
   return toReturn;
 }
 

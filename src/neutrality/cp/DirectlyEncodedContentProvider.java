@@ -31,7 +31,7 @@ public void step(
 
 private double e(Position pos) {
   VectorIndividual<Double> ind = getManager();
-  Double genomeValue = ind.getGenomeAt(pos.ordinal());
+  Double genomeValue = ind.gene(pos.ordinal());
   double toReturn = Math.exp(genomeValue);
   return toReturn;
 }

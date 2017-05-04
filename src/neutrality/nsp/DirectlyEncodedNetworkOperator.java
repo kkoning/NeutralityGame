@@ -30,8 +30,8 @@ public void step(
 public Offers.NetworkOnlyOffer getNetworkOffer(int step) {
   double pl = e(Position.NetStandalonePriceLevel); // price level
   double pr = e(Position.NetStandaloneConBwPriceBalance); // price balance
-  double conPrice = pl * proportionA(pr);
-  double bwPrice = pl * proportionB(pr);
+  double conPrice = pl * AbstractNetworkOperator.proportionA(pr);
+  double bwPrice = pl * AbstractNetworkOperator.proportionB(pr);
 
   Offers.NetworkOnlyOffer noo = new Offers.NetworkOnlyOffer(step,
       this,
@@ -52,8 +52,8 @@ public Offers.ContentOffer getContentOffer(int step) {
 public Offers.NetworkAndVideoBundleOffer getBundledOffer(int step) {
   double pl = e(Position.BundledOfferPriceLevel); // price level
   double pr = e(Position.BundledOfferConBwPriceBalance); // price balance
-  double bunPrice = pl * proportionA(pr);
-  double bwPrice = pl * proportionB(pr);
+  double bunPrice = pl * AbstractNetworkOperator.proportionA(pr);
+  double bwPrice = pl * AbstractNetworkOperator.proportionB(pr);
 
   Offers.NetworkAndVideoBundleOffer bo = new Offers.NetworkAndVideoBundleOffer(
       step,
@@ -68,20 +68,9 @@ public void init() {
   super.init();
 }
 
-public static final double proportionA(double split) {
-  // Make calculations of bw intensity based on beta
-  double videoBWIntensity;
-  videoBWIntensity = split / (1.0 + split);
-  return videoBWIntensity;
-}
-
-public final double proportionB(double split) {
-  return 1.0d - proportionA(split);
-}
-
 private double e(Position pos) {
   VectorIndividual<Double> ind = getManager();
-  Double genomeValue = ind.getGenomeAt(pos.ordinal());
+  Double genomeValue = ind.gene(pos.ordinal());
   double toReturn = Math.exp(genomeValue);
   return toReturn;
 }
