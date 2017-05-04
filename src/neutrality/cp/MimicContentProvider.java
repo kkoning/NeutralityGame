@@ -30,12 +30,14 @@ public Offers.ContentOffer getContentOffer(int step) {
 @Override
 public void step(NeutralityModel model, int step, Optional<Double> substep) {
   // In the first step, use genome.
-  if (step == 0)
+  if (step == 0) {
     super.step(model, step, substep);
+  } else {
+    // In all other steps, follow the market.
+    double toInvest = getSectorInvestment(model.getMarketInformation(step - 1));
+    makeContentInvestment(step, toInvest);
+  }
 
-  // In all other steps, follow the market.
-  double toInvest = getSectorInvestment(model.getMarketInformation(step - 1));
-  makeContentInvestment(step, toInvest);
 
 }
 
