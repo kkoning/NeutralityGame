@@ -51,10 +51,10 @@ public NetworkOnlyOffer(
 
   if (networkOperator == null)
     BUG("NetworkOnlyOffer created with null NetworkOperator");
-  if (connectionPrice <= 0)
-    BUG("NetworkOnlyOffer must have a positive connection price.");
-  if (bandwidthPrice <= 0)
-    BUG("NetworkOnlyOffer must have a positive bandwidth price.");
+  if (connectionPrice < Double.MIN_NORMAL)
+    connectionPrice = Double.MIN_NORMAL;
+  if (bandwidthPrice <= Double.MIN_NORMAL)
+    bandwidthPrice = Double.MIN_NORMAL;
 
   this.step = step;
   this.network = networkOperator;
@@ -86,12 +86,13 @@ public NetworkAndVideoBundleOffer(
 
   if (networkOperator == null)
     BUG("NetworkAndVideoBundleOffer created with null NetworkOperator");
-  if (bundlePrice <= 0)
-    BUG("NetworkAndVideoBundleOffer must have a positive connection price.");
-  if (bandwidthPrice <= 0)
-    BUG("NetworkAndVideoBundleOffer must have a positive bandwidth price.");
   if (!networkOperator.getModel().policyBundlingAllowed)
     BUG("NetworkAndVideoBundleOffer made, but bundling not allowed.");
+  
+  if (bundlePrice < Double.MIN_NORMAL)
+    bundlePrice = Double.MIN_NORMAL;
+  if (bandwidthPrice <= Double.MIN_NORMAL)
+    bandwidthPrice = Double.MIN_NORMAL;
 
   this.step = step;
   this.networkOperator = networkOperator;
