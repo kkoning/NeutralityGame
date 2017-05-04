@@ -22,25 +22,27 @@ public class MimicNetworkOperator extends DirectlyEncodedNetworkOperator {
 @Override
 public void step(NeutralityModel model, int step, Optional<Double> substep) {
   // For the first step, use the genome.
-  if (step == 0)
+  if (step == 0) {
     super.step(model, step, substep);
-
-  /*
-   * For all other steps, follow the market
-   */
-  // Network investment
-  MarketInfo mi = getModel().getMarketInformation(step - 1);
-  double mktNetInvest = mi.nspNetworkInvestment;
-  makeNetworkInvestment(step, mktNetInvest);
-
-  // Follow the video content market, but only if vertically integrated content
-  // is allowed. Otherwise it doesn't make sense to spend anything here.
-  if (getModel().policyNSPContentAllowed) {
-    double mktVidInvest = mi.nspVideoInvestment;
-    makeContentInvestment(step, mktVidInvest);
   } else {
-    makeContentInvestment(step, 0);
+    /*
+     * For all other steps, follow the market
+     */
+    // Network investment
+    MarketInfo mi = getModel().getMarketInformation(step - 1);
+    double mktNetInvest = mi.nspNetworkInvestment;
+    makeNetworkInvestment(step, mktNetInvest);
+
+    // Follow the video content market, but only if vertically integrated content
+    // is allowed. Otherwise it doesn't make sense to spend anything here.
+    if (getModel().policyNSPContentAllowed) {
+      double mktVidInvest = mi.nspVideoInvestment;
+      makeContentInvestment(step, mktVidInvest);
+    } else {
+      makeContentInvestment(step, 0);
+    }
   }
+
 }
 
 @Override
