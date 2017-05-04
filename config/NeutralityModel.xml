@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Warning: Used as template!  Make sure you're pointing at the correct file. -->
 <Environment checkpointEvery="10">
-    <PopulationGroup id="nsp" totalSize="100">
+    <PopulationGroup id="nsp" totalSize="300">
     
         <TournamentBalancer tournamentSize="2" topIndividuals="1"/>
     
     
         <Population initialSize="100" id="DirectlyEncodedNetworkOperators">
-            <DefaultVectorIndividualData generations="1" file="deno.csv"/>
+            <DefaultVectorIndividualData generations="50" file="deno.csv"/>
             <DefaultAgentFactory agentClass="neutrality.nsp.DirectlyEncodedNetworkOperator">
             </DefaultAgentFactory>
             <VectorIndividualFactory length="8">
@@ -32,6 +32,33 @@
             </VectorCrossoverPipeline>
         </Population>
         
+        <Population initialSize="100" id="MimicNetworkOperators">
+            <DefaultVectorIndividualData generations="50" file="mimic.csv"/>
+            <DefaultAgentFactory agentClass="neutrality.nsp.MimicNetworkOperator">
+            </DefaultAgentFactory>
+            <VectorIndividualFactory length="8">
+                <GaussianRandomVectorRange start="0" end="7">
+                    <Means type="DoubleList" start="0" end="7">3 3 0 0 0 0 0 0</Means>
+                    <Deviations type="DoubleList" start="0" end="7">0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01</Deviations>
+                </GaussianRandomVectorRange>
+            </VectorIndividualFactory>
+            <VectorCrossoverPipeline crossoverProb="0.3">
+                <VectorMutationPipeline>
+                    <WeightedBreedingPipeline>
+                        <TournamentSelector topIndividuals="1" tournamentSize="2" weight="4"/>
+                        <ElitismSelector proportionElites="0.1" weight="1"/>
+                    </WeightedBreedingPipeline>
+                    <VectorMutator length="8">
+                        <GaussianMutator start="0" end="7">
+                            <MutationProbability type="DoubleList" start="0" end="7">1 1 1 1 1 1 1 1</MutationProbability>
+                            <Deviations type="DoubleList" start="0" end="7">0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01</Deviations>
+                        </GaussianMutator>
+                    </VectorMutator>
+                </VectorMutationPipeline>
+            </VectorCrossoverPipeline>
+        </Population>
+        
+        
         <Population initialSize="100" id="LinearNetworkOperators">
             <!-- <DefaultVectorIndividualData generations="1" file="deno.csv"/> -->
             <DefaultAgentFactory agentClass="neutrality.nsp.LinearNetworkOperator">
@@ -39,8 +66,7 @@
             <VectorIndividualFactory length="77">
                 <GaussianRandomVectorRange start="0" end="76">
                     <Means type="RepeatingDouble" start="0" end="76" value="0"/>
-                    <Deviations type="RepeatingDouble" start="0" end="76"
-                                value="0.01"/>
+                    <Deviations type="RepeatingDouble" start="0" end="76" value="0.01"/>
                 </GaussianRandomVectorRange>
             </VectorIndividualFactory>
             <VectorCrossoverPipeline crossoverProb="0.3">
@@ -65,42 +91,35 @@
 
         <TournamentBalancer tournamentSize="2" topIndividuals="1"/>
 
-        <Population initialSize="100"
-                    id="ContingentLinearVideoContentProviders">
-            <!--<DefaultVectorIndividualData generations="100" file="clvcp.csv"/>-->
+        <Population initialSize="100" id="ContingentLinearVideoContentProviders">
+            <!--<DefaultVectorIndividualData generations="50" file="clvcp.csv"/>-->
             <DefaultAgentFactory agentClass="neutrality.cp.ContingentLinearContentProvider">
                 <Parameter name="isVideoProvider" value="true"/>
             </DefaultAgentFactory>
             <VectorIndividualFactory length="158">
                 <GaussianRandomVectorRange start="0" end="157">
                     <Means type="RepeatingDouble" start="0" end="157" value="0"/>
-                    <Deviations type="RepeatingDouble" start="0" end="157"
-                                value="0.01"/>
+                    <Deviations type="RepeatingDouble" start="0" end="157" value="0.01"/>
                 </GaussianRandomVectorRange>
             </VectorIndividualFactory>
             <VectorCrossoverPipeline crossoverProb="0.3">
                 <VectorMutationPipeline>
                     <WeightedBreedingPipeline>
-                        <TournamentSelector topIndividuals="1"
-                                            tournamentSize="2" weight="4"/>
+                        <TournamentSelector topIndividuals="1" tournamentSize="2" weight="4"/>
                         <ElitismSelector proportionElites="0.1" weight="1"/>
                     </WeightedBreedingPipeline>
                     <VectorMutator length="158">
                         <GaussianMutator start="0" end="157">
-                            <MutationProbability type="RepeatingDouble"
-                                                 start="0" end="157"
-                                                 value="0.1"/>
-                            <Deviations type="RepeatingDouble" start="0"
-                                        end="157" value="0.01"/>
+                            <MutationProbability type="RepeatingDouble" start="0" end="157" value="0.1"/>
+                            <Deviations type="RepeatingDouble" start="0" end="157" value="0.01"/>
                         </GaussianMutator>
                     </VectorMutator>
                 </VectorMutationPipeline>
             </VectorCrossoverPipeline>
         </Population>
 
-        <Population initialSize="100"
-                    id="LinearVideoContentProviders">
-            <!--<DefaultVectorIndividualData generations="100" file="clvcp.csv"/>-->
+        <Population initialSize="100" id="LinearVideoContentProviders">
+            <!--<DefaultVectorIndividualData generations="50" file="clvcp.csv"/>-->
             <DefaultAgentFactory agentClass="neutrality.cp.LinearContentProvider">
                 <Parameter name="isVideoProvider" value="true"/>
             </DefaultAgentFactory>
@@ -133,7 +152,7 @@
 
 
         <Population initialSize="100" id="DirectlyEncodedVideoContentProviders">
-            <DefaultVectorIndividualData generations="1" file="devcp.csv"/>
+            <DefaultVectorIndividualData generations="50" file="devcp.csv"/>
             <DefaultAgentFactory agentClass="neutrality.cp.DirectlyEncodedContentProvider">
                 <Parameter name="isVideoProvider" value="true"/>
             </DefaultAgentFactory>
@@ -161,7 +180,7 @@
         </Population>
         
          <Population initialSize="100" id="MimicVideoContentProviders">
-            <DefaultVectorIndividualData generations="1" file="devcp.csv"/>
+            <DefaultVectorIndividualData generations="50" file="devcp.csv"/>
             <DefaultAgentFactory agentClass="neutrality.cp.MimicContentProvider">
                 <Parameter name="isVideoProvider" value="true"/>
             </DefaultAgentFactory>
@@ -193,7 +212,7 @@
 
     <PopulationGroup id="otherContent" totalSize="200">
         <Population initialSize="200" id="DirectlyEncodedOtherContentProviders">
-            <DefaultVectorIndividualData generations="1" file="deocp.csv"/>
+            <DefaultVectorIndividualData generations="50" file="deocp.csv"/>
             <DefaultAgentFactory agentClass="neutrality.cp.DirectlyEncodedContentProvider">
                 <Parameter name="isVideoProvider" value="false"/>
             </DefaultAgentFactory>
@@ -222,7 +241,7 @@
     </PopulationGroup>
 
     <!-- Need an EvaluationGroupFactory -->
-    <ShuffledEvaluationGroupFactory numGroups="220">
+    <ShuffledEvaluationGroupFactory numGroups="500">
         <AgentSource populationGroup="nsp" numAgents="1"/>
         <AgentSource populationGroup="videoContent" numAgents="3"/>
         <AgentSource populationGroup="otherContent" numAgents="3"/>
