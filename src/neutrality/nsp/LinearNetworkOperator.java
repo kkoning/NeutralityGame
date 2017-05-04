@@ -2,7 +2,6 @@ package neutrality.nsp;
 
 import java.util.Optional;
 
-import agency.AgentModel;
 import agency.vector.VectorIndividual;
 import neutrality.MarketInfo;
 import neutrality.NeutralityModel;
@@ -10,7 +9,6 @@ import neutrality.Offers;
 import neutrality.Offers.ContentOffer;
 import neutrality.Offers.NetworkAndVideoBundleOffer;
 import neutrality.Offers.NetworkOnlyOffer;
-import neutrality.nsp.DirectlyEncodedNetworkOperator.Position;
 
 /**
  * Network Operators need to make a significantly larger number of decisions.
@@ -32,6 +30,7 @@ public class LinearNetworkOperator extends AbstractNetworkOperator<VectorIndivid
 /*
  * Layout of the Genome
  */
+@SuppressWarnings("unused")
 private static final int genomeSize; // For debugging
 
 // Positions for the initial decision variables.

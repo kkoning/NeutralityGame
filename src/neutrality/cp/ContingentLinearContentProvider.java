@@ -1,21 +1,11 @@
 package neutrality.cp;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 import agency.vector.VectorIndividual;
 import neutrality.MarketInfo;
 import neutrality.NeutralityModel;
 import neutrality.Offers;
-import neutrality.probes.ContingencyHelper;
-import neutrality.probes.CpSectorPriceAbove;
-import neutrality.probes.EnvironmentalContingency;
-import neutrality.probes.IxcPriceAbove;
-import neutrality.probes.NspBundlePremiumAbove;
-import neutrality.probes.NspNetworkInvestmentAbove;
-import neutrality.probes.NspVideoPriceAbove;
 
 /**
  * The ContingentLinearContentProvider makes investment and pricing decisions
