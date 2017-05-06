@@ -11,7 +11,7 @@
             </DefaultAgentFactory>
             <VectorIndividualFactory length="8">
                 <GaussianRandomVectorRange start="0" end="7">
-                    <Means type="DoubleList" start="0" end="7">3 3 0 0 0 0 0 0</Means>
+                    <Means type="DoubleList" start="0" end="7">0 0 0 0 0 0 0 0</Means>
                     <Deviations type="DoubleList" start="0" end="7">0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01</Deviations>
                 </GaussianRandomVectorRange>
             </VectorIndividualFactory>
@@ -37,7 +37,7 @@
             </DefaultAgentFactory>
             <VectorIndividualFactory length="8">
                 <GaussianRandomVectorRange start="0" end="7">
-                    <Means type="DoubleList" start="0" end="7">3 3 0 0 0 0 0 0</Means>
+                    <Means type="DoubleList" start="0" end="7">0 0 0 0 0 0 0 0</Means>
                     <Deviations type="DoubleList" start="0" end="7">0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01</Deviations>
                 </GaussianRandomVectorRange>
             </VectorIndividualFactory>
