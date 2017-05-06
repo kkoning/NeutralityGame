@@ -278,7 +278,7 @@ public boolean step() {
       if (isDebugEnabled())
         debugOut.println(cp + " is bankrupt, removing");
       ocpIt.remove();
-      bankruptVideoContentProviders.add(cp);
+      bankruptOtherContentProviders.add(cp);
     }
   }
 
@@ -565,6 +565,10 @@ public Object getSummaryData() {
   o.vcpBankruptcies = bankruptVideoContentProviders.size();
   o.ocpBankruptcies = bankruptOtherContentProviders.size();
 
+  // For debugging purposes.
+  o.checkForInfinities();
+  o.checkForNaNs();
+  
   return o;
 }
 
