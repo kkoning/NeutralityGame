@@ -20,8 +20,8 @@ public ContentOffer(
     double price) {
   if (contentProvider == null)
     BUG("ContentOffer cannot have a null ContentProvider");
-  if (price < Double.MIN_NORMAL)
-    price = Double.MIN_NORMAL;
+  if (price < 1E-20)
+    price = 1E-20;
 
   this.step = step;
   this.contentProvider = contentProvider;
@@ -51,10 +51,10 @@ public NetworkOnlyOffer(
 
   if (networkOperator == null)
     BUG("NetworkOnlyOffer created with null NetworkOperator");
-  if (connectionPrice < Double.MIN_NORMAL)
-    connectionPrice = Double.MIN_NORMAL;
-  if (bandwidthPrice <= Double.MIN_NORMAL)
-    bandwidthPrice = Double.MIN_NORMAL;
+  if (connectionPrice < 1E-20)
+    connectionPrice = 1E-20;
+  if (bandwidthPrice <= 1E-20)
+    bandwidthPrice = 1E-20;
 
   this.step = step;
   this.network = networkOperator;
@@ -89,10 +89,10 @@ public NetworkAndVideoBundleOffer(
   if (!networkOperator.getModel().policyBundlingAllowed)
     BUG("NetworkAndVideoBundleOffer made, but bundling not allowed.");
   
-  if (bundlePrice < Double.MIN_NORMAL)
-    bundlePrice = Double.MIN_NORMAL;
-  if (bandwidthPrice <= Double.MIN_NORMAL)
-    bandwidthPrice = Double.MIN_NORMAL;
+  if (bundlePrice < 1E-20)
+    bundlePrice = 1E-20;
+  if (bandwidthPrice <= 1E-20)
+    bandwidthPrice = 1E-20;
 
   this.step = step;
   this.networkOperator = networkOperator;
