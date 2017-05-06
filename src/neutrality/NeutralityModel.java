@@ -518,13 +518,13 @@ public Object getSummaryData() {
     o.vcpQty += vcp.getContentData(QUANTITY);
     o.vcpRev += vcp.getContentData(REVENUE);
     o.vcpKa += vcp.getContentData(INVESTMENT);
-    o.vcpBalance += vcp.getContentData(BALANCE);
+    o.vcpBalance += vcp.getContentData(BALANCE) / videoContentProviders.size();
   }
   for (ContentProvider<?> ocp : otherContentProviders) {
     o.ocpQty += ocp.getContentData(QUANTITY);
     o.ocpRev += ocp.getContentData(REVENUE);
     o.ocpKa += ocp.getContentData(INVESTMENT);
-    o.ocpBalance += ocp.getContentData(BALANCE);
+    o.ocpBalance += ocp.getContentData(BALANCE) / otherContentProviders.size();
   }
 
   /*
@@ -634,6 +634,11 @@ public MarketInfo getMarketInformation(int step) {
     marketInformation[step] = new MarketInfo(this, step);
 
   return marketInformation[step];
+}
+
+public static void verifySaneAmount(double amount) {
+  if (Double.isInfinite(amount) || Double.isNaN(amount))
+    throw new RuntimeException();
 }
 
 }
