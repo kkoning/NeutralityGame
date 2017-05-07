@@ -31,12 +31,17 @@ public void step(NeutralityModel model, int step, Optional<Double> substep) {
     // Network investment
     MarketInfo mi = getModel().getMarketInformation(step - 1);
     double mktNetInvest = mi.nspNetworkInvestment;
+    if (Double.isNaN(mktNetInvest) || Double.isInfinite(mktNetInvest))
+      mktNetInvest = this.getKn(0);
+    
     makeNetworkInvestment(step, mktNetInvest);
 
     // Follow the video content market, but only if vertically integrated content
     // is allowed. Otherwise it doesn't make sense to spend anything here.
     if (getModel().policyNSPContentAllowed) {
       double mktVidInvest = mi.nspVideoInvestment;
+      if (Double.isNaN(mktVidInvest) || Double.isInfinite(mktVidInvest))
+        mktVidInvest = this.getKa(0);
       makeContentInvestment(step, mktVidInvest);
     } else {
       makeContentInvestment(step, 0);
@@ -55,6 +60,10 @@ public NetworkOnlyOffer getNetworkOffer(int step) {
   MarketInfo mi = getModel().getMarketInformation(step - 1);
   double conPrice = mi.nspUnbundledPrice;
   double bwPrice = mi.nspBandwidthPrice;
+  
+  if (Double.isNaN(bwPrice) || Double.isNaN(conPrice) || Double.isInfinite(bwPrice) || Double.isInfinite(conPrice))
+    return super.getNetworkOffer(step);
+  
   NetworkOnlyOffer noo = new NetworkOnlyOffer(step, this, conPrice, bwPrice);
   return noo;
 }
@@ -67,7 +76,11 @@ public ContentOffer getContentOffer(int step) {
 
   // For all other steps, follow the market.
   MarketInfo mi = getModel().getMarketInformation(step - 1);
-  return new ContentOffer(step, this, mi.nspVideoPrice);
+  double price = mi.nspVideoPrice;
+  if (Double.isNaN(price) || Double.isInfinite(price))
+    return super.getContentOffer(step);
+  else 
+    return new ContentOffer(step, this, price);
 
 }
 
@@ -81,6 +94,13 @@ public NetworkAndVideoBundleOffer getBundledOffer(int step) {
   MarketInfo mi = getModel().getMarketInformation(step - 1);
   double bunPrice = mi.nspBundledPrice;
   double bwPrice = mi.nspBandwidthPrice;
+
+  if (Double.isNaN(bunPrice) || Double.isInfinite(bunPrice))
+    bunPrice = getModel().income;
+  if (Double.isNaN(bwPrice) || Double.isInfinite(bwPrice))
+    bwPrice = getModel().income;
+
+  
   return new NetworkAndVideoBundleOffer(step, this, bunPrice, bwPrice);
 }
 

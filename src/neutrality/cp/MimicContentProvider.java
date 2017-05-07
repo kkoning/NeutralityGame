@@ -24,6 +24,8 @@ public Offers.ContentOffer getContentOffer(int step) {
   // In all other steps, follow the market.
   double sectorPrice = getSectorPrice(
       getModel().getMarketInformation(step - 1));
+  if (Double.isInfinite(sectorPrice) || Double.isNaN(sectorPrice))
+    return super.getContentOffer(step);
   return new Offers.ContentOffer(step, this, sectorPrice);
 }
 
@@ -35,7 +37,10 @@ public void step(NeutralityModel model, int step, Optional<Double> substep) {
   } else {
     // In all other steps, follow the market.
     double toInvest = getSectorInvestment(model.getMarketInformation(step - 1));
-    makeContentInvestment(step, toInvest);
+    if (Double.isInfinite(toInvest) || Double.isNaN(toInvest))
+      super.step(model,step,substep);
+    else
+      makeContentInvestment(step, toInvest);
   }
 
 
