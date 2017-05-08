@@ -23,6 +23,8 @@ public ContentOffer(
   if (price < 1E-20)
     price = 1E-20;
 
+  NeutralityModel.verifySaneAmount(price);
+  
   this.step = step;
   this.contentProvider = contentProvider;
   this.price = price;
@@ -49,6 +51,9 @@ public NetworkOnlyOffer(
     double connectionPrice,
     double bandwidthPrice) {
 
+  NeutralityModel.verifySaneAmount(connectionPrice);
+  NeutralityModel.verifySaneAmount(bandwidthPrice);
+  
   if (networkOperator == null)
     BUG("NetworkOnlyOffer created with null NetworkOperator");
   if (connectionPrice < 1E-20)
@@ -84,6 +89,9 @@ public NetworkAndVideoBundleOffer(
     double bundlePrice,
     double bandwidthPrice) {
 
+  NeutralityModel.verifySaneAmount(bundlePrice);
+  NeutralityModel.verifySaneAmount(bandwidthPrice);
+  
   if (networkOperator == null)
     BUG("NetworkAndVideoBundleOffer created with null NetworkOperator");
   if (!networkOperator.getModel().policyBundlingAllowed)

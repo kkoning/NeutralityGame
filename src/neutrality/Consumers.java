@@ -1,6 +1,9 @@
 package neutrality;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+
+import neutrality.nsp.NetworkOperator;
 
 public class Consumers {
 
@@ -25,11 +28,11 @@ public Consumers(NeutralityModel model, double income) {
 
 /**
  * This function determines the quantities of each offer to consume, then
- * records that consumption and it's effects.  The effects of the consumption
- * are in the ConsumptionOption class.
+ * records that consumption and it's effects. The effects of the consumption are
+ * in the ConsumptionOption class.
  *
  * @param options
- *         A list of possible options
+ *          A list of possible options
  */
 public void consume(List<ConsumptionOption> options) {
 
@@ -55,12 +58,18 @@ public void consume(List<ConsumptionOption> options) {
 
     // options always have a network
     netCapTerm = Math.pow(option.K_n, tau);
+    // netCapTerm = Math.log(option.K_n + Math.E);
 
     // but not always both types of content
-    if (option.videoContent.isPresent())
+    if (option.videoContent.isPresent()) {
+      // vidCapTerm = Math.log(option.K_v + Math.E);
       vidCapTerm = Math.pow(option.K_v, psi);
-    if (option.otherContent.isPresent())
+
+    }
+    if (option.otherContent.isPresent()) {
+      // othCapTerm = Math.log(option.K_o + Math.E);
       othCapTerm = Math.pow(option.K_o, psi);
+    }
 
     double vidCapTot = vidValue * netCapTerm * vidCapTerm;
     double othCapTot = othValue * netCapTerm * othCapTerm;
@@ -101,7 +110,7 @@ public void consume(List<ConsumptionOption> options) {
     // Residual term for all other goods; quasi-linear demand.
     double secondTerm = 0d;
     if (model.linearDemandTerm)
-       secondTerm = -prices[i];
+      secondTerm = -prices[i];
 
     double qty = firstTerm + secondTerm;
 
@@ -111,6 +120,9 @@ public void consume(List<ConsumptionOption> options) {
 
     // Scale the size of the market based on the values
     qty *= (income / model.income);
+
+    if (Double.isNaN(qty) || Double.isInfinite(qty))
+      throw new RuntimeException();
 
     quantities[i] = qty;
   }
