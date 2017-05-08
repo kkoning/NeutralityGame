@@ -46,6 +46,7 @@ public Double gamma;
 public Double demandPriceCoefficient;
 public Double income;
 public Double firmEndowment;
+public Double nspMarginalCost;
 
 public Boolean policy0PriceIXC;
 public Boolean policyBundlingAllowed;

@@ -136,7 +136,7 @@ public void processNetworkConsumption(
   // profit maximization will have p -> zero and q-> infinity.
   // TODO: This is just qty, MC=1 right now. Think about this again later.
   try {
-    account.pay(qty);
+    account.pay(qty * getModel().nspMarginalCost);
   } catch (Account.PaymentException e) {
     this.goBankrupt();
   }
