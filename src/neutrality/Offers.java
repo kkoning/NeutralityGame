@@ -61,6 +61,9 @@ public NetworkOnlyOffer(
   if (bandwidthPrice <= 1E-20)
     bandwidthPrice = 1E-20;
 
+  // Connection prices are interpreted as a premium over marginal cost.
+  connectionPrice += networkOperator.getModel().nspMarginalCost;
+  
   this.step = step;
   this.network = networkOperator;
   this.connectionPrice = connectionPrice;
@@ -101,6 +104,9 @@ public NetworkAndVideoBundleOffer(
     bundlePrice = 1E-20;
   if (bandwidthPrice <= 1E-20)
     bandwidthPrice = 1E-20;
+
+  // Bundle prices are interpreted as a premium over marginal cost.
+  bundlePrice += networkOperator.getModel().nspMarginalCost;
 
   this.step = step;
   this.networkOperator = networkOperator;
