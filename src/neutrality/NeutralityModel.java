@@ -123,31 +123,46 @@ public static final void determineOptions(
   for (Offers.NetworkOnlyOffer networkOnlyOffer : networkOnlyOffers) {
     // Video content but not other content
     for (Offers.ContentOffer videoContentOffer : videoContentOffers) {
+
+      /*
+       * If bundling is enabled, then the combination of network access and
+       * video from the same network operator will be offered in the bundle.
+       * Having an *additional* consumption option for the same group of things
+       * would provide the Network Operators with an unfair advantage in
+       * content.
+       */
+      if (model.policyBundlingAllowed) {
+        NetworkOperator<?> no = networkOnlyOffer.network;
+        ContentProvider<?> cp = videoContentOffer.contentProvider;
+        if (no == cp) // They're the same
+          continue; // skip this combination; rely on the bundle instead.
+      }
+
       ConsumptionOption option = new ConsumptionOption(model,
-          networkOnlyOffer,
-          null,
-          videoContentOffer,
-          null);
+                                                       networkOnlyOffer,
+                                                       null,
+                                                       videoContentOffer,
+                                                       null);
       videoOnlyOptions.add(option);
     }
 
     // No video content, but other content
     for (Offers.ContentOffer otherContentOffer : otherContentOffers) {
       ConsumptionOption option = new ConsumptionOption(model,
-          networkOnlyOffer,
-          null,
-          null,
-          otherContentOffer);
+                                                       networkOnlyOffer,
+                                                       null,
+                                                       null,
+                                                       otherContentOffer);
       otherOnlyOptions.add(option);
     }
     // Both integrated and other content
     for (Offers.ContentOffer videoContentOffer : videoContentOffers) {
       for (Offers.ContentOffer otherContentOffer : otherContentOffers) {
         ConsumptionOption option = new ConsumptionOption(model,
-            networkOnlyOffer,
-            null,
-            videoContentOffer,
-            otherContentOffer);
+                                                         networkOnlyOffer,
+                                                         null,
+                                                         videoContentOffer,
+                                                         otherContentOffer);
         bothContentOptions.add(option);
       }
     }
@@ -162,23 +177,24 @@ public static final void determineOptions(
   for (Offers.NetworkAndVideoBundleOffer bundledOffer : bundledOffers) {
     // Create option without other content included.
     ConsumptionOption option = new ConsumptionOption(model,
-        null,
-        bundledOffer,
-        null,
-        null);
+                                                     null,
+                                                     bundledOffer,
+                                                     null,
+                                                     null);
     videoOnlyOptions.add(option);
 
     // Create option with other content included. There'll be one option
     // for each other content offer.
     for (Offers.ContentOffer otherContentOffer : otherContentOffers) {
       option = new ConsumptionOption(model,
-          null,
-          bundledOffer,
-          null,
-          otherContentOffer);
+                                     null,
+                                     bundledOffer,
+                                     null,
+                                     otherContentOffer);
       bothContentOptions.add(option);
     }
   }
+
 }
 
 @Override
@@ -301,17 +317,18 @@ public boolean step() {
       networkOnlyOffers.add(noo);
 
     if (policyNSPContentAllowed) {
+      // Offer Content
+      Offers.ContentOffer vco = no.getContentOffer(currentStep);
+      if (vco != null)
+        videoContentOffers.add(vco);
+
       if (policyBundlingAllowed) {
+        // Offer bundled content
         NetworkAndVideoBundleOffer navbo = no.getBundledOffer(currentStep);
         if (navbo != null)
           bundledOffers.add(navbo);
-      } else {
-        // NSP decoupled video content offering only allowed when bundling
-        // disabled.
-        Offers.ContentOffer vco = no.getContentOffer(currentStep);
-        if (vco != null)
-          videoContentOffers.add(vco);
       }
+
     }
   }
 
@@ -409,13 +426,13 @@ public boolean step() {
    * options for consumers to consider.
    */
   determineOptions(this,
-      networkOnlyOffers,
-      bundledOffers,
-      videoContentOffers,
-      otherContentOffers,
-      otherOnlyOptions,
-      videoOnlyOptions,
-      bothContentOptions);
+                   networkOnlyOffers,
+                   bundledOffers,
+                   videoContentOffers,
+                   otherContentOffers,
+                   otherOnlyOptions,
+                   videoOnlyOptions,
+                   bothContentOptions);
 
   // Debug for completed offers
   if (isDebugEnabled()) {
@@ -568,7 +585,7 @@ public Object getSummaryData() {
   // For debugging purposes.
   o.checkForInfinities();
   o.checkForNaNs();
-  
+
   return o;
 }
 
