@@ -54,7 +54,7 @@ public Consumers(final double income,
 public void consume(List<ConsumptionOption> options) {
 
   double[] prices = extractPrices(options);
-  double[] quantities = determineConsumption(options, prices);
+  double[] quantities = determineConsumption(options);
 
   if (debugOut != null) {
     debugOut.println("Consumption Price/Qty vectors:");
@@ -76,13 +76,14 @@ public void consume(List<ConsumptionOption> options) {
 
 }
 
-public double[] determineConsumption(List<ConsumptionOption> options, double[] prices) {
+public double[] determineConsumption(List<ConsumptionOption> options) {
 
   double[] capitalTerms_toBeta = new double[options.size()];
   double[] capitalTerms_toNegBeta = new double[options.size()];
   double[] prices_toNegBeta = new double[options.size()];
   double[] prices_toBetaPlus1 = new double[options.size()];
   double[] quantities = new double[options.size()];
+  double[] prices = extractPrices(options);
 
   // Preliminary calculations we need for the demand curve
   for (int i = 0; i < options.size(); i++) {
@@ -134,13 +135,22 @@ public double[] determineConsumption(List<ConsumptionOption> options, double[] p
         term *= prices_toNegBeta[i];
         term *= prices_toBetaPlus1[j];
         den += term;
+        if (debugOut != null)
+          debugOut.println("term is " + term);
       }
 
-      // Residual term sensitive to price/capital balance
-      double orElse = capitalTerms_toBeta[i];
-      orElse *= prices_toNegBeta[i];
-      den += orElse;
     }
+    // Residual term sensitive to price/capital balance
+    double orElse = capitalTerms_toBeta[i];
+    orElse *= prices_toNegBeta[i];
+    if (debugOut != null)
+      debugOut.println("residterm is " + orElse);
+    
+    den += orElse;
+
+    if (debugOut != null)
+      debugOut.println("total denominator is " + den);
+    
 
     double firstTerm = income / den;
 
