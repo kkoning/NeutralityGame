@@ -23,7 +23,7 @@
                     </WeightedBreedingPipeline>
                     <VectorMutator length="8">
                         <GaussianMutator start="0" end="7">
-                            <MutationProbability type="DoubleList" start="0" end="7">1 1 1 1 1 1 1 1</MutationProbability>
+                            <MutationProbability type="DoubleList" start="0" end="7">0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1</MutationProbability>
                             <Deviations type="DoubleList" start="0" end="7">0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01</Deviations>
                         </GaussianMutator>
                     </VectorMutator>
@@ -49,7 +49,7 @@
                     </WeightedBreedingPipeline>
                     <VectorMutator length="8">
                         <GaussianMutator start="0" end="7">
-                            <MutationProbability type="DoubleList" start="0" end="7">1 1 1 1 1 1 1 1</MutationProbability>
+                            <MutationProbability type="DoubleList" start="0" end="7">0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1</MutationProbability>
                             <Deviations type="DoubleList" start="0" end="7">0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01</Deviations>
                         </GaussianMutator>
                     </VectorMutator>
@@ -268,20 +268,22 @@
     <!-- Need an EvaluationGroupFactory -->
     <ShuffledEvaluationGroupFactory numGroups="500">
         <AgentSource populationGroup="nsp" numAgents="1"/>
-        <AgentSource populationGroup="videoContent" numAgents="3"/>
-        <AgentSource populationGroup="otherContent" numAgents="3"/>
+        <AgentSource populationGroup="videoContent" numAgents="1"/>
+        <AgentSource populationGroup="otherContent" numAgents="2"/>
     </ShuffledEvaluationGroupFactory>
 
     <!-- Need an Agent Model Factory -->
     <DefaultAgentModelFactory modelClass="neutrality.NeutralityModel">
         <Parameter name="alpha" value="1.0"/> <!-- 1 for testing -->
         <Parameter name="beta" value="1.0"/> <!-- 1 for testing -->
-        <Parameter name="psi" value="0.4"/>
-        <Parameter name="tau" value="0.4"/>
+        <Parameter name="psi" value="0.5"/>
+        <Parameter name="tau" value="0.5"/>
         <Parameter name="gamma" value="0.5"/>
         <Parameter name="income" value="10000"/>
-        <Parameter name="firmEndowment" value="100000"/>
+        <Parameter name="firmEndowment" value="1000000"/>
         <Parameter name="maxSteps" value="10"/>
+        <Parameter name="nspMarginalCost" value="1"/>
+        <Parameter name="linearDemandTerm" value="1"/>
 
         <Parameter name="policy0PriceIXC" value="true"/>
         <Parameter name="policyBundlingAllowed" value="true"/>

@@ -54,7 +54,7 @@ public Boolean policyZeroRated;
 public Boolean policyNSPContentAllowed;
 
 // Quasi-parameters; model is broken-ish without them?
-public Boolean linearDemandTerm = true;
+public Double linearDemandTerm;
 
 public Integer maxSteps;
 
@@ -95,8 +95,7 @@ public NeutralityModel() {
  * @param bundledOffers
  * @return
  */
-public static final void determineOptions(
-                                          @NotNull NeutralityModel model,
+public static final void determineOptions(@NotNull NeutralityModel model,
                                           @NotNull List<NetworkOnlyOffer> networkOnlyOffers,
                                           @NotNull List<Offers.NetworkAndVideoBundleOffer> bundledOffers,
                                           @NotNull List<Offers.ContentOffer> videoContentOffers,
@@ -553,7 +552,7 @@ public Object getSummaryData() {
   for (int i = 0; i < networkOperators.size(); i++) {
     NetworkOperator<?> no = networkOperators.get(i);
     networkSales[i] = no.getNetOpData(QUANTITY_NETWORK) +
-        no.getNetOpData(QUANTITY_BUNDLE);
+                      no.getNetOpData(QUANTITY_BUNDLE);
   }
   o.hhiNetwork = HHI(networkSales);
 
@@ -565,7 +564,7 @@ public Object getSummaryData() {
   if (policyNSPContentAllowed) {
     for (NetworkOperator<?> no : networkOperators) {
       videoSales.add(no.getContentData(QUANTITY) +
-          no.getNetOpData(QUANTITY_BUNDLE));
+                     no.getNetOpData(QUANTITY_BUNDLE));
     }
   }
   o.hhiVideo = HHI(videoSales);
@@ -632,9 +631,30 @@ public void init() {
   incomeOtherOnly = income * otherContentValue;
 
   // Initialize representative consumer agents.
-  consumersBoth = new Consumers(this, income);
-  consumersVideoOnly = new Consumers(this, incomeVideoOnly);
-  consumersOtherOnly = new Consumers(this, incomeOtherOnly);
+  consumersBoth = new Consumers(income,
+                                gamma,
+                                tau,
+                                psi,
+                                videoContentValue,
+                                otherContentValue,
+                                linearDemandTerm,
+                                debugOut);
+  consumersVideoOnly = new Consumers(incomeVideoOnly,
+                                gamma,
+                                tau,
+                                psi,
+                                1,
+                                1,
+                                linearDemandTerm,
+                                debugOut);
+  consumersOtherOnly = new Consumers(incomeOtherOnly,
+                                gamma,
+                                tau,
+                                psi,
+                                1,
+                                1,
+                                linearDemandTerm,
+                                debugOut);
 
   // Allocate array for market information.
   marketInformation = new MarketInfo[maxSteps];

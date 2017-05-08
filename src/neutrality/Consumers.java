@@ -1,28 +1,45 @@
 package neutrality;
 
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 
-import neutrality.nsp.NetworkOperator;
-
 public class Consumers {
 
-final NeutralityModel model;
-final double          income;
-final double          gamma;
-final double          beta;
-final double          tau;
-final double          psi;
+// final NeutralityModel model;
+final double income;
+final double gamma;
+final double beta;
+final double tau;
+final double psi;
+final double linearDemandTerm;
+final double videoContentValue;
+final double otherContentValue;
 
 double accumulatedUtility;
 
-public Consumers(NeutralityModel model, double income) {
+PrintStream debugOut;
+
+public Consumers(final double income,
+                 final double gamma,
+                 final double tau,
+                 final double psi,
+                 final double videoContentValue,
+                 final double otherContentValue,
+                 final double linearDemandTerm,
+                 final PrintStream debugOut) {
+
   this.income = income;
-  this.gamma = model.gamma;
-  this.tau = model.tau;
-  this.psi = model.psi;
+  this.gamma = gamma;
+  this.tau = tau;
+  this.psi = psi;
   this.beta = 1 / (gamma - 1);
-  this.model = model;
+  this.linearDemandTerm = linearDemandTerm;
+  this.videoContentValue = videoContentValue;
+  this.otherContentValue = otherContentValue;
+
+  this.debugOut = debugOut;
+
   accumulatedUtility = 0.0d;
 }
 
@@ -36,15 +53,36 @@ public Consumers(NeutralityModel model, double income) {
  */
 public void consume(List<ConsumptionOption> options) {
 
+  double[] prices = extractPrices(options);
+  double[] quantities = determineConsumption(options, prices);
+
+  if (debugOut != null) {
+    debugOut.println("Consumption Price/Qty vectors:");
+    debugOut.println(Arrays.toString(prices));
+    debugOut.println(Arrays.toString(quantities));
+    // Total purchased, in $
+    double total = 0.0;
+    for (int i = 0; i < prices.length; i++) {
+      total += prices[i] * quantities[i];
+    }
+    debugOut.println("total spent was " + total + ", income was " + income);
+  }
+
+  for (int i = 0; i < options.size(); i++) {
+    ConsumptionOption co = options.get(i);
+    co.consume(quantities[i]);
+    accumulatedUtility += co.getUtility(quantities[i]);
+  }
+
+}
+
+public double[] determineConsumption(List<ConsumptionOption> options, double[] prices) {
+
   double[] capitalTerms_toBeta = new double[options.size()];
   double[] capitalTerms_toNegBeta = new double[options.size()];
-  double[] prices = new double[options.size()];
   double[] prices_toNegBeta = new double[options.size()];
   double[] prices_toBetaPlus1 = new double[options.size()];
   double[] quantities = new double[options.size()];
-
-  double vidValue = this.model.videoContentValue;
-  double othValue = this.model.otherContentValue;
 
   // Preliminary calculations we need for the demand curve
   for (int i = 0; i < options.size(); i++) {
@@ -71,13 +109,12 @@ public void consume(List<ConsumptionOption> options) {
       othCapTerm = Math.pow(option.K_o, psi);
     }
 
-    double vidCapTot = vidValue * netCapTerm * vidCapTerm;
-    double othCapTot = othValue * netCapTerm * othCapTerm;
+    double vidCapTot = videoContentValue * netCapTerm * vidCapTerm;
+    double othCapTot = otherContentValue * netCapTerm * othCapTerm;
     double capTot = vidCapTot + othCapTot;
 
     capitalTerms_toBeta[i] = Math.pow(capTot, beta);
     capitalTerms_toNegBeta[i] = Math.pow(capTot, -beta);
-    prices[i] = option.totalCostToConsumer;
     prices_toNegBeta[i] = Math.pow(prices[i], -beta);
     prices_toBetaPlus1[i] = Math.pow(prices[i], beta + 1);
   }
@@ -105,49 +142,31 @@ public void consume(List<ConsumptionOption> options) {
       den += orElse;
     }
 
-    double firstTerm = model.income / den;
+    double firstTerm = income / den;
 
     // Residual term for all other goods; quasi-linear demand.
-    double secondTerm = 0d;
-    if (model.linearDemandTerm)
-      secondTerm = -prices[i];
+    double secondTerm = prices[i] * linearDemandTerm;
 
-    double qty = firstTerm + secondTerm;
+    double qty = firstTerm - secondTerm;
 
     // Quantity cannot be negative.
     if (qty <= 0)
       qty = 0d;
-
-    // Scale the size of the market based on the values
-    qty *= (income / model.income);
 
     if (Double.isNaN(qty) || Double.isInfinite(qty))
       throw new RuntimeException();
 
     quantities[i] = qty;
   }
+  return quantities;
+}
 
-  if (model.isDebugEnabled()) {
-    model.debugOut.println("Consumption Price/Qty vectors:");
-    model.debugOut.println(Arrays.toString(prices));
-    model.debugOut.println(Arrays.toString(quantities));
-    // Total purchased, in $
-    double total = 0.0;
-    for (int i = 0; i < prices.length; i++) {
-      total += prices[i] * quantities[i];
-    }
-    this.model.debugOut.println("total spent was " +
-                                total +
-                                ", income was " +
-                                income);
-  }
-
+public double[] extractPrices(List<ConsumptionOption> options) {
+  double[] toReturn = new double[options.size()];
   for (int i = 0; i < options.size(); i++) {
-    ConsumptionOption co = options.get(i);
-    co.consume(quantities[i]);
-    accumulatedUtility += co.getUtility(quantities[i]);
+    toReturn[i] = options.get(i).totalCostToConsumer;
   }
-
+  return toReturn;
 }
 
 }
