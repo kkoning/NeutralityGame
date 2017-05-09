@@ -506,14 +506,17 @@ public Object getSummaryData() {
   /*
    * Data from Network Operators
    */
+  double nspQtyNetworkOnly = 0;
+  double nspQtyVideoOnly = 0;
+  double nspQtyBundle = 0;
   for (NetworkOperator<?> no : networkOperators) {
-    o.nspQtyNetworkOnly += no.getNetOpData(QUANTITY_NETWORK);
+    nspQtyNetworkOnly += no.getNetOpData(QUANTITY_NETWORK);
     o.nspRevNetworkOnly += no.getNetOpData(REVENUE_NETWORK);
 
-    o.nspQtyVideoOnly += no.getContentData(QUANTITY);
+    nspQtyVideoOnly += no.getContentData(QUANTITY);
     o.nspRevVideoOnly += no.getContentData(REVENUE);
 
-    o.nspQtyBundle += no.getNetOpData(QUANTITY_BUNDLE);
+    nspQtyBundle += no.getNetOpData(QUANTITY_BUNDLE);
     o.nspRevBundle += no.getNetOpData(REVENUE_BUNDLE);
 
     o.nspQtyIxcVideo += no.getNetOpData(QUANTITY_IXC_VIDEO);
@@ -527,22 +530,47 @@ public Object getSummaryData() {
 
     o.nspBalance += no.getAccount().getBalance();
   }
+  if (nspQtyNetworkOnly == 0)
+    o.nspPriceNetworkOnly = 0;
+  else 
+    o.nspPriceNetworkOnly = o.nspPriceNetworkOnly / nspQtyNetworkOnly;
+  if (o.nspPriceVideoOnly == 0)
+    o.nspPriceVideoOnly = 0;
+  else 
+    o.nspPriceVideoOnly = o.nspRevVideoOnly / nspQtyVideoOnly;
+  if (o.nspPriceBundle == 0)
+    o.nspPriceBundle = 0;
+  else 
+    o.nspPriceBundle = o.nspRevBundle / nspQtyBundle;
 
+  
+  
   /*
    * Data from Content Providers
    */
+  double vcpQty = 0;
+  double ocpQty = 0;
   for (ContentProvider<?> vcp : videoContentProviders) {
-    o.vcpQty += vcp.getContentData(QUANTITY);
+    vcpQty += vcp.getContentData(QUANTITY);
     o.vcpRev += vcp.getContentData(REVENUE);
+    
     o.vcpKa += vcp.getContentData(INVESTMENT);
     o.vcpBalance += vcp.getContentData(BALANCE) / videoContentProviders.size();
   }
+  if (vcpQty == 0)
+    o.vcpP = 0;
+  else 
+    o.vcpP = o.vcpRev / vcpQty;
   for (ContentProvider<?> ocp : otherContentProviders) {
-    o.ocpQty += ocp.getContentData(QUANTITY);
+    ocpQty += ocp.getContentData(QUANTITY);
     o.ocpRev += ocp.getContentData(REVENUE);
     o.ocpKa += ocp.getContentData(INVESTMENT);
     o.ocpBalance += ocp.getContentData(BALANCE) / otherContentProviders.size();
   }
+  if (vcpQty == 0)
+    o.ocpP = 0;
+  else
+    o.ocpP = o.ocpRev / ocpQty;
 
   /*
    * Market Information
