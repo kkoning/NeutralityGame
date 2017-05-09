@@ -1,15 +1,15 @@
 package neutrality;
 
+import static agency.util.Misc.BUG;
+
+import java.util.Optional;
+
 import agency.Account;
 import neutrality.Offers.NetworkAndVideoBundleOffer;
 import neutrality.Offers.NetworkOnlyOffer;
 import neutrality.cp.ContentProvider;
+import neutrality.cp.DirectlyEncodedContentProvider;
 import neutrality.nsp.NetworkOperator;
-
-import java.util.Optional;
-
-import static agency.util.Misc.BUG;
-
 
 /**
  * This
@@ -31,7 +31,7 @@ public final double  otherBWPrice;
 public final double  totalCostToConsumer;
 public final double  ixcBWPrice;
 public final boolean wasVideoBundled;
-//public final boolean wasZeroRated;
+// public final boolean wasZeroRated;
 
 public final double utilityCoefficient;
 
@@ -41,13 +41,11 @@ public final Optional<ContentProvider<?>> otherContent;
 
 NeutralityModel model;
 
-
-ConsumptionOption(
-        NeutralityModel model,
-        NetworkOnlyOffer no,
-        NetworkAndVideoBundleOffer bo,
-        Offers.ContentOffer vco,
-        Offers.ContentOffer oco) {
+ConsumptionOption(NeutralityModel model,
+                  NetworkOnlyOffer no,
+                  NetworkAndVideoBundleOffer bo,
+                  Offers.ContentOffer vco,
+                  Offers.ContentOffer oco) {
 
   this.model = model;
 
@@ -57,8 +55,8 @@ ConsumptionOption(
   Optional<Offers.ContentOffer> otherOffer = Optional.ofNullable(oco);
 
   /*
-  Perform some sanity checks during development and debugging.  These could
-  be removed for a (very minor) performance boost.
+   * Perform some sanity checks during development and debugging. These could be
+   * removed for a (very minor) performance boost.
    */
   if (netOffer.isPresent() && bundledOffer.isPresent())
     BUG("ConsumptionOption cannot have both a standalone and bundled " +
@@ -79,7 +77,7 @@ ConsumptionOption(
     bundledPrice = 0.0;
     bandwidthPrice = netOffer.get().bandwidthPrice;
     wasVideoBundled = false;
-//    wasZeroRated = false;
+    // wasZeroRated = false;
 
     if (videoOffer.isPresent()) {
       videoContent = Optional.of(videoOffer.get().contentProvider);
@@ -90,7 +88,6 @@ ConsumptionOption(
       K_v = 0.0d;
       videoContentPrice = 0.0d;
     }
-
 
   } else if (bundledOffer.isPresent()) {
     network = bundledOffer.get().networkOperator;
@@ -104,7 +101,7 @@ ConsumptionOption(
     videoContentPrice = 0.0d;
 
     bandwidthPrice = bundledOffer.get().bandwidthPrice;
-//    wasZeroRated = model.policyZeroRated;
+    // wasZeroRated = model.policyZeroRated;
   } else {
     throw new RuntimeException("BUG: ConsumptionOption must have either a " +
                                "standalone or bundled network offer.");
@@ -221,12 +218,72 @@ public void consume(double qty) {
   }
 }
 
-static void payIXCFees(
-        ContentProvider<?> cp,
-        NetworkOperator<?> no,
-        double ixcBWPrice,
-        double bwIntensity,
-        double qty) {
+/**
+ * Create a synthetic consumption option, for the purpose of testing consumer
+ * demand. This function allows demand-relevant parameters to be specified
+ * directly, rather than created from existing agents and offers.
+ * 
+ * @param K_n
+ *          Network capital investment
+ * @param K_v
+ *          Video capital investment
+ * @param K_o
+ *          Other content capital investment
+ * @param totPrice
+ *          The total price of the bundle.
+ * @return
+ */
+public static ConsumptionOption getSyntheticConsumptionOption(double K_n,
+                                                              double K_v,
+                                                              double K_o,
+                                                              double totPrice) {
+  return new ConsumptionOption(K_n, K_v, K_o, totPrice);
+}
+
+/**
+ * See getSyntheticConsumptionOption().
+ */
+private ConsumptionOption(double K_n, double K_v, double K_o, double totPrice) {
+
+  // These should be the only variables examined directly by
+  // Consumers.determineConsumption().
+  this.K_n = K_n;
+  this.K_v = K_v;
+  this.K_o = K_o;
+  this.totalCostToConsumer = totPrice;
+
+  networkOnlyPrice = 0;
+  bundledPrice = 0;
+  bandwidthPrice = 0;
+  videoContentPrice = 0;
+  otherContentPrice = 0;
+  videoBWPrice = 0;
+  otherBWPrice = 0;
+  ixcBWPrice = 0;
+  wasVideoBundled = false;
+  utilityCoefficient = 0;
+
+  ContentProvider<?> cp = new DirectlyEncodedContentProvider();
+
+  if (K_v > 0)
+    videoContent = Optional.of(cp);
+  else
+    videoContent = Optional.empty();
+
+  if (K_o > 0)
+    otherContent = Optional.of(cp);
+  else
+    otherContent = Optional.empty();
+
+  network = null;
+
+}
+
+static void payIXCFees(ContentProvider<?> cp,
+                       NetworkOperator<?> no,
+                       double ixcBWPrice,
+                       double bwIntensity,
+                       double qty) {
   Account cpAccount = cp.getAccount();
   Account noAccount = no.getAccount();
 
