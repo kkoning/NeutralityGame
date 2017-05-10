@@ -62,11 +62,9 @@ colnames <- c(
 'nspBankruptcies',
 'nspKa',
 'nspKn',
-'nspQtyBundle',
-'nspQtyIxcOther',
-'nspQtyIxcVideo',
-'nspQtyNetworkOnly',
-'nspQtyVideoOnly',
+'nspPriceBundle',
+'nspPriceNetworkOnly',
+'nspPriceVideoOnly',
 'nspRevBundle',
 'nspRevIxcOther',
 'nspRevIxcVideo',
@@ -75,7 +73,7 @@ colnames <- c(
 'ocpBalance',
 'ocpBankruptcies',
 'ocpKa',
-'ocpQty',
+'ocpP',
 'ocpRev',
 'utilityBoth',
 'utilityOtherOnly',
@@ -83,7 +81,7 @@ colnames <- c(
 'vcpBalance',
 'vcpBankruptcies',
 'vcpKa',
-'vcpQty',
+'vcpP',
 'vcpRev'
 )
 
@@ -95,28 +93,26 @@ nsp_cols = c(
 'nspBankruptcies',
 'nspKa',
 'nspKn',
-'nspQtyBundle',
-'nspQtyIxcOther',
-'nspQtyIxcVideo',
-'nspQtyNetworkOnly',
-'nspQtyVideoOnly',
+'nspPriceNetworkOnly',
+'nspRevNetworkOnly',
+'nspPriceVideoOnly',
+'nspRevVideoOnly',
+'nspPriceBundle',
 'nspRevBundle',
 'nspRevIxcOther',
-'nspRevIxcVideo',
-'nspRevNetworkOnly',
-'nspRevVideoOnly'
+'nspRevIxcVideo'
 )
 
 cp_cols = c(
 'ocpBalance',
 'ocpBankruptcies',
 'ocpKa',
-'ocpQty',
+'ocpP',
 'ocpRev',
 'vcpBalance',
 'vcpBankruptcies',
 'vcpKa',
-'vcpQty',
+'vcpP',
 'vcpRev')
 
 other_cols = c(
