@@ -46,6 +46,10 @@ public void step(NeutralityModel model, int step, Optional<Double> substep) {
     } else {
       makeContentInvestment(step, 0);
     }
+    
+    // IXC price
+    setIxcPrice(step, mi.nspIXCPrice);
+    
   }
 
 }
