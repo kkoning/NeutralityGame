@@ -41,6 +41,7 @@ private static final int POS_INIT_NET_CONN_PRICE_BALANCE;
 private static final int POS_INIT_BUN_CONN_PRICE_LEVEL;
 private static final int POS_INIT_BUN_CONN_PRICE_BALANCE;
 private static final int POS_INIT_VID_PRICE;
+private static final int POS_INIT_IXC_PRICE;
 
 // The number of variables for each decision's linear eq
 private static final int NET_INVEST_VARS             = 4;
@@ -50,6 +51,8 @@ private static final int NET_CONN_PRICE_BALANCE_VARS = NET_CONN_PRICE_LEVEL_VARS
 private static final int BUN_CONN_PRICE_LEVEL_VARS   = NET_CONN_PRICE_LEVEL_VARS;
 private static final int BUN_CONN_PRICE_BALANCE_VARS = NET_CONN_PRICE_LEVEL_VARS;
 private static final int VID_PRICE_VARS              = NET_CONN_PRICE_LEVEL_VARS;
+private static final int IXC_PRICE_VARS              = NET_CONN_PRICE_LEVEL_VARS;
+
 
 // Based on the number of variables, we can determine the genome positions of
 // each of these linear equation blocks.
@@ -60,6 +63,7 @@ private static final int POS_NET_CONN_PRICE_BALANCE_BLOCK;
 private static final int POS_BUN_CONN_PRICE_LEVEL_BLOCK;
 private static final int POS_BUN_CONN_PRICE_BALANCE_BLOCK;
 private static final int POS_VID_PRICE_BLOCK;
+private static final int POS_IXC_PRICE_BLOCK;
 
 /**
  * We're going to do things more explicitly in a static block rather than just
@@ -75,6 +79,7 @@ static {
   POS_INIT_BUN_CONN_PRICE_LEVEL = pos++;
   POS_INIT_BUN_CONN_PRICE_BALANCE = pos++;
   POS_INIT_VID_PRICE = pos++;
+  POS_INIT_IXC_PRICE = pos++;
 
   // Mark blocks and advance pos by the size of those blocks.
   POS_NET_INVEST_BLOCK = pos;
@@ -91,6 +96,9 @@ static {
   pos += VectorIndividual.linearEqExpGenomeLength(BUN_CONN_PRICE_BALANCE_VARS);
   POS_VID_PRICE_BLOCK = pos;
   pos += VectorIndividual.linearEqExpGenomeLength(VID_PRICE_VARS);
+  POS_IXC_PRICE_BLOCK = pos;
+  pos += VectorIndividual.linearEqExpGenomeLength(IXC_PRICE_VARS);
+  
   genomeSize = pos;
   
 }
@@ -103,17 +111,23 @@ public void step(NeutralityModel model, int step, Optional<Double> substep) {
    */
   double toInvestNetwork = Double.NaN;
   double toInvestContent = Double.NaN;
+  double ixcPrice = Double.NaN;
   if (step == 0) {
     // For the first step, use directly encoded values.
     toInvestNetwork = getManager().e(POS_INIT_NET_INVEST);
     toInvestContent = getManager().e(POS_INIT_VID_INVEST);
+    ixcPrice = getManager().e(POS_INIT_IXC_PRICE);
+    
   } else {
     // In all subsequent steps, use a linear equation.
     toInvestNetwork = getManager().linearEqExp(POS_NET_INVEST_BLOCK, netInvestmentVars());
     toInvestContent = getManager().linearEqExp(POS_VID_INVEST_BLOCK, vidInvestmentVars());
+    ixcPrice = getManager().linearEqExp(POS_IXC_PRICE_BLOCK, ixcPriceVars());
+    
   }
   makeNetworkInvestment(step, toInvestNetwork);
   makeContentInvestment(step, toInvestContent);
+  setIxcPrice(step, ixcPrice);
 }
 
 @Override
@@ -232,6 +246,10 @@ private double[] bunPriceBalanceVars() {
 }
 
 private double[] bunPriceLevelVars() {
+  return netPriceLevelVars();
+}
+
+private double[] ixcPriceVars() {
   return netPriceLevelVars();
 }
 
