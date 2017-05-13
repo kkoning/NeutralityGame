@@ -17,8 +17,12 @@ public class OutputData {
  * Consumption Variables
  */
 double utilityVideoOnly;
+double utilityPerCostVideoOnly;
 double utilityOtherOnly;
+double utilityPerCostOtherOnly;
 double utilityBoth;
+double utilityPerCostBoth;
+
 
 /*
  * Network Operator Variables
