@@ -32,84 +32,84 @@ public MarketInfo(NeutralityModel model, int step) {
   
   // nspNetworkInvestment
   tmp = calcAverageNspInvestment(model, step);
-  if (tmp == Double.NaN)
+  if (Double.isNaN(tmp))
     nspNetworkInvestment = 0d;
   else
     nspNetworkInvestment = tmp;
     
   // nspVideoInvestment
   tmp = calcAverageNspVideoInvestment(model, step);
-  if (tmp == Double.NaN)
+  if (Double.isNaN(tmp))
     nspVideoInvestment = 0d;
   else
     nspVideoInvestment = tmp;
   
   // nspVideoPrice
   tmp = calcAverageNspVideoPrice(model, step);
-  if (tmp == Double.NaN)
+  if (Double.isNaN(tmp))
     nspVideoPrice = 0d;
   else
     nspVideoPrice = tmp;
   
   // nspUnbundledPrice
   tmp = calcAverageUnbundledPrice(model, step);
-  if (tmp == Double.NaN)
+  if (Double.isNaN(tmp))
     nspUnbundledPrice = 0d;
   else
     nspUnbundledPrice = tmp;
   
   // nspBundledPrice
   tmp = calcAverageBundledPrice(model, step);
-  if (tmp == Double.NaN)
+  if (Double.isNaN(tmp))
     nspBundledPrice = 0d;
   else
     nspBundledPrice = tmp;
   
   // nspIXCPrice
   tmp = calcAverageIXCPrice(model, step);
-  if (tmp == Double.NaN)
+  if (Double.isNaN(tmp))
     nspIXCPrice = 0d;
   else
     nspIXCPrice = tmp;
   
   // cpVideoInvestment
   tmp = calcAverageCpVideoInvestment(model, step);
-  if (tmp == Double.NaN)
+  if (Double.isNaN(tmp))
     cpVideoInvestment = 0d;
   else
     cpVideoInvestment = tmp;
   
   // cpVideoPrice
   tmp = calcAverageCpVideoPrice(model, step);
-  if (tmp == Double.NaN)
+  if (Double.isNaN(tmp))
     cpVideoPrice = 0d;
   else
     cpVideoPrice = tmp;
   
   // cpOtherInvestment
   tmp = calcAverageCpOtherInvestment(model, step);
-  if (tmp == Double.NaN)
+  if (Double.isNaN(tmp))
     cpOtherInvestment = 0d;
   else
     cpOtherInvestment = tmp;
   
   // cpOtherPrice
   tmp = calcAverageCpOtherPrice(model, step);
-  if (tmp == Double.NaN)
+  if (Double.isNaN(tmp))
     cpOtherPrice = 0d;
   else
     cpOtherPrice = tmp;
   
   // nspBandwidthPrice
   tmp = calcAverageNspBandwidthPrice(model, step);
-  if (tmp == Double.NaN)
+  if (Double.isNaN(tmp))
     nspBandwidthPrice = 0d;
   else
     nspBandwidthPrice = tmp;
 
   // Secondary values
   tmp = nspBundledPrice - nspUnbundledPrice;
-  if (tmp == Double.NaN)
+  if (Double.isNaN(tmp))
     nspBundlePremium = 0d;
   else
     nspBundlePremium = tmp;
@@ -121,7 +121,11 @@ private double calcAverageNspInvestment(NeutralityModel model, int step) {
     AbstractNetworkOperator<?> ano = (AbstractNetworkOperator<?>) no;
     totalInvestment += ano.Kn[step];
   }
-  return totalInvestment / model.networkOperators.size();
+  double toReturn = totalInvestment / model.networkOperators.size();
+  if (Double.isNaN(toReturn))
+    toReturn = 0.0;
+  return toReturn;
+
 }
 
 private double calcAverageUnbundledPrice(NeutralityModel model, int step) {
@@ -133,7 +137,11 @@ private double calcAverageUnbundledPrice(NeutralityModel model, int step) {
     totalUnbundledRevenue += ano.revNetwork[step];
     totalUnbundledSales += ano.qtyNetwork[step];
   }
-  return totalUnbundledRevenue / totalUnbundledSales;
+  double toReturn = totalUnbundledRevenue / totalUnbundledSales;
+  if (Double.isNaN(toReturn))
+    toReturn = 0.0;
+  return toReturn;
+
 }
 
 private double calcAverageBundledPrice(NeutralityModel model, int step) {
@@ -145,7 +153,11 @@ private double calcAverageBundledPrice(NeutralityModel model, int step) {
     totalBundledRevenue += ano.revBundle[step];
     totalBundledSales += ano.qtyBundle[step];
   }
-  return totalBundledRevenue / totalBundledSales;
+  double toReturn = totalBundledRevenue / totalBundledSales;
+  if (Double.isNaN(toReturn))
+    toReturn = 0.0;
+  return toReturn;
+
 }
 
 private double calcAverageIXCPrice(NeutralityModel model, int step) {
@@ -159,7 +171,13 @@ private double calcAverageIXCPrice(NeutralityModel model, int step) {
     totalIxcRevenue += ano.revIxcOther[step] + ano.revIxcVideo[step];
     totalIxcSales += ano.qtyBandwidthOther[step] + ano.qtyBandwidthVideo[step];
   }
-  return totalIxcRevenue / totalIxcSales;
+  if (totalIxcSales < Double.MIN_NORMAL)
+    return 0.0;
+  double toReturn = totalIxcRevenue / totalIxcSales;
+  if (Double.isNaN(toReturn))
+    toReturn = 0.0;
+  return toReturn;
+
 }
 
 private double calcAverageNspVideoInvestment(NeutralityModel model, int step) {
@@ -169,7 +187,10 @@ private double calcAverageNspVideoInvestment(NeutralityModel model, int step) {
     // Just like the nspInvestment function, but Ka here instead of Kn
     totalInvestment += ano.Ka[step];
   }
-  return totalInvestment / model.networkOperators.size();
+  double toReturn = totalInvestment / model.networkOperators.size();
+  if (Double.isNaN(toReturn))
+    toReturn = 0.0;
+  return toReturn;
 }
 
 private double calcAverageNspVideoPrice(NeutralityModel model, int step) {
@@ -181,7 +202,10 @@ private double calcAverageNspVideoPrice(NeutralityModel model, int step) {
     totalVideoRevenue += ano.revContent[step];
     totalVideoSales += ano.qtyContent[step];
   }
-  return totalVideoRevenue / totalVideoSales;
+  double toReturn = totalVideoRevenue / totalVideoSales;
+  if (Double.isNaN(toReturn))
+    toReturn = 0.0;
+  return toReturn;
 
 }
 
@@ -191,7 +215,11 @@ private double calcAverageCpVideoInvestment(NeutralityModel model, int step) {
     AbstractContentProvider<?> acp = (AbstractContentProvider<?>) cp;
     totalInvestment += acp.Ka[step];
   }
-  return totalInvestment / model.videoContentProviders.size();
+  double toReturn = totalInvestment / model.videoContentProviders.size();
+  if (Double.isNaN(toReturn))
+    toReturn = 0.0;
+  return toReturn;
+
 }
 
 private double calcAverageCpVideoPrice(NeutralityModel model, int step) {
@@ -202,7 +230,10 @@ private double calcAverageCpVideoPrice(NeutralityModel model, int step) {
     totalRevenue += acp.revContent[step];
     totalSales += acp.qtyContent[step];
   }
-  return totalRevenue / totalSales;
+  double toReturn = totalRevenue / totalSales;
+  if (Double.isNaN(toReturn))
+    toReturn = 0.0;
+  return toReturn;
 }
 
 private double calcAverageCpOtherInvestment(NeutralityModel model, int step) {
@@ -211,7 +242,10 @@ private double calcAverageCpOtherInvestment(NeutralityModel model, int step) {
     AbstractContentProvider<?> acp = (AbstractContentProvider<?>) cp;
     totalInvestment += acp.Ka[step];
   }
-  return totalInvestment / model.otherContentProviders.size();
+  double toReturn = totalInvestment / model.otherContentProviders.size();
+  if (Double.isNaN(toReturn))
+    toReturn = 0.0;
+  return toReturn;
 }
 
 private double calcAverageCpOtherPrice(NeutralityModel model, int step) {
@@ -222,7 +256,11 @@ private double calcAverageCpOtherPrice(NeutralityModel model, int step) {
     totalRevenue += acp.revContent[step];
     totalSales += acp.qtyContent[step];
   }
-  return totalRevenue / totalSales;
+  double toReturn = totalRevenue / totalSales;
+  if (Double.isNaN(toReturn))
+    toReturn = 0.0;
+  return toReturn;
+
 }
 
 private double calcAverageNspBandwidthPrice(NeutralityModel model, int step) {
@@ -237,7 +275,11 @@ private double calcAverageNspBandwidthPrice(NeutralityModel model, int step) {
     qtyBW += ano.qtyBandwidthVideo[step];
   }
 
-  return revBW / qtyBW;
+  double toReturn = revBW / qtyBW;
+  if (Double.isNaN(toReturn))
+    toReturn = 0.0;
+  return toReturn;
+
 }
 
 }
