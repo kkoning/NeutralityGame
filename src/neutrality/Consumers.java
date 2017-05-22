@@ -17,6 +17,7 @@ final double videoContentValue;
 final double otherContentValue;
 
 double accumulatedUtility;
+double accumulatedCost;
 
 PrintStream debugOut;
 
@@ -41,6 +42,7 @@ public Consumers(final double income,
   this.debugOut = debugOut;
 
   accumulatedUtility = 0.0d;
+  accumulatedCost = 0.0d;
 }
 
 /**
@@ -72,6 +74,7 @@ public void consume(List<ConsumptionOption> options) {
     ConsumptionOption co = options.get(i);
     co.consume(quantities[i]);
     accumulatedUtility += co.getUtility(quantities[i]);
+    accumulatedCost += co.totalCostToConsumer * quantities[i];
   }
 
 }
@@ -145,12 +148,11 @@ public double[] determineConsumption(List<ConsumptionOption> options) {
     orElse *= prices_toNegBeta[i];
     if (debugOut != null)
       debugOut.println("residterm is " + orElse);
-    
+
     den += orElse;
 
     if (debugOut != null)
       debugOut.println("total denominator is " + den);
-    
 
     double firstTerm = income / den;
 
