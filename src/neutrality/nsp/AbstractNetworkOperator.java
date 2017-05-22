@@ -154,7 +154,7 @@ public double getIXCPrice(int step) {
 @Override
 public void trackIXC(int step, double price, double qty, boolean video) {
   double rev = price * qty;
-  if (rev > 1E8)
+  if (rev > 1E10)
     throw new RuntimeException();
   if (video) {
     qtyIxcVideo[step] += qty;
