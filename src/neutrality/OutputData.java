@@ -23,7 +23,6 @@ double utilityPerCostOtherOnly;
 double utilityBoth;
 double utilityPerCostBoth;
 
-
 /*
  * Network Operator Variables
  */
@@ -33,13 +32,15 @@ double nspPriceVideoOnly;   // Unbundled Content
 double nspRevVideoOnly;
 double nspPriceBundle;      // Bundled network and content
 double nspRevBundle;
-double nspQtyIxcVideo;    // IXC from Video
+double nspRevVideoBW;       // Bandwidth fees from consumers
+double nspRevOtherBW;
+double nspQtyIxcVideo;      // IXC from Video
 double nspRevIxcVideo;
-double nspQtyIxcOther;    // IXC from Other
+double nspQtyIxcOther;      // IXC from Other
 double nspRevIxcOther;
-double nspKn;             // Investment
+double nspKn;               // Investment
 double nspKa;
-double nspBalance;        // Balance/Fitness
+double nspProfit;           // Profit
 
 /*
  * Content Provider Variables
@@ -47,12 +48,12 @@ double nspBalance;        // Balance/Fitness
 double vcpP;
 double vcpRev;
 double vcpKa;
-double vcpBalance;
+double vcpProfit;
 
 double ocpP;
 double ocpRev;
 double ocpKa;
-double ocpBalance;
+double ocpProfit;
 
 /*
  * Market variables
@@ -60,75 +61,130 @@ double ocpBalance;
 double hhiNetwork;
 double hhiVideo;
 double hhiOther;
-int    nspBankruptcies;
-int    vcpBankruptcies;
-int    ocpBankruptcies;
+
+int nspBankruptcies;
+int vcpBankruptcies;
+int ocpBankruptcies;
 
 public void checkForNaNs() {
-  if (Double.isNaN(utilityVideoOnly) ||
-      Double.isNaN(utilityOtherOnly) ||
-      Double.isNaN(utilityBoth) ||
-      Double.isNaN(nspPriceNetworkOnly) ||
-      Double.isNaN(nspRevNetworkOnly) ||
-      Double.isNaN(nspPriceVideoOnly) ||
-      Double.isNaN(nspRevVideoOnly) ||
-      Double.isNaN(nspPriceBundle) ||
-      Double.isNaN(nspQtyIxcVideo) ||
-      Double.isNaN(nspRevIxcVideo) ||
-      Double.isNaN(nspQtyIxcOther) ||
-      Double.isNaN(nspRevIxcOther) ||
-      Double.isNaN(nspKn) ||
-      Double.isNaN(nspKa) ||
-      Double.isNaN(nspBalance) ||
-      Double.isNaN(nspKn) ||
-      Double.isNaN(nspKa) ||
-      Double.isNaN(nspBalance) ||
-      Double.isNaN(vcpP) ||
-      Double.isNaN(vcpRev) ||
-      Double.isNaN(vcpKa) ||
-      Double.isNaN(vcpBalance) ||
-      Double.isNaN(ocpP) ||
-      Double.isNaN(ocpRev) ||
-      Double.isNaN(ocpKa) ||
-      Double.isNaN(ocpBalance) ||
-      Double.isNaN(hhiNetwork) ||
-      Double.isNaN(hhiVideo) ||
-      Double.isNaN(hhiOther) ||
-      Double.isNaN(hhiVideo))
+  if (Double.isNaN(utilityVideoOnly))
+    throw new RuntimeException();
+  if (Double.isNaN(utilityBoth))
+    throw new RuntimeException();
+  if (Double.isNaN(nspPriceNetworkOnly))
+    throw new RuntimeException();
+  if (Double.isNaN(nspRevNetworkOnly))
+    throw new RuntimeException();
+  if (Double.isNaN(nspPriceVideoOnly))
+    throw new RuntimeException();
+  if (Double.isNaN(nspRevVideoOnly))
+    throw new RuntimeException();
+  if (Double.isNaN(nspPriceBundle))
+    throw new RuntimeException();
+  if (Double.isNaN(nspRevBundle))
+    throw new RuntimeException();
+  if (Double.isNaN(nspRevVideoBW))
+    throw new RuntimeException();
+  if (Double.isNaN(nspRevOtherBW))
+    throw new RuntimeException();
+  if (Double.isNaN(nspQtyIxcVideo))
+    throw new RuntimeException();
+  if (Double.isNaN(nspRevIxcVideo))
+    throw new RuntimeException();
+  if (Double.isNaN(nspQtyIxcOther))
+    throw new RuntimeException();
+  if (Double.isNaN(nspRevIxcOther))
+    throw new RuntimeException();
+  if (Double.isNaN(nspKn))
+    throw new RuntimeException();
+  if (Double.isNaN(nspKa))
+    throw new RuntimeException();
+  if (Double.isNaN(nspProfit))
+    throw new RuntimeException();
+  if (Double.isNaN(vcpP))
+    throw new RuntimeException();
+  if (Double.isNaN(vcpRev))
+    throw new RuntimeException();
+  if (Double.isNaN(vcpKa))
+    throw new RuntimeException();
+  if (Double.isNaN(vcpProfit))
+    throw new RuntimeException();
+  if (Double.isNaN(ocpP))
+    throw new RuntimeException();
+  if (Double.isNaN(utilityVideoOnly))
+    throw new RuntimeException();
+  if (Double.isNaN(ocpRev))
+    throw new RuntimeException();
+  if (Double.isNaN(ocpKa))
+    throw new RuntimeException();
+  if (Double.isNaN(ocpProfit))
+    throw new RuntimeException();
+  if (Double.isNaN(hhiNetwork))
+    throw new RuntimeException();
+  if (Double.isNaN(hhiVideo))
+    throw new RuntimeException();
+  if (Double.isNaN(hhiOther))
     throw new RuntimeException();
 }
 
 public void checkForInfinities() {
-  if (Double.isInfinite(utilityVideoOnly) ||
-      Double.isInfinite(utilityOtherOnly) ||
-      Double.isInfinite(utilityBoth) ||
-      Double.isInfinite(nspPriceNetworkOnly) ||
-      Double.isInfinite(nspRevNetworkOnly) ||
-      Double.isInfinite(nspPriceVideoOnly) ||
-      Double.isInfinite(nspRevVideoOnly) ||
-      Double.isInfinite(nspPriceBundle) ||
-      Double.isInfinite(nspQtyIxcVideo) ||
-      Double.isInfinite(nspRevIxcVideo) ||
-      Double.isInfinite(nspQtyIxcOther) ||
-      Double.isInfinite(nspRevIxcOther) ||
-      Double.isInfinite(nspKn) ||
-      Double.isInfinite(nspKa) ||
-      Double.isInfinite(nspBalance) ||
-      Double.isInfinite(nspKn) ||
-      Double.isInfinite(nspKa) ||
-      Double.isInfinite(nspBalance) ||
-      Double.isInfinite(vcpP) ||
-      Double.isInfinite(vcpRev) ||
-      Double.isInfinite(vcpKa) ||
-      Double.isInfinite(vcpBalance) ||
-      Double.isInfinite(ocpP) ||
-      Double.isInfinite(ocpRev) ||
-      Double.isInfinite(ocpKa) ||
-      Double.isInfinite(ocpBalance) ||
-      Double.isInfinite(hhiNetwork) ||
-      Double.isInfinite(hhiVideo) ||
-      Double.isInfinite(hhiOther) ||
-      Double.isInfinite(hhiVideo))
+  if (Double.isInfinite(utilityVideoOnly))
+    throw new RuntimeException();
+  if (Double.isInfinite(utilityBoth))
+    throw new RuntimeException();
+  if (Double.isInfinite(nspPriceNetworkOnly))
+    throw new RuntimeException();
+  if (Double.isInfinite(nspRevNetworkOnly))
+    throw new RuntimeException();
+  if (Double.isInfinite(nspPriceVideoOnly))
+    throw new RuntimeException();
+  if (Double.isInfinite(nspRevVideoOnly))
+    throw new RuntimeException();
+  if (Double.isInfinite(nspPriceBundle))
+    throw new RuntimeException();
+  if (Double.isInfinite(nspRevBundle))
+    throw new RuntimeException();
+  if (Double.isInfinite(nspRevVideoBW))
+    throw new RuntimeException();
+  if (Double.isInfinite(nspRevOtherBW))
+    throw new RuntimeException();
+  if (Double.isInfinite(nspQtyIxcVideo))
+    throw new RuntimeException();
+  if (Double.isInfinite(nspRevIxcVideo))
+    throw new RuntimeException();
+  if (Double.isInfinite(nspQtyIxcOther))
+    throw new RuntimeException();
+  if (Double.isInfinite(nspRevIxcOther))
+    throw new RuntimeException();
+  if (Double.isInfinite(nspKn))
+    throw new RuntimeException();
+  if (Double.isInfinite(nspKa))
+    throw new RuntimeException();
+  if (Double.isInfinite(nspProfit))
+    throw new RuntimeException();
+  if (Double.isInfinite(vcpP))
+    throw new RuntimeException();
+  if (Double.isInfinite(vcpRev))
+    throw new RuntimeException();
+  if (Double.isInfinite(vcpKa))
+    throw new RuntimeException();
+  if (Double.isInfinite(vcpProfit))
+    throw new RuntimeException();
+  if (Double.isInfinite(ocpP))
+    throw new RuntimeException();
+  if (Double.isInfinite(utilityVideoOnly))
+    throw new RuntimeException();
+  if (Double.isInfinite(ocpRev))
+    throw new RuntimeException();
+  if (Double.isInfinite(ocpKa))
+    throw new RuntimeException();
+  if (Double.isInfinite(ocpProfit))
+    throw new RuntimeException();
+  if (Double.isInfinite(hhiNetwork))
+    throw new RuntimeException();
+  if (Double.isInfinite(hhiVideo))
+    throw new RuntimeException();
+  if (Double.isInfinite(hhiOther))
     throw new RuntimeException();
 }
 
@@ -150,15 +206,15 @@ public String toString() {
          ", \nnspRevIxcOther=" + nspRevIxcOther +
          ", \nnspKn=" + nspKn +
          ", \nnspKa=" + nspKa +
-         ", \nnspBalance=" + nspBalance +
+         ", \nnspProfit=" + nspProfit +
          ", \nvcpP=" + vcpP +
          ", \nvcpRev=" + vcpRev +
          ", \nvcpKa=" + vcpKa +
-         ", \nvcpBalance=" + vcpBalance +
+         ", \nvcpProfit=" + vcpProfit +
          ", \nocpP=" + ocpP +
          ", \nocpRev=" + ocpRev +
          ", \nocpKa=" + ocpKa +
-         ", \nocpBalance=" + ocpBalance +
+         ", \nocpProfit=" + ocpProfit +
          ", \nhhiNetwork=" + hhiNetwork +
          ", \nhhiVideo=" + hhiVideo +
          ", \nhhiOther=" + hhiOther +
