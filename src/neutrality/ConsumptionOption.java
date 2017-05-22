@@ -183,37 +183,41 @@ public void consume(double qty) {
   // Network or bundle consumption
   network.processNetworkConsumption(model.currentStep, this, qty);
 
-  // Unbundled video content, if present
+  // Video content, if present
   if (videoContent.isPresent()) {
     videoContent.get().processContentConsumption(model.currentStep, this, qty);
     if (!model.policy0PriceIXC) {
-      payIXCFees(videoContent.get(),
-                 network,
-                 ixcBWPrice,
-                 model.videoBWIntensity,
-                 qty);
+      boolean feesWerePaid = payIXCFees(videoContent.get(),
+                                        network,
+                                        ixcBWPrice,
+                                        model.videoBWIntensity,
+                                        qty);
 
-      network.trackIXC(model.currentStep,
-                       ixcBWPrice,
-                       model.videoBWIntensity * qty,
-                       true);
+      if (feesWerePaid) {
+        network.trackIXC(model.currentStep,
+                         ixcBWPrice,
+                         model.videoBWIntensity * qty,
+                         true);
+      }
+      
     }
   }
 
-  // Unbundled other content, if present
+  // Other content, if present
   if (otherContent.isPresent()) {
     otherContent.get().processContentConsumption(model.currentStep, this, qty);
     if (!model.policy0PriceIXC) {
-      payIXCFees(otherContent.get(),
-                 network,
-                 ixcBWPrice,
-                 model.otherBWIntensity,
-                 qty);
-
-      network.trackIXC(model.currentStep,
-                       ixcBWPrice,
-                       model.videoBWIntensity * qty,
-                       false);
+      boolean feesWerePaid = payIXCFees(otherContent.get(),
+                                        network,
+                                        ixcBWPrice,
+                                        model.otherBWIntensity,
+                                        qty);
+      if (feesWerePaid) {
+        network.trackIXC(model.currentStep,
+                         ixcBWPrice,
+                         model.videoBWIntensity * qty,
+                         false);
+      }
     }
   }
 }
@@ -279,21 +283,28 @@ private ConsumptionOption(double K_n, double K_v, double K_o, double totPrice) {
 
 }
 
-static void payIXCFees(ContentProvider<?> cp,
-                       NetworkOperator<?> no,
-                       double ixcBWPrice,
-                       double bwIntensity,
-                       double qty) {
+static boolean payIXCFees(ContentProvider<?> cp,
+                          NetworkOperator<?> no,
+                          double ixcBWPrice,
+                          double bwIntensity,
+                          double qty) {
   Account cpAccount = cp.getAccount();
   Account noAccount = no.getAccount();
+  
+  if (cpAccount == noAccount)
+    return false;
 
   double bill = ixcBWPrice * bwIntensity * qty;
   try {
-    cpAccount.payTo(noAccount, bill);
+    if (bill > 0)
+      cpAccount.payTo(noAccount, bill);
+    if (bill < 0)
+      noAccount.payTo(cpAccount, -bill);
+    return true;
   } catch (Account.PaymentException e) {
     cp.goBankrupt();
-    return;
   }
+  return false;
 }
 
 @Override
