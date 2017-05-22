@@ -121,28 +121,31 @@ public void trackIXCFees(int step, double price, double qty) {
 }
 
 @Override
-public double getContentData(ContentData data) {
-  double amount = 0.0;
-  switch (data) {
-    case BALANCE:
-      amount = account.getBalance();
-      break;
-    case INVESTMENT:
-      for (double d : Ka)
-        amount += d;
-      break;
-    case QUANTITY:
-      for (double d : qtyContent)
-        amount += d;
-      break;
-    case REVENUE:
-      for (double d : revContent)
-        amount += d;
-      break;
-    default:
-      BUG("Unknown ContentData!");
-  }
-  return amount;
+public double totQtyContent() {
+  double toReturn = 0;
+  for (int i = 0; i < qtyContent.length; i++)
+    toReturn += qtyContent[i];
+  return toReturn;
 }
+
+@Override
+public double totRevContent() {
+  double toReturn = 0;
+  for (int i = 0; i < revContent.length; i++)
+    toReturn += revContent[i];
+  return toReturn;
+}
+
+@Override
+public double totKa() {
+  double toReturn = 0;
+  for (int i = 0; i < Ka.length; i++)
+    toReturn += Ka[i];
+  return toReturn;
+}
+
+
+
+
 
 }
