@@ -5,6 +5,9 @@ import static agency.util.Misc.BUG;
 import agency.Account;
 import agency.Individual;
 import neutrality.ConsumptionOption;
+import neutrality.Offers.ContentOffer;
+import neutrality.Offers.NetworkAndVideoBundleOffer;
+import neutrality.Offers.NetworkOnlyOffer;
 import neutrality.cp.AbstractContentProvider;
 
 public abstract class AbstractNetworkOperator<N extends Individual>
@@ -151,6 +154,8 @@ public double getIXCPrice(int step) {
 @Override
 public void trackIXC(int step, double price, double qty, boolean video) {
   double rev = price * qty;
+  if (rev > 1E8)
+    throw new RuntimeException();
   if (video) {
     qtyIxcVideo[step] += qty;
     revIxcVideo[step] += rev;
@@ -159,62 +164,6 @@ public void trackIXC(int step, double price, double qty, boolean video) {
     revIxcOther[step] += rev;
   }
   // Actual amounts are transferred by ConsumptionOption.consume
-}
-
-@Override
-public double getNetOpData(NetOpData variable) {
-  double amount = 0.0d;
-  switch (variable) {
-    case QUANTITY_NETWORK:
-      for (double d : qtyNetwork) {
-        amount += d;
-      }
-      break;
-    case REVENUE_NETWORK:
-      for (double d : revNetwork) {
-        amount += d;
-      }
-      break;
-    case QUANTITY_BUNDLE:
-      for (double d : qtyBundle) {
-        amount += d;
-      }
-      break;
-    case REVENUE_BUNDLE:
-      for (double d : revBundle) {
-        amount += d;
-      }
-      break;
-    case QUANTITY_IXC_VIDEO:
-      for (double d : qtyIxcVideo) {
-        amount += d;
-      }
-      break;
-    case REVENUE_IXC_VIDEO:
-      for (double d : revIxcVideo) {
-        amount += d;
-      }
-      break;
-    case QUANTITY_IXC_OTHER:
-      for (double d : qtyIxcOther) {
-        amount += d;
-      }
-      break;
-    case REVENUE_IXC_OTHER:
-      for (double d : revIxcOther) {
-        amount += d;
-      }
-      break;
-    case INVESTMENT_NETWORK:
-      for (double d : Kn) {
-        amount += d;
-      }
-      break;
-    default:
-      BUG("Unimplemented NetOpData");
-  }
-
-  return amount;
 }
 
 public static double proportionA(double split) {
@@ -227,5 +176,96 @@ public static double proportionA(double split) {
 public static double proportionB(double split) {
   return 1.0d - AbstractNetworkOperator.proportionA(split);
 }
+
+@Override
+public double totQtyBundle() {
+  double toReturn = 0;
+  for (int i = 0; i < qtyBundle.length; i++)
+    toReturn += qtyBundle[i];
+  return toReturn;
+}
+
+@Override
+public double totQtyNetworkOnly() {
+  double toReturn = 0;
+  for (int i = 0; i < qtyNetwork.length; i++)
+    toReturn += qtyNetwork[i];
+  return toReturn;
+}
+
+@Override
+public double totRevNetworkOnly() {
+  double toReturn = 0;
+  for (int i = 0; i < revNetwork.length; i++)
+    toReturn += revNetwork[i];
+  return toReturn;
+}
+
+@Override
+public double totRevBundle() {
+  double toReturn = 0;
+  for (int i = 0; i < revBundle.length; i++)
+    toReturn += revBundle[i];
+  return toReturn;
+}
+
+@Override
+public double totQtyIxcVideo() {
+  double toReturn = 0;
+  for (int i = 0; i < qtyIxcVideo.length; i++)
+    toReturn += qtyIxcVideo[i];
+  return toReturn;
+}
+
+@Override
+public double totRevIxcVideo() {
+  double toReturn = 0;
+  for (int i = 0; i < revIxcVideo.length; i++)
+    toReturn += revIxcVideo[i];
+  return toReturn;
+}
+
+@Override
+public double totQtyIxcOther() {
+  double toReturn = 0;
+  for (int i = 0; i < qtyIxcOther.length; i++)
+    toReturn += qtyIxcOther[i];
+  return toReturn;
+}
+
+@Override
+public double totRevIxcOther() {
+  double toReturn = 0;
+  for (int i = 0; i < revIxcOther.length; i++)
+    toReturn += revIxcOther[i];
+  return toReturn;
+}
+
+@Override
+public double totKn() {
+  double toReturn = 0;
+  for (int i = 0; i < Kn.length; i++)
+    toReturn += Kn[i];
+  return toReturn;
+}
+
+@Override
+public double totRevVideoBW() {
+  double toReturn = 0;
+  for (int i = 0; i < revBandwidthVideo.length; i++)
+    toReturn += revBandwidthVideo[i];
+  return toReturn;
+}
+
+@Override
+public double totRevOtherBW() {
+  double toReturn = 0;
+  for (int i = 0; i < revBandwidthOther.length; i++)
+    toReturn += revBandwidthOther[i];
+  return toReturn;
+}
+
+
+
 
 }

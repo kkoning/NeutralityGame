@@ -36,8 +36,6 @@ boolean isVideoProvider();
 
 void goBankrupt();
 
-double getContentData(ContentData data);
-
 default double getSectorInvestment(MarketInfo mi) {
   if (isVideo()) {
     return mi.cpVideoInvestment;
@@ -54,12 +52,10 @@ default double getSectorPrice(MarketInfo mi) {
   }
 }
 
+double totQtyContent();
 
-enum ContentData {
-  QUANTITY,
-  REVENUE,
-  INVESTMENT,
-  BALANCE
-}
+double totRevContent();
+
+double totKa();
 
 }
