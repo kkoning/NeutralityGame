@@ -2,19 +2,6 @@ package neutrality;
 
 import static agency.util.Misc.BUG;
 import static agency.util.Statistics.HHI;
-import static neutrality.cp.ContentProvider.ContentData.BALANCE;
-import static neutrality.cp.ContentProvider.ContentData.INVESTMENT;
-import static neutrality.cp.ContentProvider.ContentData.QUANTITY;
-import static neutrality.cp.ContentProvider.ContentData.REVENUE;
-import static neutrality.nsp.NetworkOperator.NetOpData.INVESTMENT_NETWORK;
-import static neutrality.nsp.NetworkOperator.NetOpData.QUANTITY_BUNDLE;
-import static neutrality.nsp.NetworkOperator.NetOpData.QUANTITY_IXC_OTHER;
-import static neutrality.nsp.NetworkOperator.NetOpData.QUANTITY_IXC_VIDEO;
-import static neutrality.nsp.NetworkOperator.NetOpData.QUANTITY_NETWORK;
-import static neutrality.nsp.NetworkOperator.NetOpData.REVENUE_BUNDLE;
-import static neutrality.nsp.NetworkOperator.NetOpData.REVENUE_IXC_OTHER;
-import static neutrality.nsp.NetworkOperator.NetOpData.REVENUE_IXC_VIDEO;
-import static neutrality.nsp.NetworkOperator.NetOpData.REVENUE_NETWORK;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -500,8 +487,23 @@ public Object getSummaryData() {
    * Consumption Data
    */
   o.utilityVideoOnly = consumersVideoOnly.accumulatedUtility;
+  if (consumersVideoOnly.accumulatedCost != 0)
+    o.utilityPerCostVideoOnly = o.utilityVideoOnly / consumersVideoOnly.accumulatedCost;
+  else
+    o.utilityPerCostVideoOnly = 0d;
+
   o.utilityOtherOnly = consumersOtherOnly.accumulatedUtility;
+  if (consumersOtherOnly.accumulatedCost != 0)
+    o.utilityPerCostOtherOnly = consumersOtherOnly.accumulatedUtility
+                                / consumersOtherOnly.accumulatedCost;
+  else
+    o.utilityPerCostOtherOnly = 0d;
+ 
   o.utilityBoth = consumersBoth.accumulatedUtility;
+  if (consumersBoth.accumulatedCost != 0)
+    o.utilityPerCostBoth = consumersBoth.accumulatedUtility / consumersBoth.accumulatedCost;
+  else
+    o.utilityPerCostBoth = 0d;
 
   /*
    * Data from Network Operators
@@ -509,68 +511,125 @@ public Object getSummaryData() {
   double nspQtyNetworkOnly = 0;
   double nspQtyVideoOnly = 0;
   double nspQtyBundle = 0;
+  double totNspBalance = 0;
   for (NetworkOperator<?> no : networkOperators) {
-    nspQtyNetworkOnly += no.getNetOpData(QUANTITY_NETWORK);
-    o.nspRevNetworkOnly += no.getNetOpData(REVENUE_NETWORK);
+    nspQtyNetworkOnly += no.totQtyNetworkOnly();
+    o.nspRevNetworkOnly += no.totRevNetworkOnly();
 
-    nspQtyVideoOnly += no.getContentData(QUANTITY);
-    o.nspRevVideoOnly += no.getContentData(REVENUE);
+    nspQtyVideoOnly += no.totQtyContent();
+    o.nspRevVideoOnly += no.totRevContent();
 
-    nspQtyBundle += no.getNetOpData(QUANTITY_BUNDLE);
-    o.nspRevBundle += no.getNetOpData(REVENUE_BUNDLE);
+    nspQtyBundle += no.totQtyBundle();
+    o.nspRevBundle += no.totRevBundle();
+    
+    o.nspRevVideoBW = no.totRevVideoBW();
+    o.nspRevOtherBW = no.totRevOtherBW();
 
-    o.nspQtyIxcVideo += no.getNetOpData(QUANTITY_IXC_VIDEO);
-    o.nspRevIxcVideo += no.getNetOpData(REVENUE_IXC_VIDEO);
+    o.nspQtyIxcVideo += no.totQtyIxcVideo();
+    o.nspRevIxcVideo += no.totRevIxcVideo();
 
-    o.nspQtyIxcOther += no.getNetOpData(QUANTITY_IXC_OTHER);
-    o.nspRevIxcOther += no.getNetOpData(REVENUE_IXC_OTHER);
+    o.nspQtyIxcOther += no.totQtyIxcOther();
+    o.nspRevIxcOther += no.totRevIxcOther();
 
-    o.nspKn += no.getNetOpData(INVESTMENT_NETWORK);
-    o.nspKa += no.getContentData(INVESTMENT);
+    o.nspKn += no.totKn();
+    o.nspKa += no.totKa(); // TODO: MAKE AVERAGE ALSO
 
-    o.nspBalance += no.getAccount().getBalance();
+    totNspBalance += no.getAccount().getBalance();
   }
   if (nspQtyNetworkOnly == 0)
     o.nspPriceNetworkOnly = 0;
-  else 
-    o.nspPriceNetworkOnly = o.nspPriceNetworkOnly / nspQtyNetworkOnly;
-  if (o.nspPriceVideoOnly == 0)
+  else
+    o.nspPriceNetworkOnly = o.nspRevNetworkOnly / nspQtyNetworkOnly;
+
+  if (nspQtyVideoOnly == 0)
     o.nspPriceVideoOnly = 0;
-  else 
+  else
     o.nspPriceVideoOnly = o.nspRevVideoOnly / nspQtyVideoOnly;
-  if (o.nspPriceBundle == 0)
+
+  if (nspQtyBundle == 0)
     o.nspPriceBundle = 0;
-  else 
+  else
     o.nspPriceBundle = o.nspRevBundle / nspQtyBundle;
 
-  
-  
   /*
-   * Data from Content Providers
+   * Capital amounts should be shown as a per-step per-firm average. This allows
+   * an easier visual appraisal of the magnitude of capital effects on the
+   * demand function.
    */
+  o.nspKn = o.nspKn / maxSteps / networkOperators.size();
+  o.nspKa = o.nspKa / maxSteps / networkOperators.size();
+
+  /*
+   * NSP profit should be a per-nsp average also, and subtract the initial firm
+   * endowment from the total balance to get an average profit.
+   */
+  o.nspProfit = (totNspBalance / networkOperators.size()) - firmEndowment;
+
+  ////////////////////////////////////
+  // Data from Video Content Providers
+  //
   double vcpQty = 0;
-  double ocpQty = 0;
+  double totVcpBalance = 0;
   for (ContentProvider<?> vcp : videoContentProviders) {
-    vcpQty += vcp.getContentData(QUANTITY);
-    o.vcpRev += vcp.getContentData(REVENUE);
-    
-    o.vcpKa += vcp.getContentData(INVESTMENT);
-    o.vcpBalance += vcp.getContentData(BALANCE) / videoContentProviders.size();
+    vcpQty += vcp.totQtyContent();
+    o.vcpRev += vcp.totRevContent();
+    o.vcpKa += vcp.totKa();
+    totVcpBalance += vcp.getAccount().getBalance();
   }
+
+  /*
+   * Capital amounts should be shown as a per-step per-firm average. This allows
+   * an easier visual appraisal of the magnitude of capital effects on the
+   * demand function.
+   */
+  o.vcpKa = o.vcpKa / maxSteps / networkOperators.size();
+
+  /*
+   * CP profit should be a per-cp average also, and subtract the initial firm
+   * endowment from the total balance to get an average profit.
+   */
+  o.vcpProfit = (totVcpBalance / videoContentProviders.size()) - firmEndowment;
+
+  /*
+   * Quantity and revenue are used to calculate the average price
+   */
   if (vcpQty == 0)
     o.vcpP = 0;
-  else 
+  else
     o.vcpP = o.vcpRev / vcpQty;
+
+  ///////////////////////////////////////////////
+  // Now do the same for other content providers.
+  //
+  double ocpQty = 0;
+  double totOcpBalance = 0;
   for (ContentProvider<?> ocp : otherContentProviders) {
-    ocpQty += ocp.getContentData(QUANTITY);
-    o.ocpRev += ocp.getContentData(REVENUE);
-    o.ocpKa += ocp.getContentData(INVESTMENT);
-    o.ocpBalance += ocp.getContentData(BALANCE) / otherContentProviders.size();
+    ocpQty += ocp.totQtyContent();
+    o.ocpRev += ocp.totRevContent();
+    o.ocpKa += ocp.totKa();
+    totOcpBalance += ocp.getAccount().getBalance();
   }
-  if (vcpQty == 0)
+
+  /*
+   * Quantity and revenue are used to calculate the average price
+   */
+  if (ocpQty == 0)
     o.ocpP = 0;
   else
     o.ocpP = o.ocpRev / ocpQty;
+
+  /*
+   * Capital amounts should be shown as a per-step per-firm average. This allows
+   * an easier visual appraisal of the magnitude of capital effects on the
+   * demand function.
+   */
+  o.ocpKa = o.ocpKa / maxSteps / otherContentProviders.size();
+
+  /*
+   * CP profit should be a per-cp average also, and subtract the initial firm
+   * endowment from the total balance to get an average profit.
+   */
+  o.ocpProfit = (totOcpBalance / otherContentProviders.size()) - firmEndowment;
 
   /*
    * Market Information
@@ -579,31 +638,37 @@ public Object getSummaryData() {
   double[] networkSales = new double[networkOperators.size()];
   for (int i = 0; i < networkOperators.size(); i++) {
     NetworkOperator<?> no = networkOperators.get(i);
-    networkSales[i] = no.getNetOpData(QUANTITY_NETWORK) +
-                      no.getNetOpData(QUANTITY_BUNDLE);
+    networkSales[i] = no.totQtyNetworkOnly() +
+                      no.totQtyBundle();
   }
   o.hhiNetwork = HHI(networkSales);
+  if (Double.isNaN(o.hhiNetwork) || Double.isInfinite(o.hhiNetwork))
+    o.hhiNetwork = 0;
 
   // Video Content HHI
   List<Double> videoSales = new ArrayList<>();
   for (ContentProvider<?> cp : videoContentProviders) {
-    videoSales.add(cp.getContentData(QUANTITY));
+    videoSales.add(cp.totQtyContent());
   }
   if (policyNSPContentAllowed) {
     for (NetworkOperator<?> no : networkOperators) {
-      videoSales.add(no.getContentData(QUANTITY) +
-                     no.getNetOpData(QUANTITY_BUNDLE));
+      videoSales.add(no.totQtyContent() +
+                     no.totQtyBundle());
     }
   }
   o.hhiVideo = HHI(videoSales);
+  if (Double.isNaN(o.hhiVideo) || Double.isInfinite(o.hhiVideo))
+    o.hhiVideo = 0;
 
   // Other Content HHI
   double[] otherSales = new double[otherContentProviders.size()];
   for (int i = 0; i < otherContentProviders.size(); i++) {
     ContentProvider<?> vcp = otherContentProviders.get(i);
-    otherSales[i] = vcp.getContentData(QUANTITY);
+    otherSales[i] = vcp.totQtyContent();
   }
   o.hhiOther = HHI(otherSales);
+  if (Double.isNaN(o.hhiOther) || Double.isInfinite(o.hhiOther))
+    o.hhiOther = 0;
 
   // Bankruptcies
   o.nspBankruptcies = bankruptNetworkOperators.size();
@@ -668,21 +733,21 @@ public void init() {
                                 linearDemandTerm,
                                 debugOut);
   consumersVideoOnly = new Consumers(incomeVideoOnly,
-                                gamma,
-                                tau,
-                                psi,
-                                1,
-                                1,
-                                linearDemandTerm,
-                                debugOut);
+                                     gamma,
+                                     tau,
+                                     psi,
+                                     1,
+                                     1,
+                                     linearDemandTerm,
+                                     debugOut);
   consumersOtherOnly = new Consumers(incomeOtherOnly,
-                                gamma,
-                                tau,
-                                psi,
-                                1,
-                                1,
-                                linearDemandTerm,
-                                debugOut);
+                                     gamma,
+                                     tau,
+                                     psi,
+                                     1,
+                                     1,
+                                     linearDemandTerm,
+                                     debugOut);
 
   // Allocate array for market information.
   marketInformation = new MarketInfo[maxSteps];

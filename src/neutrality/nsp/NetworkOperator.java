@@ -25,18 +25,26 @@ Offers.ContentOffer getContentOffer(int step);
 
 Offers.NetworkAndVideoBundleOffer getBundledOffer(int step);
 
-double getNetOpData(NetOpData variable);
+double totQtyBundle();
 
-enum NetOpData {
-  QUANTITY_NETWORK,
-  REVENUE_NETWORK,
-  QUANTITY_BUNDLE,
-  REVENUE_BUNDLE,
-  QUANTITY_IXC_VIDEO,
-  REVENUE_IXC_VIDEO,
-  QUANTITY_IXC_OTHER,
-  REVENUE_IXC_OTHER,
-  INVESTMENT_NETWORK,
-}
+double totQtyNetworkOnly();
+
+double totRevNetworkOnly();
+
+double totRevBundle();
+
+double totQtyIxcVideo();
+
+double totRevIxcVideo();
+
+double totQtyIxcOther();
+
+double totRevIxcOther();
+
+double totKn();
+
+double totRevVideoBW();
+
+double totRevOtherBW();
 
 }
