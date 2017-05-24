@@ -70,6 +70,13 @@ Consumers consumersBoth;
 MarketInfo[] marketInformation;
 
 public NeutralityModel() {
+  networkOperators = new ArrayList<>();
+  videoContentProviders = new ArrayList<>();
+  otherContentProviders = new ArrayList<>();
+
+  bankruptNetworkOperators = new ArrayList<>();
+  bankruptVideoContentProviders = new ArrayList<>();
+  bankruptOtherContentProviders = new ArrayList<>();
 }
 
 /**
@@ -698,14 +705,6 @@ public void init() {
   // Initialize consumers, print information for debug
   if (isDebugEnabled())
     debugOut.println("Initializing NeutralityModel");
-
-  networkOperators = new ArrayList<>();
-  videoContentProviders = new ArrayList<>();
-  otherContentProviders = new ArrayList<>();
-
-  bankruptNetworkOperators = new ArrayList<>();
-  bankruptVideoContentProviders = new ArrayList<>();
-  bankruptOtherContentProviders = new ArrayList<>();
 
   // Pre-calculating some common intermediate variables.
   videoContentValue = alpha / (1.0d + alpha);
