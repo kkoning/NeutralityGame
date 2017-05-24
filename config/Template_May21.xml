@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Warning: Used as template!  Make sure you're pointing at the correct file. -->
-<Environment checkpointEvery="1000">
+<Environment checkpointEvery="10000">
 
  <PopulationGroup id="nsp" totalSize="400">
   <TournamentBalancer tournamentSize="2" topIndividuals="1"/>
@@ -334,7 +334,7 @@
 
   <!-- Need an EvaluationGroupFactory -->
  <ShuffledEvaluationGroupFactory numGroups="500">
-  <AgentSource populationGroup="nsp" numAgents="__NUMNSPS__"/>
+  <AgentSource populationGroup="nsp" numAgents="__NUM_NSPS__"/>
   <AgentSource populationGroup="videoContent" numAgents="__NUM_3P_VIDEO__"/>
   <AgentSource populationGroup="otherContent" numAgents="4"/>
  </ShuffledEvaluationGroupFactory>
@@ -363,8 +363,8 @@
  <DefaultEnvironmentStatistics file="DefaultEnvironmentStatistics.csv" format="csv"/>
 
  <!-- Need an Evaluator -->
- <!-- <LocalEvaluator/> -->
- <LocalParallelEvaluator/>
+ <LocalEvaluator/>
+ <!-- <LocalParallelEvaluator/> -->
 
  <!-- Simulation data output -->
  <DefaultModelSummaryData generations="50" file="summary.csv" format="csv"/>

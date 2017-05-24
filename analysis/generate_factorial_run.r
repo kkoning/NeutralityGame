@@ -1,6 +1,6 @@
 library(data.table)
 
-inputFile <- "/Users/liara/ownCloud/src/NeutralityGame/data/config/Template.xml"
+inputFile <- "/Users/liara/Dropbox/git/NeutralityGame/config/Template_May21.xml"
 template <- readLines(inputFile)
 
 # for run 004, first refactored run
@@ -18,28 +18,36 @@ template <- readLines(inputFile)
 
 f <- function(row, template) {
   configFile <- template
-  configFile <- gsub("__NUMNSPS__", row$numNSPs, configFile)
+  configFile <- gsub("__NUM_NSPS__", row$numNSPs, configFile)
   configFile <- gsub("__ALPHA__", row$alpha, configFile)
   configFile <- gsub("__BETA__", row$beta, configFile)
-  configFile <- gsub("__ZEROIXC__", row$zeroIXC, configFile)
+  configFile <- gsub("__ZERO_IXC__", row$zeroIXC, configFile)
+  configFile <- gsub("__GAMMA__", row$gamma, configFile)
+  
   configFile <- gsub("__BUNDLING__", row$bundling, configFile)
   configFile <- gsub("__ZERORATING__", row$zeroRating, configFile)
   configFile <- gsub("__ISP_CONTENT__", row$ispContent, configFile)
+  configFile <- gsub("__NUM_3P_VIDEO__", row$numVideoCPs, configFile)
   cat(configFile, file = sprintf("%d.xml",row$ID), sep='\n')
 }
 
 
 
 parameters <- expand.grid(numNSPs = c(1, 2),
-                    zeroIXC = c(TRUE),
+                    numVideoCPs = c(2, 3, 4),
+					          gamma = c(0.4, 0.8),
+                    zeroIXC = c(FALSE, TRUE),
                     zeroRating = c(FALSE, TRUE),
                     bundling = c(FALSE, TRUE),
                     ispContent = c(TRUE, FALSE),
-                    alpha = rep(c(1), times=30),
-                    beta = rep(c(1), times=30))
+                    alpha = rep(c(1), times=10),
+                    beta = rep(c(1), times=10))
 parameters <- as.data.table(parameters)
 parameters <- parameters[!(ispContent == FALSE & bundling == TRUE)]
 parameters <- parameters[!(ispContent == FALSE & zeroRating == TRUE)]
+parameters <- parameters[!(ispContent == FALSE & numVideoCPs != 4)]
+parameters <- parameters[!(ispContent == TRUE & (numNSPs + numVideoCPs != 4))]
+
 parameters$ID <- seq.int(nrow(parameters))
 parameters$alpha <- exp(rnorm(nrow(parameters), sd=1.5))
 parameters$beta <- exp(rnorm(nrow(parameters), sd=1.5))
@@ -48,8 +56,8 @@ parameters$beta <- exp(rnorm(nrow(parameters), sd=1.5))
 
 # Actually write stuff.  Commented out so as to not run accidentally and overwrite data!
 #
-# write.table(parameters,file="non_strategic.table")
-# tmp <- by(parameters, 1:nrow(parameters), f, template = template)
+write.table(parameters,file="parameters_May21.table")
+tmp <- by(parameters, 1:nrow(parameters), f, template = template)
 
 
 

@@ -19,9 +19,9 @@ import neutrality.Offers;
  * vector that are used, in combination with observations from the environment,
  * to determine investment and pricing decisions.
  * 
- * This strategy requires rather sizable genome. The exact size can be found either
- * by calculating by hand or by running a debugger and examining the value of
- * TOTAL_GENOME_LENGTH.  It's currently 158.
+ * This strategy requires rather sizable genome. The exact size can be found
+ * either by calculating by hand or by running a debugger and examining the
+ * value of TOTAL_GENOME_LENGTH. It's currently 158.
  * 
  */
 public class ContingentLinearContentProvider
@@ -55,8 +55,6 @@ private static final int PRICING_GENOME_SIZE   = VectorIndividual
 @SuppressWarnings("unused")
 private static final int TOTAL_GENOME_LENGTH = PRICING_BLOCK_IDX + PRICING_GENOME_SIZE;
 // Debug says 158.
-
-
 
 @Override
 public Offers.ContentOffer getContentOffer(int step) {
@@ -99,8 +97,7 @@ public Offers.ContentOffer getContentOffer(int step) {
 }
 
 @Override
-public void step(
-                 NeutralityModel model, int step, Optional<Double> substep) {
+public void step(NeutralityModel model, int step, Optional<Double> substep) {
 
   /*
    * For the first step, we have no environmental information on which to base

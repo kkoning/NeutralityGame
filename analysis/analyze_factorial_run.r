@@ -85,6 +85,7 @@ dummies_to_factor <- function(ispContent, bundling, zeroRating) {
 	}
 	return(factor)
 }
+
 foo <- dummies_to_factor(combined$ispContent, combined$bundling, combined$zeroRating)
 bar <- factor(foo,labels = c("Separation","Restricted", "Bundling", "ZeroRating", "Both"))
 combined$Condition <- bar
@@ -156,5 +157,8 @@ lm_hhiVideo <- lm(hhiVideo ~ numNSPs + log(alpha) * Condition + log(beta) * Cond
 summary(lm_hhiVideo)
 
 
+# On consumer utility
+lm_hhiVideo <- lm(utilityTotal ~ numNSPs + log(alpha) * Condition + log(beta) * Condition, data=combined)
+summary(lm_hhiVideo)
 
 

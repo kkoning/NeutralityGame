@@ -49,7 +49,7 @@ make_plot_list_heat <- function(colnames, numGenerations) {
 
 
 # requres revision if data output format changes.
-models <- read.csv('summary.csv', header=TRUE, colClasses = c("integer", "character", rep("numeric",30)))
+models <- read.csv('summary.csv', header=TRUE, colClasses = c("integer", "character", rep("numeric",35)))
 models <- data.table(models)
 summary(models)
 
@@ -58,7 +58,7 @@ colnames <- c(
 'hhiNetwork',
 'hhiOther',
 'hhiVideo',
-'nspBalance',
+'nspProfit',
 'nspBankruptcies',
 'nspKa',
 'nspKn',
@@ -66,11 +66,13 @@ colnames <- c(
 'nspPriceNetworkOnly',
 'nspPriceVideoOnly',
 'nspRevBundle',
+'nspRevOtherBW',
+'nspRevVideoBW',
 'nspRevIxcOther',
 'nspRevIxcVideo',
 'nspRevNetworkOnly',
 'nspRevVideoOnly',
-'ocpBalance',
+'ocpProfit',
 'ocpBankruptcies',
 'ocpKa',
 'ocpP',
@@ -78,7 +80,10 @@ colnames <- c(
 'utilityBoth',
 'utilityOtherOnly',
 'utilityVideoOnly',
-'vcpBalance',
+'utilityPerCostBoth',
+'utilityPerCostOtherOnly',
+'utilityPerCostVideoOnly',
+'vcpProfit',
 'vcpBankruptcies',
 'vcpKa',
 'vcpP',
@@ -89,7 +94,7 @@ summary <- models[, lapply(.SD, prot_mean, na.rm=TRUE), by=generation, .SDcols=c
 numGenerations <- max(summary$generation)
 
 nsp_cols = c(
-'nspBalance',
+'nspProfit',
 'nspBankruptcies',
 'nspKa',
 'nspKn',
@@ -99,17 +104,19 @@ nsp_cols = c(
 'nspRevVideoOnly',
 'nspPriceBundle',
 'nspRevBundle',
+'nspRevOtherBW',
+'nspRevVideoBW',
 'nspRevIxcOther',
 'nspRevIxcVideo'
 )
 
 cp_cols = c(
-'ocpBalance',
+'ocpProfit',
 'ocpBankruptcies',
 'ocpKa',
 'ocpP',
 'ocpRev',
-'vcpBalance',
+'vcpProfit',
 'vcpBankruptcies',
 'vcpKa',
 'vcpP',
@@ -121,7 +128,10 @@ other_cols = c(
 'hhiVideo',
 'utilityBoth',
 'utilityOtherOnly',
-'utilityVideoOnly'
+'utilityVideoOnly',
+'utilityPerCostBoth',
+'utilityPerCostOtherOnly',
+'utilityPerCostVideoOnly'
 )
 
 # Investments
