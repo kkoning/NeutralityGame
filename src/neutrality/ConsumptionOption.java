@@ -156,6 +156,7 @@ ConsumptionOption(NeutralityModel model,
   // Determine utility
   double contentCapitalTerm = 0.0;
   double psi = network.getModel().psi;
+  double tau = network.getModel().tau;
   if (videoContent.isPresent()) {
     double videoValue = network.getModel().videoContentValue;
     double videoCapitalTerm = Math.pow(K_v, psi);
@@ -166,7 +167,7 @@ ConsumptionOption(NeutralityModel model,
     double otherCapitalTerm = Math.pow(K_o, psi);
     contentCapitalTerm += otherValue * otherCapitalTerm;
   }
-  double netCapitalTerm = Math.pow(K_n, psi);
+  double netCapitalTerm = Math.pow(K_n, tau);
   utilityCoefficient = contentCapitalTerm * netCapitalTerm;
 
   this.ixcBWPrice = network.getIXCPrice(model.currentStep);
