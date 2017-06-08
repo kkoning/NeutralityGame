@@ -2,30 +2,25 @@ package neutrality;
 
 import com.sun.istack.internal.NotNull;
 
-import neutrality.cp.ContentProvider;
-import neutrality.nsp.NetworkOperator;
-
 import static agency.util.Misc.BUG;
 
 public class Offers {
 
 public static class ContentOffer {
-final ContentProvider<?> contentProvider;
-final double             price;
-final int                step;
+final ContentProvider contentProvider;
+final double          price;
 
 public ContentOffer(
-    int step,
-    @NotNull ContentProvider<?> contentProvider,
-    double price) {
+                    int step,
+                    @NotNull ContentProvider contentProvider,
+                    double price) {
   if (contentProvider == null)
     BUG("ContentOffer cannot have a null ContentProvider");
   if (price < 1E-20)
     price = 1E-20;
 
   NeutralityModel.verifySaneAmount(price);
-  
-  this.step = step;
+
   this.contentProvider = contentProvider;
   this.price = price;
 }
@@ -33,27 +28,27 @@ public ContentOffer(
 @Override
 public String toString() {
   return "ContentOffer{" +
-      "Ka=" + contentProvider.getKa(step) +
+      "Ka=" + contentProvider.Ka +
       ", p=" + price +
       '}';
 }
 }
 
 public static class NetworkOnlyOffer {
-final NetworkOperator<?> network;
-final double             connectionPrice;
-final double             bandwidthPrice;
-final int                step;
+final NetworkOperator network;
+final double          connectionPrice;
+final double          bandwidthPrice;
+final int             step;
 
 public NetworkOnlyOffer(
-    int step,
-    @NotNull NetworkOperator<?> networkOperator,
-    double connectionPrice,
-    double bandwidthPrice) {
+                        int step,
+                        @NotNull NetworkOperator networkOperator,
+                        double connectionPrice,
+                        double bandwidthPrice) {
 
   NeutralityModel.verifySaneAmount(connectionPrice);
   NeutralityModel.verifySaneAmount(bandwidthPrice);
-  
+
   if (networkOperator == null)
     BUG("NetworkOnlyOffer created with null NetworkOperator");
   if (connectionPrice < 1E-20)
@@ -63,7 +58,7 @@ public NetworkOnlyOffer(
 
   // Connection prices are interpreted as a premium over marginal cost.
   connectionPrice += networkOperator.getModel().nspMarginalCost;
-  
+
   this.step = step;
   this.network = networkOperator;
   this.connectionPrice = connectionPrice;
@@ -73,55 +68,49 @@ public NetworkOnlyOffer(
 @Override
 public String toString() {
   return "NetworkOnlyOffer{" +
-      "Kn=" + network.getKn(step) +
-      ", Pn=" + connectionPrice +
-      ", Pbw=" + bandwidthPrice +
-      '}';
+         "Kn=" + network.Kn +
+         ", Pn=" + connectionPrice +
+         ", Pbw=" + bandwidthPrice +
+         '}';
 }
 }
 
-public static class NetworkAndVideoBundleOffer {
-final NetworkOperator<?> networkOperator;
-final double             bundlePrice;
-final double             bandwidthPrice;
-final int                step;
+public static class BundleOffer {
+final NetworkOperator networkOperator;
+double                bundlePrice;
+final double          bandwidthPrice;
+final int             step;
 
-public NetworkAndVideoBundleOffer(
-    int step,
-    @NotNull NetworkOperator<?> networkOperator,
-    double bundlePrice,
-    double bandwidthPrice) {
+public BundleOffer(
+                   int step,
+                   NetworkOnlyOffer unbundled,
+                   double bundlePremium) {
 
-  NeutralityModel.verifySaneAmount(bundlePrice);
-  NeutralityModel.verifySaneAmount(bandwidthPrice);
-  
-  if (networkOperator == null)
+  NeutralityModel.verifySaneAmount(bundlePremium);
+
+  if (unbundled.network == null)
     BUG("NetworkAndVideoBundleOffer created with null NetworkOperator");
-  if (!networkOperator.getModel().policyBundlingAllowed)
+  if (!unbundled.network.getModel().policyBundlingAllowed)
     BUG("NetworkAndVideoBundleOffer made, but bundling not allowed.");
-  
-  if (bundlePrice < 1E-20)
-    bundlePrice = 1E-20;
-  if (bandwidthPrice <= 1E-20)
-    bandwidthPrice = 1E-20;
 
-  // Bundle prices are interpreted as a premium over marginal cost.
-  bundlePrice += networkOperator.getModel().nspMarginalCost;
+  if (bundlePremium < 1E-20)
+    bundlePremium = 1E-20;
+
+  bundlePrice = unbundled.connectionPrice + bundlePremium;
+  bandwidthPrice = unbundled.bandwidthPrice;
 
   this.step = step;
-  this.networkOperator = networkOperator;
-  this.bundlePrice = bundlePrice;
-  this.bandwidthPrice = bandwidthPrice;
+  this.networkOperator = unbundled.network;
 }
 
 @Override
 public String toString() {
   return "NetworkAndVideoBundleOffer{" +
-      "Kn=" + networkOperator.getKn(step) +
-      ", Ka=" + networkOperator.getKa(step) +
-      ", Pb=" + bundlePrice +
-      ", Pbw=" + bandwidthPrice +
-      '}';
+         "Kn=" + networkOperator.Kn +
+         ", Ka=" + networkOperator.Ka +
+         ", Pb=" + bundlePrice +
+         ", Pbw=" + bandwidthPrice +
+         '}';
 }
 }
 

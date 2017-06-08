@@ -46,7 +46,7 @@ summary(lm(hhiVideo ~ numNSPs + zeroRating +
 	bundling * log(beta) + 
 	zeroRating * log(alpha) + 
 	zeroRating * log(beta), 
-	data=data[ispContent == TRUE]))
+	data=data[nspContent == TRUE]))
 
 summary(lm(hhiVideo ~ numNSPs +
 	bundling * zeroRating * log(alpha) +
@@ -86,10 +86,29 @@ dummies_to_factor <- function(ispContent, bundling, zeroRating) {
 	return(factor)
 }
 
-foo <- dummies_to_factor(combined$ispContent, combined$bundling, combined$zeroRating)
+
+
+
+factorize_gamma <- function(gamma) {
+	factor <- rep(0,length(gamma))
+	for (i in 1:length(gamma) ) {
+		if (gamma[[i]] < 0.5) {
+			factor[[i]] <- 1
+		} else {
+			factor[[i]] <- 2
+		}
+	}
+	return(factor)
+}
+
+
+
+
+foo <- dummies_to_factor(data$ispContent, data$bundling, data$zeroRating)
 bar <- factor(foo,labels = c("Separation","Restricted", "Bundling", "ZeroRating", "Both"))
-combined$Condition <- bar
-combined <- as.data.table(combined)
+data$Condition <- bar
+rm(foo,bar)
+
 
 #
 # Interesting Plots
@@ -97,41 +116,41 @@ combined <- as.data.table(combined)
 
 
 # Alpha vs. hhiVideo under various conditions
-ggplot(combined[Condition=="Separation"], aes(y=hhiVideo, x=log(alpha), color=as.factor(numNSPs))) + 
+ggplot(data[Condition=="Separation"], aes(y=hhiVideo, x=log(alpha), color=as.factor(numNSPs))) + 
 	geom_point() + 
 	ggtitle("Alpha's effect on hhiVideo, condition = Separation")
 
-ggplot(combined[Condition=="Restricted"], aes(y=hhiVideo, x=log(alpha), color=as.factor(numNSPs))) + 
+ggplot(data[Condition=="Restricted"], aes(y=hhiVideo, x=log(alpha), color=as.factor(numNSPs))) + 
 	geom_point() + 
 	ggtitle("Alpha's effect on hhiVideo, condition = Restricted")
 
-ggplot(combined[Condition=="Bundling"], aes(y=hhiVideo, x=log(alpha), color=as.factor(numNSPs))) + 
+ggplot(data[Condition=="Bundling"], aes(y=hhiVideo, x=log(alpha), color=as.factor(numNSPs))) + 
 	geom_point() + 
 	ggtitle("Alpha's effect on hhiVideo, condition = Bundling")
 
-ggplot(combined[Condition=="ZeroRating"], aes(y=hhiVideo, x=log(alpha), color=as.factor(numNSPs))) + 
+ggplot(data[Condition=="ZeroRating"], aes(y=hhiVideo, x=log(alpha), color=as.factor(numNSPs))) + 
 	geom_point() + 
 	ggtitle("Alpha's effect on hhiVideo, condition = ZeroRating")
 
-ggplot(combined[Condition=="Both"], aes(y=hhiVideo, x=log(alpha), color=as.factor(numNSPs))) + 
+ggplot(data[Condition=="Both"], aes(y=hhiVideo, x=log(alpha), color=as.factor(numNSPs))) + 
 	geom_point() + 
 	ggtitle("Alpha's effect on hhiVideo, condition = Both")
 
 #combined
-ggplot(combined, aes(y=hhiVideo, x=log(alpha), color=numNSPs)) + geom_point()
+ggplot(data, aes(y=hhiVideo, x=log(alpha), color=numNSPs)) + geom_point()
 
 
-ggplot(combined[Condition=="Bundling"], aes(y=vcpKa+nspKa, x=hhiVideo, color=as.factor(numNSPs))) + 
+ggplot(data[Condition=="Bundling"], aes(y=vcpKa+nspKa, x=hhiVideo, color=as.factor(numNSPs))) + 
 	geom_point() + 
 	ggtitle("Alpha's effect on hhiVideo, condition = Both")
 
 
-ggplot(combined, aes(y=vcpKa, x=hhiVideo, color=log(alpha))) + geom_point()
+ggplot(data, aes(y=vcpKa, x=hhiVideo, color=log(alpha))) + geom_point()
 
 
-ggplot(combined[numNSPs == 1], aes(y=hhiVideo, x=Condition, color=numNSPs)) + geom_point()
+ggplot(data[numNSPs == 1], aes(y=hhiVideo, x=Condition, color=numNSPs)) + geom_point()
 
-ggplot(combined[numNSPs == 1], aes(y=hhiVideo, x=Condition)) + geom_boxplot()
+ggplot(data[numNSPs == 1], aes(y=hhiVideo, x=Condition)) + geom_boxplot()
 
 
 
@@ -147,18 +166,94 @@ ggplot(combined[numNSPs == 1], aes(y=hhiVideo, x=Condition)) + geom_boxplot()
 
 # With Condition
 
-# Completely Interacted
-lm_hhiVideo <- lm(hhiVideo ~ numNSPs + log(alpha) * log(beta) * Condition, data=combined)
+lm_hhiVideoSimple <- lm(hhiVideo ~ Condition * log(alpha) + Condition * log(beta), data=data)
+lm_hhiVideoSimpleHighGamma <- lm(hhiVideo ~ Condition * log(alpha) + Condition * log(beta), data=data[gamma > 0.6])
+lm_hhiVideoSimpleLowGamma <- lm(hhiVideo ~ Condition * log(alpha) + Condition * log(beta), data=data[gamma < 0.6])
+summary(lm_hhiVideoSimple)
+stargazer(lm_hhiVideoSimple, no.space=TRUE, single.row=TRUE, 
+	title='$\\alpha$ and $\\beta$ and HHI by Policy', label="lm_hhiVideoSimple",
+	dep.var.labels=c("Video Market HHI"),
+	out="lm_hhiVideoSimple.tex")
+stargazer(lm_hhiVideoSimpleHighGamma, no.space=TRUE, single.row=TRUE, 
+	title='$\\alpha$ and $\\beta$ and HHI by Policy, High $\\gamma$ only', 
+	label="lm_hhiVideoSimpleHighGamma",
+	dep.var.labels=c("Video Market HHI"),
+	out="lm_hhiVideoSimpleHighGamma.tex")
+stargazer(lm_hhiVideoSimpleLowGamma, no.space=TRUE, single.row=TRUE, 
+	title='$\\alpha$ and $\\beta$ and HHI by Policy, Low $\\gamma$ only', 
+	label="lm_hhiVideoSimpleLowGamma",
+	dep.var.labels=c("Video Market HHI"),
+	out="lm_hhiVideoSimpleLowGamma.tex")
+
+
+lm_hhiVideo <- lm(hhiVideo ~ Condition * log(alpha) * zeroIXC + Condition * log(beta) * zeroIXC, data=data)
 summary(lm_hhiVideo)
+
+stargazer(lm_hhiVideo, no.space=TRUE, single.row=TRUE, 
+	title='$\\alpha$ and $\\beta$ and HHI by Policy and IXC pricing', label="lm_hhiVideo",
+	dep.var.labels=c("Video Market HHI"),
+	out="lm_hhiVideo.tex")
+
+
+
+lm_VideoInvestmentSimple <- lm(totalKaLog ~ Condition * log(alpha) + Condition * log(beta), data=data)
+lm_VideoInvestmentSimpleHighGamma <- lm(totalKaLog ~ Condition * log(alpha) + Condition * log(beta), data=data[gamma > 0.6])
+lm_VideoInvestmentSimpleLowGamma <- lm(ntotalKaLog ~ Condition * log(alpha) + Condition * log(beta), data=data[gamma < 0.6])
+summary(lm_VideoInvestmentSimple)
+summary(lm_VideoInvestmentSimpleHighGamma)
+summary(lm_VideoInvestmentSimpleLowGamma)
+
+stargazer(lm_VideoInvestmentSimple, no.space=TRUE, single.row=TRUE, 
+	title='$\\alpha$ and $\\beta$ and Video Content Investment by Policy', 
+	label="lm_VideoInvestmentSimple",
+	dep.var.labels=c("Total Video Content Investment (log)"),
+	out="lm_VideoInvestmentSimple.tex")
+
+stargazer(lm_VideoInvestmentSimpleHighGamma, no.space=TRUE, single.row=TRUE, 
+	title='$\\alpha$ and $\\beta$ and Video Content Investment by Policy, High $\\gamma$ only', 
+	label="lm_VideoInvestmentSimple",
+	dep.var.labels=c("Total Video Content Investment (log)"),
+	out="lm_VideoInvestmentSimpleHighGamma.tex")
+
+stargazer(lm_VideoInvestmentSimpleLowGamma, no.space=TRUE, single.row=TRUE, 
+	title='$\\alpha$ and $\\beta$ and Video Content Investment by Policy, Low $\\gamma$ only', 
+	label="lm_VideoInvestmentSimple",
+	dep.var.labels=c("Total Video Content Investment (log)"),
+	out="lm_VideoInvestmentSimpleLowGamma.tex")
+
+
+
+
+lm_NetworkInvestmentSimple <- lm(log(nspKn) ~ Condition * log(alpha) + Condition * log(beta), data=data)
+summary(lm_NetworkInvestmentSimple)
+stargazer(lm_VideoInvestmentSimpleLowGamma, no.space=TRUE, single.row=TRUE, 
+	title='$\\alpha$ and $\\beta$ and Network Investment by Policy', 
+	label="lm_VideoInvestmentSimple",
+	dep.var.labels=c("Total Network Investment (log)"),
+	out="lm_NetworkInvestmentSimple.tex")
+
+
 
 # No interaction between alpha and beta.
 
-lm_hhiVideo <- lm(hhiVideo ~ numNSPs + log(alpha) * Condition + log(beta) * Condition, data=combined)
+lm_hhiVideo <- lm(hhiVideo ~ numNSPs + log(alpha) * Condition + log(beta) * Condition, data=data)
 summary(lm_hhiVideo)
 
 
 # On consumer utility
-lm_hhiVideo <- lm(utilityTotal ~ numNSPs + log(alpha) * Condition + log(beta) * Condition, data=combined)
+lm_hhiVideo <- lm(utilityTotal ~ numNSPs + log(alpha) * Condition + log(beta) * Condition, data=data)
 summary(lm_hhiVideo)
+
+
+
+
+
+
+
+
+
+
+
+
 
 

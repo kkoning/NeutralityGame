@@ -1,6 +1,6 @@
 library(data.table)
 
-inputFile <- "/Users/liara/Dropbox/git/NeutralityGame/config/Template_May21.xml"
+inputFile <- "Template.xml"
 template <- readLines(inputFile)
 
 # for run 004, first refactored run
@@ -34,29 +34,29 @@ f <- function(row, template) {
 
 
 parameters <- expand.grid(numNSPs = c(1, 2),
-                    numVideoCPs = c(2, 3, 4),
+                    numVideoCPs = c(1, 2, 3),
 					          gamma = c(0.4, 0.8),
                     zeroIXC = c(FALSE, TRUE),
                     zeroRating = c(FALSE, TRUE),
                     bundling = c(FALSE, TRUE),
                     ispContent = c(TRUE, FALSE),
-                    alpha = rep(c(1), times=10),
-                    beta = rep(c(1), times=10))
+                    alpha = rep(c(1), times=20),
+                    beta = rep(c(1), times=20))
 parameters <- as.data.table(parameters)
 parameters <- parameters[!(ispContent == FALSE & bundling == TRUE)]
 parameters <- parameters[!(ispContent == FALSE & zeroRating == TRUE)]
-parameters <- parameters[!(ispContent == FALSE & numVideoCPs != 4)]
-parameters <- parameters[!(ispContent == TRUE & (numNSPs + numVideoCPs != 4))]
+parameters <- parameters[!(ispContent == FALSE & numVideoCPs != 3)]
+parameters <- parameters[!(ispContent == TRUE & (numNSPs + numVideoCPs != 3))]
 
 parameters$ID <- seq.int(nrow(parameters))
-parameters$alpha <- exp(rnorm(nrow(parameters), sd=1.5))
-parameters$beta <- exp(rnorm(nrow(parameters), sd=1.5))
+parameters$alpha <- exp(runif(nrow(parameters), -2,2))
+parameters$beta <- exp(runif(nrow(parameters), -2,2))
 # ggplot(parameters, aes(x=log(alpha))) + geom_histogram()
 
 
 # Actually write stuff.  Commented out so as to not run accidentally and overwrite data!
 #
-write.table(parameters,file="parameters_May21.table")
+write.table(parameters,file="parameters.table")
 tmp <- by(parameters, 1:nrow(parameters), f, template = template)
 
 

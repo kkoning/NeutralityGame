@@ -13,8 +13,6 @@ final double beta;
 final double tau;
 final double psi;
 final double linearDemandTerm;
-final double videoContentValue;
-final double otherContentValue;
 
 double accumulatedUtility;
 double accumulatedCost;
@@ -25,8 +23,6 @@ public Consumers(final double income,
                  final double gamma,
                  final double tau,
                  final double psi,
-                 final double videoContentValue,
-                 final double otherContentValue,
                  final double linearDemandTerm,
                  final PrintStream debugOut) {
 
@@ -36,8 +32,6 @@ public Consumers(final double income,
   this.psi = psi;
   this.beta = 1 / (gamma - 1);
   this.linearDemandTerm = linearDemandTerm;
-  this.videoContentValue = videoContentValue;
-  this.otherContentValue = otherContentValue;
 
   this.debugOut = debugOut;
 
@@ -72,15 +66,14 @@ public void consume(List<ConsumptionOption> options) {
 
   for (int i = 0; i < options.size(); i++) {
     ConsumptionOption co = options.get(i);
-    co.consume(quantities[i]);
-    accumulatedUtility += co.getUtility(quantities[i]);
-    accumulatedCost += co.totalCostToConsumer * quantities[i];
+    co.consume(this, quantities[i]);
   }
 
 }
 
 public double[] determineConsumption(List<ConsumptionOption> options) {
 
+  double[] capTerm = new double[options.size()];
   double[] capitalTerms_toBeta = new double[options.size()];
   double[] capitalTerms_toNegBeta = new double[options.size()];
   double[] prices_toNegBeta = new double[options.size()];
@@ -92,33 +85,10 @@ public double[] determineConsumption(List<ConsumptionOption> options) {
   for (int i = 0; i < options.size(); i++) {
     ConsumptionOption option = options.get(i);
 
-    // Calculate capital terms to avoid lots of repetitive Math.pow() calls
-    // (The effect of alpha and beta is captured here too)
-    double netCapTerm;
-    double vidCapTerm = 0.0;
-    double othCapTerm = 0.0;
+    capTerm[i] = option.K();
 
-    // options always have a network
-    netCapTerm = Math.pow(option.K_n, tau);
-    // netCapTerm = Math.log(option.K_n + Math.E);
-
-    // but not always both types of content
-    if (option.videoContent.isPresent()) {
-      // vidCapTerm = Math.log(option.K_v + Math.E);
-      vidCapTerm = Math.pow(option.K_v, psi);
-
-    }
-    if (option.otherContent.isPresent()) {
-      // othCapTerm = Math.log(option.K_o + Math.E);
-      othCapTerm = Math.pow(option.K_o, psi);
-    }
-
-    double vidCapTot = videoContentValue * netCapTerm * vidCapTerm;
-    double othCapTot = otherContentValue * netCapTerm * othCapTerm;
-    double capTot = vidCapTot + othCapTot;
-
-    capitalTerms_toBeta[i] = Math.pow(capTot, beta);
-    capitalTerms_toNegBeta[i] = Math.pow(capTot, -beta);
+    capitalTerms_toBeta[i] = Math.pow(capTerm[i], beta);
+    capitalTerms_toNegBeta[i] = Math.pow(capTerm[i], -beta);
     prices_toNegBeta[i] = Math.pow(prices[i], -beta);
     prices_toBetaPlus1[i] = Math.pow(prices[i], beta + 1);
   }
@@ -148,7 +118,6 @@ public double[] determineConsumption(List<ConsumptionOption> options) {
     orElse *= prices_toNegBeta[i];
     if (debugOut != null)
       debugOut.println("residterm is " + orElse);
-
     den += orElse;
 
     if (debugOut != null)
@@ -157,13 +126,34 @@ public double[] determineConsumption(List<ConsumptionOption> options) {
     double firstTerm = income / den;
 
     // Residual term for all other goods; quasi-linear demand.
-    double secondTerm = prices[i] * linearDemandTerm;
+    // double secondTerm = prices[i] * linearDemandTerm;
+    // double secondTerm = linearDemandTerm * prices[i] * prices[i] /
+    // capTerm[i];
+    
+    // Small negative constant to prevent convergence to zero
+    double secondTerm = 1;
+    
 
     double qty = firstTerm - secondTerm;
 
-    // Quantity cannot be negative.
-    if (qty <= 0)
+    /*
+     * Obviously, quantity has a floor of zero. However, this flattens the
+     * fitness landscape, and agents need a slope here just to point them
+     * towards the portion of the fitness landscape where there may be positive
+     * returns. This doesn't prevent agents from choosing prices or investment
+     * that result in consumption arbitrarily close to zero.
+     * 
+     */
+    if (qty <= 0) {
+      // Punish any agent that tries to give a negative qty.
+      ConsumptionOption offendingOption = options.get(i);
+      offendingOption.network.fitnessAdjustment -= qty * qty * 10;
+      offendingOption.video.fitnessAdjustment -= qty * qty * 10;
+      offendingOption.other.fitnessAdjustment -= qty * qty * 10;
+
+      // Set to zero for other purposes.
       qty = 0d;
+    }
 
     if (Double.isNaN(qty) || Double.isInfinite(qty))
       throw new RuntimeException();
@@ -176,7 +166,7 @@ public double[] determineConsumption(List<ConsumptionOption> options) {
 public double[] extractPrices(List<ConsumptionOption> options) {
   double[] toReturn = new double[options.size()];
   for (int i = 0; i < options.size(); i++) {
-    toReturn[i] = options.get(i).totalCostToConsumer;
+    toReturn[i] = options.get(i).getTotalCost();
   }
   return toReturn;
 }

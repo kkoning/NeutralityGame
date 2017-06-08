@@ -1,5 +1,10 @@
 package neutrality;
 
+import static agency.util.Statistics.HHI;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * This object gets translated directly into column headers and data values in
  * output files. For this reason, it needs to be flattened and not hierarchical.
@@ -16,44 +21,63 @@ public class OutputData {
 /*
  * Consumption Variables
  */
-double utilityVideoOnly;
-double utilityPerCostVideoOnly;
-double utilityOtherOnly;
-double utilityPerCostOtherOnly;
-double utilityBoth;
-double utilityPerCostBoth;
+double consumerUtility;
+double consumerPaid;
 
 /*
  * Network Operator Variables
  */
-double nspPriceNetworkOnly; // Unbundled Network
-double nspRevNetworkOnly;
-double nspPriceVideoOnly;   // Unbundled Content
-double nspRevVideoOnly;
-double nspPriceBundle;      // Bundled network and content
-double nspRevBundle;
-double nspRevVideoBW;       // Bandwidth fees from consumers
-double nspRevOtherBW;
-double nspQtyIxcVideo;      // IXC from Video
-double nspRevIxcVideo;
-double nspQtyIxcOther;      // IXC from Other
-double nspRevIxcOther;
-double nspKn;               // Investment
+double unbundledPrice;
+double unbundledQty;
+double unbundledRev;
+
+double bundlePrice;
+double bundleQty;
+double bundleRev;
+
+double nspContentPrice;
+double nspContentQty;
+double nspContentRev;
+
+double videoBandwidthPrice;
+double videoBandwidthQty;
+double videoBandwidthRev;
+
+double otherBandwidthPrice;
+double otherBandwidthQty;
+double otherBandwidthRev;
+
+double zeroRatingDiscounts;
+
+double ixcVideoPrice;
+double ixcVideoQty;
+double ixcVideoRev;
+
+double ixcOtherPrice;
+double ixcOtherQty;
+double ixcOtherRev;
+
+double ixcAvoided;
+
+double nspKn;  
 double nspKa;
-double nspProfit;           // Profit
+double nspBalance; 
 
 /*
  * Content Provider Variables
  */
-double vcpP;
-double vcpRev;
-double vcpKa;
-double vcpProfit;
+double videoKa;
+double videoPrice;
+double videoQty;
+double videoRev;
+double videoBalance;
 
-double ocpP;
-double ocpRev;
-double ocpKa;
-double ocpProfit;
+double otherKa;
+double otherPrice;
+double otherQty;
+double otherRev;
+double otherBalance;
+
 
 /*
  * Market variables
@@ -62,166 +86,130 @@ double hhiNetwork;
 double hhiVideo;
 double hhiOther;
 
-int nspBankruptcies;
-int vcpBankruptcies;
-int ocpBankruptcies;
 
-public void checkForNaNs() {
-  if (Double.isNaN(utilityVideoOnly))
-    throw new RuntimeException();
-  if (Double.isNaN(utilityBoth))
-    throw new RuntimeException();
-  if (Double.isNaN(nspPriceNetworkOnly))
-    throw new RuntimeException();
-  if (Double.isNaN(nspRevNetworkOnly))
-    throw new RuntimeException();
-  if (Double.isNaN(nspPriceVideoOnly))
-    throw new RuntimeException();
-  if (Double.isNaN(nspRevVideoOnly))
-    throw new RuntimeException();
-  if (Double.isNaN(nspPriceBundle))
-    throw new RuntimeException();
-  if (Double.isNaN(nspRevBundle))
-    throw new RuntimeException();
-  if (Double.isNaN(nspRevVideoBW))
-    throw new RuntimeException();
-  if (Double.isNaN(nspRevOtherBW))
-    throw new RuntimeException();
-  if (Double.isNaN(nspQtyIxcVideo))
-    throw new RuntimeException();
-  if (Double.isNaN(nspRevIxcVideo))
-    throw new RuntimeException();
-  if (Double.isNaN(nspQtyIxcOther))
-    throw new RuntimeException();
-  if (Double.isNaN(nspRevIxcOther))
-    throw new RuntimeException();
-  if (Double.isNaN(nspKn))
-    throw new RuntimeException();
-  if (Double.isNaN(nspKa))
-    throw new RuntimeException();
-  if (Double.isNaN(nspProfit))
-    throw new RuntimeException();
-  if (Double.isNaN(vcpP))
-    throw new RuntimeException();
-  if (Double.isNaN(vcpRev))
-    throw new RuntimeException();
-  if (Double.isNaN(vcpKa))
-    throw new RuntimeException();
-  if (Double.isNaN(vcpProfit))
-    throw new RuntimeException();
-  if (Double.isNaN(ocpP))
-    throw new RuntimeException();
-  if (Double.isNaN(utilityVideoOnly))
-    throw new RuntimeException();
-  if (Double.isNaN(ocpRev))
-    throw new RuntimeException();
-  if (Double.isNaN(ocpKa))
-    throw new RuntimeException();
-  if (Double.isNaN(ocpProfit))
-    throw new RuntimeException();
-  if (Double.isNaN(hhiNetwork))
-    throw new RuntimeException();
-  if (Double.isNaN(hhiVideo))
-    throw new RuntimeException();
-  if (Double.isNaN(hhiOther))
-    throw new RuntimeException();
+public OutputData(NeutralityModel model) {
+  calculateConsumerStats(model);
+  calculateNSPStats(model);
+  calculateCPStats(model);
+  calculateHHIs(model);
 }
 
-public void checkForInfinities() {
-  if (Double.isInfinite(utilityVideoOnly))
-    throw new RuntimeException();
-  if (Double.isInfinite(utilityBoth))
-    throw new RuntimeException();
-  if (Double.isInfinite(nspPriceNetworkOnly))
-    throw new RuntimeException();
-  if (Double.isInfinite(nspRevNetworkOnly))
-    throw new RuntimeException();
-  if (Double.isInfinite(nspPriceVideoOnly))
-    throw new RuntimeException();
-  if (Double.isInfinite(nspRevVideoOnly))
-    throw new RuntimeException();
-  if (Double.isInfinite(nspPriceBundle))
-    throw new RuntimeException();
-  if (Double.isInfinite(nspRevBundle))
-    throw new RuntimeException();
-  if (Double.isInfinite(nspRevVideoBW))
-    throw new RuntimeException();
-  if (Double.isInfinite(nspRevOtherBW))
-    throw new RuntimeException();
-  if (Double.isInfinite(nspQtyIxcVideo))
-    throw new RuntimeException();
-  if (Double.isInfinite(nspRevIxcVideo))
-    throw new RuntimeException();
-  if (Double.isInfinite(nspQtyIxcOther))
-    throw new RuntimeException();
-  if (Double.isInfinite(nspRevIxcOther))
-    throw new RuntimeException();
-  if (Double.isInfinite(nspKn))
-    throw new RuntimeException();
-  if (Double.isInfinite(nspKa))
-    throw new RuntimeException();
-  if (Double.isInfinite(nspProfit))
-    throw new RuntimeException();
-  if (Double.isInfinite(vcpP))
-    throw new RuntimeException();
-  if (Double.isInfinite(vcpRev))
-    throw new RuntimeException();
-  if (Double.isInfinite(vcpKa))
-    throw new RuntimeException();
-  if (Double.isInfinite(vcpProfit))
-    throw new RuntimeException();
-  if (Double.isInfinite(ocpP))
-    throw new RuntimeException();
-  if (Double.isInfinite(utilityVideoOnly))
-    throw new RuntimeException();
-  if (Double.isInfinite(ocpRev))
-    throw new RuntimeException();
-  if (Double.isInfinite(ocpKa))
-    throw new RuntimeException();
-  if (Double.isInfinite(ocpProfit))
-    throw new RuntimeException();
-  if (Double.isInfinite(hhiNetwork))
-    throw new RuntimeException();
-  if (Double.isInfinite(hhiVideo))
-    throw new RuntimeException();
-  if (Double.isInfinite(hhiOther))
-    throw new RuntimeException();
+public void calculateConsumerStats(NeutralityModel model) {
+  consumerUtility = model.consumers.accumulatedUtility;
+  consumerPaid = model.consumers.accumulatedCost;
 }
 
-@Override
-public String toString() {
-  return "OutputData{" +
-         "\nutilityVideoOnly=" + utilityVideoOnly +
-         ", \nutilityOtherOnly=" + utilityOtherOnly +
-         ", \nutilityBoth=" + utilityBoth +
-         ", \nnspPriceNetworkOnly=" + nspPriceNetworkOnly +
-         ", \nnspRevNetworkOnly=" + nspRevNetworkOnly +
-         ", \nnspPriceVideoOnly=" + nspPriceVideoOnly +
-         ", \nnspRevVideoOnly=" + nspRevVideoOnly +
-         ", \nnspPriceBundle=" + nspPriceBundle +
-         ", \nnspRevBundle=" + nspRevBundle +
-         ", \nnspQtyIxcVideo=" + nspQtyIxcVideo +
-         ", \nnspRevIxcVideo=" + nspRevIxcVideo +
-         ", \nnspQtyIxcOther=" + nspQtyIxcOther +
-         ", \nnspRevIxcOther=" + nspRevIxcOther +
-         ", \nnspKn=" + nspKn +
-         ", \nnspKa=" + nspKa +
-         ", \nnspProfit=" + nspProfit +
-         ", \nvcpP=" + vcpP +
-         ", \nvcpRev=" + vcpRev +
-         ", \nvcpKa=" + vcpKa +
-         ", \nvcpProfit=" + vcpProfit +
-         ", \nocpP=" + ocpP +
-         ", \nocpRev=" + ocpRev +
-         ", \nocpKa=" + ocpKa +
-         ", \nocpProfit=" + ocpProfit +
-         ", \nhhiNetwork=" + hhiNetwork +
-         ", \nhhiVideo=" + hhiVideo +
-         ", \nhhiOther=" + hhiOther +
-         ", \nnspBankruptcies=" + nspBankruptcies +
-         ", \nvcpBankruptcies=" + vcpBankruptcies +
-         ", \nocpBankruptcies=" + ocpBankruptcies +
-         "\n}";
+public void calculateCPStats(NeutralityModel model) {
+  for (ContentProvider vcp : model.videoContentProviders) {
+    videoKa += vcp.Ka;
+    videoBalance += vcp.getBalance();
+    
+    videoQty = vcp.content.qty + Double.MIN_NORMAL;
+    videoRev = vcp.content.revenue();
+  }
+  
+  for (ContentProvider ocp : model.otherContentProviders) {
+    otherKa += ocp.Ka;
+    otherBalance += ocp.getBalance();
+    
+    otherQty = ocp.content.qty + Double.MIN_NORMAL;
+    otherRev = ocp.content.revenue();
+  }
+  
+  videoPrice = videoRev / videoQty;
+  otherPrice = otherRev / otherQty;
+  
 }
+
+public void calculateNSPStats(NeutralityModel model) {
+  for (NetworkOperator no : model.networkOperators) {
+    unbundledQty += no.netOnly.qty + Double.MIN_NORMAL;
+    unbundledRev += no.netOnly.revenue();
+    
+    bundleQty += no.bundle.qty + Double.MIN_NORMAL;
+    bundleRev += no.bundle.revenue();
+    
+    nspContentQty += no.content.qty + Double.MIN_NORMAL;
+    nspContentRev += no.content.revenue();
+    
+    videoBandwidthQty += no.videoBW.qty + Double.MIN_NORMAL;
+    videoBandwidthRev += no.videoBW.revenue();
+    
+    otherBandwidthQty += no.otherBW.qty + Double.MIN_NORMAL;
+    otherBandwidthRev += no.otherBW.revenue();
+
+    zeroRatingDiscounts += no.zeroRatingDiscounts;
+
+    ixcVideoQty += no.videoIXC.qty + Double.MIN_NORMAL;
+    ixcVideoRev += no.videoIXC.revenue();
+    
+    ixcOtherQty += no.otherIXC.qty + Double.MIN_NORMAL;
+    ixcOtherRev += no.otherIXC.revenue();
+
+    ixcAvoided += no.ixcAvoided;
+    
+    nspKn += no.Kn;
+    nspKa += no.Ka;
+    nspBalance += no.getBalance();
+  }
+  
+  unbundledPrice = unbundledRev / unbundledQty;
+  bundlePrice = bundleRev / bundleQty;
+  nspContentPrice = nspContentRev / nspContentQty;
+  
+  videoBandwidthPrice = videoBandwidthRev / videoBandwidthQty;
+  otherBandwidthPrice = otherBandwidthRev / otherBandwidthQty;
+  
+  ixcVideoPrice = ixcVideoRev / ixcVideoQty;
+  ixcOtherPrice = ixcOtherRev / ixcOtherQty;
+}
+
+public void calculateHHIs(NeutralityModel model) {
+
+  /*
+   * Market Information
+   */
+  // Network HHI
+  double[] networkSales = new double[model.networkOperators.size()];
+  for (int i = 0; i < model.networkOperators.size(); i++) {
+    NetworkOperator no = model.networkOperators.get(i);
+    networkSales[i] = no.netOnly.qty +
+                      no.bundle.qty;
+  }
+  hhiNetwork = HHI(networkSales);
+  if (Double.isNaN(hhiNetwork) || Double.isInfinite(hhiNetwork))
+    hhiNetwork = 0;
+
+  
+  // Video Content HHI
+  List<Double> videoSales = new ArrayList<>();
+  for (ContentProvider cp : model.videoContentProviders) {
+    videoSales.add(cp.content.qty);
+  }
+  if (model.policyNSPContentAllowed) {
+    for (NetworkOperator no : model.networkOperators) {
+      videoSales.add(no.content.qty +
+                     no.bundle.qty);
+    }
+  }
+  hhiVideo = HHI(videoSales);
+  if (Double.isNaN(hhiVideo) || Double.isInfinite(hhiVideo))
+    hhiVideo = 0;
+
+  
+  // Other Content HHI
+  double[] otherSales = new double[model.otherContentProviders.size()];
+  for (int i = 0; i < model.otherContentProviders.size(); i++) {
+    ContentProvider ocp = model.otherContentProviders.get(i);
+    otherSales[i] = ocp.content.qty;
+  }
+  hhiOther = HHI(otherSales);
+  if (Double.isNaN(hhiOther) || Double.isInfinite(hhiOther))
+    hhiOther = 0;
+  }
+
+
+
+
 
 }

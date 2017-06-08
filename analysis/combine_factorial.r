@@ -8,8 +8,13 @@ ids <- seq(first_id, last_id)
 
 accumulated <- NULL
 for (id in ids) {
-	data <- read.table(sprintf("%i/%s",id,filename), header=TRUE)
-	accumulated <- rbind(accumulated,data)
+	f <- sprintf("%i/%s",id,filename)
+	if (file.exists(f)) {
+		data <- read.table(f, header=TRUE)
+		accumulated <- rbind(accumulated,data)
+	} else {
+		print(id)
+	}
 }
 
 out_filename <- sprintf("%s_%i-%i.table",filename,first_id,last_id)

@@ -2,11 +2,12 @@
 <!-- Warning: Used as template!  Make sure you're pointing at the correct file. -->
 <Environment checkpointEvery="10000">
 
- <PopulationGroup id="nsp" totalSize="400">
-  <TournamentBalancer tournamentSize="2" topIndividuals="1"/>
-
-  <Population baseSize="10" initialSize="100" id="DirectlyEncodedNetworkOperators">
-   <DefaultAgentFactory agentClass="neutrality.nsp.DirectlyEncodedNetworkOperator"/>
+ <PopulationGroup id="nsp" totalSize="100">
+  <Population baseSize="20" initialSize="100" id="NetworkOperators">
+   <DefaultAgentFactory agentClass="neutrality.NetworkOperator">
+    <Parameter name="isVideoProvider" value="true"/>
+    <Parameter name="emulateMarket" value="false"/>
+  </DefaultAgentFactory>
    <VectorIndividualFactory length="8">
     <GaussianRandomVectorRange start="0" end="7">
      <Means type="RepeatingDouble" start="0" end="7" value="0"/>
@@ -15,28 +16,7 @@
    </VectorIndividualFactory>
    <VectorCrossoverPipeline crossoverProb="0.3">
     <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
-     <VectorMutator length="8">
-      <GaussianMutator start="0" end="7">
-       <MutationProbability type="RepeatingDouble" start="0" end="7" value="0.5"/>
-       <Deviations type="RepeatingDouble" start="0" end="7" value="0.1"/>
-      </GaussianMutator>
-     </VectorMutator>
-    </VectorMutationPipeline>
-   </VectorCrossoverPipeline>
-  </Population>
-
-  <Population baseSize="10" initialSize="100" id="MimicNetworkOperators">
-   <DefaultAgentFactory agentClass="neutrality.nsp.MimicNetworkOperator"/>
-   <VectorIndividualFactory length="8">
-    <GaussianRandomVectorRange start="0" end="7">
-     <Means type="RepeatingDouble" start="0" end="7" value="0"/>
-     <Deviations type="RepeatingDouble" start="0" end="7" value="0.1"/>
-    </GaussianRandomVectorRange>
-   </VectorIndividualFactory>
-   <VectorCrossoverPipeline crossoverProb="0.3">
-    <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
+     <TournamentSelector topIndividuals="1" tournamentSize="10"/>
      <VectorMutator length="8">
       <GaussianMutator start="0" end="7">
        <MutationProbability type="RepeatingDouble" start="0" end="7" value="0.1"/>
@@ -46,43 +26,27 @@
     </VectorMutationPipeline>
    </VectorCrossoverPipeline>
   </Population>
-        
-  <Population baseSize="10" initialSize="100" id="LinearNetworkOperators">
-   <DefaultAgentFactory agentClass="neutrality.nsp.LinearNetworkOperator"/>
-   <VectorIndividualFactory length="88">
-    <GaussianRandomVectorRange start="0" end="87">
-     <Means type="RepeatingDouble" start="0" end="87" value="0"/>
-     <Deviations type="RepeatingDouble" start="0" end="87" value="0.1"/>
-    </GaussianRandomVectorRange>
-   </VectorIndividualFactory>
-   <VectorCrossoverPipeline crossoverProb="0.3">
-    <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
-     <VectorMutator length="77">
-      <GaussianMutator start="0" end="87">
-       <MutationProbability type="RepeatingDouble" start="0" end="87" value="0.1"/>
-       <Deviations type="RepeatingDouble" start="0" end="87" value="0.1"/>
-      </GaussianMutator>
-     </VectorMutator>
-    </VectorMutationPipeline>
-   </VectorCrossoverPipeline>
-  </Population>
+ </PopulationGroup>
 
-  <Population baseSize="10" initialSize="100" id="ContingentLinearNetworkOperators">
-   <DefaultAgentFactory agentClass="neutrality.nsp.ContingentLinearNetworkOperator"/>
-   <VectorIndividualFactory length="1352">
-    <GaussianRandomVectorRange start="0" end="1351">
-     <Means type="RepeatingDouble" start="0" end="1351" value="0"/>
-     <Deviations type="RepeatingDouble" start="0" end="1351" value="0.1"/>
+ <PopulationGroup id="videoContent" totalSize="100">
+  <Population baseSize="20" initialSize="100" id="VideoContentProviders">
+   <DefaultAgentFactory agentClass="neutrality.ContentProvider">
+    <Parameter name="isVideoProvider" value="true"/>
+    <Parameter name="emulateMarket" value="true"/>
+   </DefaultAgentFactory>
+   <VectorIndividualFactory length="2">
+    <GaussianRandomVectorRange start="0" end="1">
+     <Means type="RepeatingDouble" start="0" end="1" value="0"/>
+     <Deviations type="RepeatingDouble" start="0" end="1" value="0.1"/>
     </GaussianRandomVectorRange>
    </VectorIndividualFactory>
    <VectorCrossoverPipeline crossoverProb="0.3">
     <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
-     <VectorMutator length="1183">
-      <GaussianMutator start="0" end="1351">
-       <MutationProbability type="RepeatingDouble" start="0" end="1351" value="0.1"/>
-       <Deviations type="RepeatingDouble" start="0" end="1351" value="0.1"/>
+     <TournamentSelector topIndividuals="1" tournamentSize="10"/>
+     <VectorMutator length="2">
+      <GaussianMutator start="0" end="1">
+       <MutationProbability type="RepeatingDouble" start="0" end="1" value="0.1"/>
+       <Deviations type="RepeatingDouble" start="0" end="1" value="0.1"/>
       </GaussianMutator>
      </VectorMutator>
     </VectorMutationPipeline>
@@ -91,12 +55,12 @@
 
  </PopulationGroup>
 
- <PopulationGroup id="videoContent" totalSize="400">
-  <TournamentBalancer tournamentSize="2" topIndividuals="1"/>
+ <PopulationGroup id="otherContent" totalSize="100">
 
-  <Population baseSize="10" initialSize="100" id="DirectlyEncodedVideoContentProviders">
-   <DefaultAgentFactory agentClass="neutrality.cp.DirectlyEncodedContentProvider">
-    <Parameter name="isVideoProvider" value="true"/>
+  <Population baseSize="20" initialSize="100" id="OtherContentProviders">
+   <DefaultAgentFactory agentClass="neutrality.ContentProvider">
+    <Parameter name="isVideoProvider" value="false"/>
+    <Parameter name="emulateMarket" value="true"/>
    </DefaultAgentFactory>
    <VectorIndividualFactory length="2">
     <GaussianRandomVectorRange start="0" end="1">
@@ -106,7 +70,7 @@
    </VectorIndividualFactory>
    <VectorCrossoverPipeline crossoverProb="0.3">
     <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
+     <TournamentSelector topIndividuals="1" tournamentSize="10"/>
      <VectorMutator length="2">
       <GaussianMutator start="0" end="1">
        <MutationProbability type="RepeatingDouble" start="0" end="1" value="0.1"/>
@@ -116,241 +80,26 @@
     </VectorMutationPipeline>
    </VectorCrossoverPipeline>
   </Population>
-
-  <Population baseSize="10" initialSize="100" id="ContingentLinearVideoContentProviders">
-   <DefaultAgentFactory agentClass="neutrality.cp.ContingentLinearContentProvider">
-    <Parameter name="isVideoProvider" value="true"/>
-   </DefaultAgentFactory>
-   <VectorIndividualFactory length="158">
-    <GaussianRandomVectorRange start="0" end="157">
-     <Means type="RepeatingDouble" start="0" end="157" value="0"/>
-     <Deviations type="RepeatingDouble" start="0" end="157" value="0.1"/>
-    </GaussianRandomVectorRange>
-   </VectorIndividualFactory>
-   <VectorCrossoverPipeline crossoverProb="0.3">
-     <VectorMutationPipeline>
-      <TournamentSelector topIndividuals="1" tournamentSize="2"/>
-      <VectorMutator length="158">
-       <GaussianMutator start="0" end="157">
-        <MutationProbability type="RepeatingDouble" start="0" end="157" value="0.1"/>
-        <Deviations type="RepeatingDouble" start="0" end="157" value="0.1"/>
-       </GaussianMutator>
-      </VectorMutator>
-    </VectorMutationPipeline>
-   </VectorCrossoverPipeline>
-  </Population>
-
-  <Population baseSize="10" initialSize="100" id="LinearVideoContentProviders">
-   <DefaultAgentFactory agentClass="neutrality.cp.LinearContentProvider">
-    <Parameter name="isVideoProvider" value="true"/>
-   </DefaultAgentFactory>
-   <VectorIndividualFactory length="30">
-    <GaussianRandomVectorRange start="0" end="29">
-     <Means type="RepeatingDouble" start="0" end="29" value="0"/>
-     <Deviations type="RepeatingDouble" start="0" end="29" value="0.1"/>
-    </GaussianRandomVectorRange>
-   </VectorIndividualFactory>
-   <VectorCrossoverPipeline crossoverProb="0.3">
-    <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
-     <VectorMutator length="30">
-      <GaussianMutator start="0" end="29">
-       <MutationProbability type="RepeatingDouble" start="0" end="29" value="0.1"/>
-       <Deviations type="RepeatingDouble" start="0" end="29" value="0.1"/>
-      </GaussianMutator>
-     </VectorMutator>
-    </VectorMutationPipeline>
-   </VectorCrossoverPipeline>
-  </Population>
- 
-  <Population baseSize="10" initialSize="100" id="MimicVideoContentProviders">
-   <DefaultAgentFactory agentClass="neutrality.cp.MimicContentProvider">
-    <Parameter name="isVideoProvider" value="true"/>
-   </DefaultAgentFactory>
-   <VectorIndividualFactory length="2">
-    <GaussianRandomVectorRange start="0" end="1">
-     <Means type="RepeatingDouble" start="0" end="1" value="0"/>
-     <Deviations type="RepeatingDouble" start="0" end="1" value="0.1"/>
-    </GaussianRandomVectorRange>
-   </VectorIndividualFactory>
-   <VectorCrossoverPipeline crossoverProb="0.3">
-    <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
-     <VectorMutator length="2">
-      <GaussianMutator start="0" end="1">
-       <MutationProbability type="RepeatingDouble" start="0" end="1" value="0.1"/>
-       <Deviations type="RepeatingDouble" start="0" end="1" value="0.1"/>
-      </GaussianMutator>
-     </VectorMutator>
-    </VectorMutationPipeline>
-   </VectorCrossoverPipeline>
-  </Population>
-
-  <Population baseSize="10" initialSize="100" id="ContingentVideoContentProviders">
-   <DefaultAgentFactory agentClass="neutrality.cp.ContingentContentProvider">
-    <Parameter name="isVideoProvider" value="true"/>
-   </DefaultAgentFactory>
-   <VectorIndividualFactory length="30">
-    <GaussianRandomVectorRange start="0" end="29">
-     <Means type="RepeatingDouble" start="0" end="29" value="0"/>
-     <Deviations type="RepeatingDouble" start="0" end="29" value="0.1"/>
-    </GaussianRandomVectorRange>
-   </VectorIndividualFactory>
-   <VectorCrossoverPipeline crossoverProb="0.3">
-    <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
-     <VectorMutator length="30">
-      <GaussianMutator start="0" end="29">
-       <MutationProbability type="RepeatingDouble" start="0" end="29" value="0.1"/>
-       <Deviations type="RepeatingDouble" start="0" end="29" value="0.1"/>
-      </GaussianMutator>
-     </VectorMutator>
-    </VectorMutationPipeline>
-   </VectorCrossoverPipeline>
-  </Population>
-
- </PopulationGroup>
-
- <PopulationGroup id="otherContent" totalSize="500">
- <TournamentBalancer tournamentSize="2" topIndividuals="1"/>
-
-  <Population baseSize="10" initialSize="100" id="DirectlyEncodedOtherContentProviders">
-   <DefaultAgentFactory agentClass="neutrality.cp.DirectlyEncodedContentProvider">
-    <Parameter name="isVideoProvider" value="false"/>
-   </DefaultAgentFactory>
-   <VectorIndividualFactory length="2">
-    <GaussianRandomVectorRange start="0" end="1">
-     <Means type="RepeatingDouble" start="0" end="1" value="0"/>
-     <Deviations type="RepeatingDouble" start="0" end="1" value="0.1"/>
-    </GaussianRandomVectorRange>
-   </VectorIndividualFactory>
-   <VectorCrossoverPipeline crossoverProb="0.3">
-    <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
-     <VectorMutator length="2">
-      <GaussianMutator start="0" end="1">
-       <MutationProbability type="RepeatingDouble" start="0" end="1" value="0.1"/>
-       <Deviations type="RepeatingDouble" start="0" end="1" value="0.1"/>
-      </GaussianMutator>
-     </VectorMutator>
-    </VectorMutationPipeline>
-   </VectorCrossoverPipeline>
-  </Population>
-
-  <Population baseSize="10" initialSize="100" id="ContingentLinearOtherContentProviders">
-   <DefaultAgentFactory agentClass="neutrality.cp.ContingentLinearContentProvider">
-    <Parameter name="isVideoProvider" value="false"/>
-   </DefaultAgentFactory>
-   <VectorIndividualFactory length="158">
-    <GaussianRandomVectorRange start="0" end="157">
-     <Means type="RepeatingDouble" start="0" end="157" value="0"/>
-     <Deviations type="RepeatingDouble" start="0" end="157" value="0.1"/>
-    </GaussianRandomVectorRange>
-   </VectorIndividualFactory>
-   <VectorCrossoverPipeline crossoverProb="0.3">
-    <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
-     <VectorMutator length="158">
-      <GaussianMutator start="0" end="157">
-       <MutationProbability type="RepeatingDouble" start="0" end="157" value="0.1"/>
-       <Deviations type="RepeatingDouble" start="0" end="157" value="0.1"/>
-      </GaussianMutator>
-     </VectorMutator>
-    </VectorMutationPipeline>
-   </VectorCrossoverPipeline>
-  </Population>
-
-  <Population baseSize="10" initialSize="100" id="LinearOtherContentProviders">
-   <DefaultAgentFactory agentClass="neutrality.cp.LinearContentProvider">
-    <Parameter name="isVideoProvider" value="false"/>
-   </DefaultAgentFactory>
-   <VectorIndividualFactory length="30">
-    <GaussianRandomVectorRange start="0" end="29">
-     <Means type="RepeatingDouble" start="0" end="29" value="0"/>
-     <Deviations type="RepeatingDouble" start="0" end="29" value="0.1"/>
-    </GaussianRandomVectorRange>
-   </VectorIndividualFactory>
-   <VectorCrossoverPipeline crossoverProb="0.3">
-    <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
-     <VectorMutator length="30">
-      <GaussianMutator start="0" end="29">
-       <MutationProbability type="RepeatingDouble" start="0" end="29" value="0.1"/>
-       <Deviations type="RepeatingDouble" start="0" end="29" value="0.1"/>
-      </GaussianMutator>
-     </VectorMutator>
-    </VectorMutationPipeline>
-   </VectorCrossoverPipeline>
-  </Population>
-
-  <Population baseSize="10" initialSize="100" id="MimicOtherContentProviders">
-   <DefaultAgentFactory agentClass="neutrality.cp.MimicContentProvider">
-    <Parameter name="isVideoProvider" value="false"/>
-   </DefaultAgentFactory>
-   <VectorIndividualFactory length="2">
-    <GaussianRandomVectorRange start="0" end="1">
-     <Means type="RepeatingDouble" start="0" end="1" value="0"/>
-     <Deviations type="RepeatingDouble" start="0" end="1" value="0.1"/>
-    </GaussianRandomVectorRange>
-   </VectorIndividualFactory>
-   <VectorCrossoverPipeline crossoverProb="0.3">
-    <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
-     <VectorMutator length="2">
-      <GaussianMutator start="0" end="1">
-       <MutationProbability type="RepeatingDouble" start="0" end="1" value="0.1"/>
-       <Deviations type="RepeatingDouble" start="0" end="1" value="0.1"/>
-      </GaussianMutator>
-     </VectorMutator>
-    </VectorMutationPipeline>
-   </VectorCrossoverPipeline>
-  </Population>
-
-  <Population baseSize="10" initialSize="100" id="ContingentOtherContentProviders">
-   <DefaultAgentFactory agentClass="neutrality.cp.ContingentContentProvider">
-    <Parameter name="isVideoProvider" value="false"/>
-   </DefaultAgentFactory>
-   <VectorIndividualFactory length="30">
-    <GaussianRandomVectorRange start="0" end="29">
-     <Means type="RepeatingDouble" start="0" end="29" value="0"/>
-     <Deviations type="RepeatingDouble" start="0" end="29" value="0.1"/>
-    </GaussianRandomVectorRange>
-   </VectorIndividualFactory>
-   <VectorCrossoverPipeline crossoverProb="0.3">
-    <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
-     <VectorMutator length="30">
-      <GaussianMutator start="0" end="29">
-       <MutationProbability type="RepeatingDouble" start="0" end="29" value="0.1"/>
-       <Deviations type="RepeatingDouble" start="0" end="29" value="0.1"/>
-      </GaussianMutator>
-     </VectorMutator>
-    </VectorMutationPipeline>
-   </VectorCrossoverPipeline>
-  </Population>
-
 
  </PopulationGroup>
 
   <!-- Need an EvaluationGroupFactory -->
- <ShuffledEvaluationGroupFactory numGroups="500">
-  <AgentSource populationGroup="nsp" numAgents="2"/>
-  <AgentSource populationGroup="videoContent" numAgents="3"/>
-  <AgentSource populationGroup="otherContent" numAgents="3"/>
+ <ShuffledEvaluationGroupFactory numGroups="110">
+  <AgentSource populationGroup="nsp" numAgents="1"/>
+  <AgentSource populationGroup="videoContent" numAgents="1"/>
+  <AgentSource populationGroup="otherContent" numAgents="1"/>
  </ShuffledEvaluationGroupFactory>
 
   <!-- Need an Agent Model Factory -->
  <DefaultAgentModelFactory modelClass="neutrality.NeutralityModel">
-  <Parameter name="alpha" value="1"/> <!-- 1 for testing -->
-  <Parameter name="beta" value="1"/> <!-- 1 for testing -->
+  <Parameter name="alpha" value="0.2"/> <!-- 1 for testing -->
+  <Parameter name="beta" value="0.2"/> <!-- 1 for testing -->
   <Parameter name="psi" value="0.4"/>
   <Parameter name="tau" value="0.4"/>
   <Parameter name="gamma" value="0.8"/>
   <Parameter name="income" value="100000"/>
-  <Parameter name="firmEndowment" value="1000000"/>
-  <Parameter name="maxSteps" value="10"/>
-  <Parameter name="nspMarginalCost" value="0.01"/>
-  <Parameter name="linearDemandTerm" value="0.01"/>
+  <Parameter name="nspMarginalCost" value="1"/>
+  <Parameter name="linearDemandTerm" value="1"/>
 
   <Parameter name="policy0PriceIXC" value="false"/>
   <Parameter name="policyBundlingAllowed" value="true"/>
@@ -367,6 +116,6 @@
  <LocalParallelEvaluator/>
 
  <!-- Simulation data output -->
- <DefaultModelSummaryData generations="50" file="summary.csv" format="csv"/>
+ <DefaultModelSummaryData generations="10" file="summary.csv" format="csv"/>
 
 </Environment>
