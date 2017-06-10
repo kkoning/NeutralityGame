@@ -125,12 +125,6 @@ plot_num <- 1
       ggtitle('Distribution of log(unbundledQty)')
     plot_num <- plot_num + 1
 
-    sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(unbundledRev))) + 
-      stat_bin2d(bins=heat_bins) + 
-      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
-      ggtitle('Distribution of log(unbundledRev)')
-    plot_num <- plot_num + 1
-
 # 'bundlePrice',
 # 'bundleQty',
 # 'bundleRev',
@@ -147,15 +141,26 @@ plot_num <- 1
       ggtitle('Distribution of log(bundleQty)')
     plot_num <- plot_num + 1
 
-    sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(bundleRev))) + 
+# nspContentPrice
+# nspContentQty
+# no nspContentRev
+
+ sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(nspContentPrice))) + 
       stat_bin2d(bins=heat_bins) + 
       scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
-      ggtitle('Distribution of log(bundleRev)')
+      ggtitle('Distribution of log(nspContentPrice)')
     plot_num <- plot_num + 1
+
+    sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(nspContentQty))) + 
+      stat_bin2d(bins=heat_bins) + 
+      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
+      ggtitle('Distribution of log(nspContentQty)')
+    plot_num <- plot_num + 1
+
 
 # 'videoBandwidthPrice',
 # 'videoBandwidthQty',
-# 'videoBandwidthRev',
+# no 'videoBandwidthRev',
  
     sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(videoBandwidthPrice))) + 
       stat_bin2d(bins=heat_bins) + 
@@ -167,12 +172,6 @@ plot_num <- 1
       stat_bin2d(bins=heat_bins) + 
       scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
       ggtitle('Distribution of log(videoBandwidthQty)')
-    plot_num <- plot_num + 1
-
-    sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(videoBandwidthRev))) + 
-      stat_bin2d(bins=heat_bins) + 
-      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
-      ggtitle('Distribution of log(videoBandwidthRev)')
     plot_num <- plot_num + 1
 
 # 'otherBandwidthPrice',
@@ -191,11 +190,6 @@ plot_num <- 1
       ggtitle('Distribution of log(otherBandwidthQty)')
     plot_num <- plot_num + 1
 
-    sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(otherBandwidthRev))) + 
-      stat_bin2d(bins=heat_bins) + 
-      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
-      ggtitle('Distribution of log(otherBandwidthRev)')
-    plot_num <- plot_num + 1
 
 # 'videoPrice',
 # 'videoQty',
@@ -213,34 +207,22 @@ plot_num <- 1
       ggtitle('Distribution of log(videoQty)')
     plot_num <- plot_num + 1
 
-    sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(videoRev))) + 
-      stat_bin2d(bins=heat_bins) + 
-      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
-      ggtitle('Distribution of log(videoRev)')
-    plot_num <- plot_num + 1
-
-
 # 'otherBandwidthPrice',
 # 'otherBandwidthQty',
 # 'otherBandwidthRev'
 
-    sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(otherBandwidthPrice))) + 
+    sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(otherPrice))) + 
       stat_bin2d(bins=heat_bins) + 
       scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
-      ggtitle('Distribution of log(otherBandwidthPrice)')
+      ggtitle('Distribution of log(otherPrice)')
     plot_num <- plot_num + 1
 
-    sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(otherBandwidthQty))) + 
+    sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(otherQty))) + 
       stat_bin2d(bins=heat_bins) + 
       scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
-      ggtitle('Distribution of log(otherBandwidthQty)')
+      ggtitle('Distribution of log(otherQty)')
     plot_num <- plot_num + 1
 
-    sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(otherBandwidthRev))) + 
-      stat_bin2d(bins=heat_bins) + 
-      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
-      ggtitle('Distribution of log(otherBandwidthRev)')
-    plot_num <- plot_num + 1
 
 num_cols <- as.integer(length(sales_plots)^0.5 - 0.1) + 1
 png("sales.png", height=png_height, width=png_width, res=(300/(num_cols/2)))
