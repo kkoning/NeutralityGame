@@ -39,7 +39,18 @@ public NetworkOperator() {
 }
 
 public void setKn() {
-  Kn = 1 + getManager().e(Genome.NETWORK_INVESTMENT.ordinal());
+  double genomeValue = getManager().e(Genome.NETWORK_INVESTMENT.ordinal());
+  /*
+   * Penalize values below 1 here. The actual Kn is set higher to prevent a
+   * negative result when we take the log, but we need to make sure we're
+   * preventing genetic drift towards extremely low values that make very
+   * little practical difference and might prevent us from finding the hill
+   * to climb later.
+   */
+  if (genomeValue < 1) {
+    fitnessAdjustment -= (1 / genomeValue) * 100;
+  }
+  Kn = 1 + genomeValue;
 }
 
 public void setNetPrices() {
