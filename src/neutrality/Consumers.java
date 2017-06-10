@@ -116,6 +116,7 @@ public double[] determineConsumption(List<ConsumptionOption> options) {
     // Residual term sensitive to price/capital balance
     double orElse = capitalTerms_toBeta[i];
     orElse *= prices_toNegBeta[i];
+    
     if (debugOut != null)
       debugOut.println("residterm is " + orElse);
     den += orElse;
@@ -131,10 +132,10 @@ public double[] determineConsumption(List<ConsumptionOption> options) {
     // capTerm[i];
     
     // Small negative constant to prevent convergence to zero
-    double secondTerm = 1;
+//    double secondTerm = 1; //prices[i];
     
 
-    double qty = firstTerm - secondTerm;
+    double qty = firstTerm;  //- secondTerm;
 
     /*
      * Obviously, quantity has a floor of zero. However, this flattens the
@@ -144,12 +145,18 @@ public double[] determineConsumption(List<ConsumptionOption> options) {
      * that result in consumption arbitrarily close to zero.
      * 
      */
-    if (qty <= 0) {
-      // Punish any agent that tries to give a negative qty.
+    if (qty < 1d) {
+      // Punish any agent that sells negative units.
+      double pun = 1 / qty;
+      pun = pun * 100d;
+      
       ConsumptionOption offendingOption = options.get(i);
-      offendingOption.network.fitnessAdjustment -= qty * qty * 10;
-      offendingOption.video.fitnessAdjustment -= qty * qty * 10;
-      offendingOption.other.fitnessAdjustment -= qty * qty * 10;
+      // An initial cliff
+      double cliff = 100000d;
+      
+      offendingOption.network.fitnessAdjustment -= cliff + pun;
+      offendingOption.video.fitnessAdjustment -= cliff + pun;
+      offendingOption.other.fitnessAdjustment -= cliff + pun;
 
       // Set to zero for other purposes.
       qty = 0d;
