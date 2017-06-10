@@ -27,12 +27,11 @@ public Boolean emulateMarket;
 public double       Ka      = Double.NaN;
 public SalesTracker content = new SalesTracker();
 
-
 /*
- * IXC paid needs to be tracked directly, because a content provider will 
- * pay different amounts of IXC to different network providers.
+ * IXC paid needs to be tracked directly, because a content provider will pay
+ * different amounts of IXC to different network providers.
  */
-public double       ixcPaid = 0d;
+public double ixcPaid = 0d;
 
 public double fitnessAdjustment = 0d;
 
@@ -49,7 +48,18 @@ public ContentProvider() {
 }
 
 public void setKa() {
-  Ka = 1 + getManager().e(Genome.CONTENT_INVESTMENT.ordinal());
+  double genomeValue = getManager().e(Genome.CONTENT_INVESTMENT.ordinal());
+  /*
+   * Penalize values below 1 here. The actual Ka is set higher to prevent a
+   * negative result when we take the log, but we need to make sure we're
+   * preventing genetic drift towards extremely low values that make very
+   * little practical difference and might prevent us from finding the hill
+   * to climb later.
+   */
+  if (genomeValue < 1) {
+    fitnessAdjustment -= (1 / genomeValue) * 100;
+  }
+  Ka = 1 + genomeValue;
 }
 
 public void setContentPrice() {
@@ -96,7 +106,7 @@ public SimpleFitness getFitness() {
 
     double lossPenalty = 0;
     if (getBalance() < 0) {
-      lossPenalty = getBalance() * getBalance() * getBalance() * getBalance();
+      lossPenalty = getBalance() * getBalance();
     }
 
     return new SimpleFitness(utilProduced + fitnessAdjustment - lossPenalty);
