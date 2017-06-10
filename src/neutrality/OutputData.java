@@ -104,46 +104,46 @@ public void calculateCPStats(NeutralityModel model) {
     videoKa += vcp.Ka;
     videoBalance += vcp.getBalance();
     
-    videoQty = vcp.content.qty + Double.MIN_NORMAL;
-    videoRev = vcp.content.revenue();
+    videoQty += vcp.content.qty;
+    videoRev += vcp.content.revenue();
   }
   
   for (ContentProvider ocp : model.otherContentProviders) {
     otherKa += ocp.Ka;
     otherBalance += ocp.getBalance();
     
-    otherQty = ocp.content.qty + Double.MIN_NORMAL;
-    otherRev = ocp.content.revenue();
+    otherQty += ocp.content.qty;
+    otherRev += ocp.content.revenue();
   }
   
-  videoPrice = videoRev / videoQty;
-  otherPrice = otherRev / otherQty;
+  videoPrice = videoRev / (videoQty + Double.MIN_NORMAL);
+  otherPrice = otherRev / (otherQty + Double.MIN_NORMAL);
   
 }
 
 public void calculateNSPStats(NeutralityModel model) {
   for (NetworkOperator no : model.networkOperators) {
-    unbundledQty += no.netOnly.qty + Double.MIN_NORMAL;
+    unbundledQty += no.netOnly.qty;
     unbundledRev += no.netOnly.revenue();
     
-    bundleQty += no.bundle.qty + Double.MIN_NORMAL;
+    bundleQty += no.bundle.qty;
     bundleRev += no.bundle.revenue();
     
-    nspContentQty += no.content.qty + Double.MIN_NORMAL;
+    nspContentQty += no.content.qty;
     nspContentRev += no.content.revenue();
     
-    videoBandwidthQty += no.videoBW.qty + Double.MIN_NORMAL;
+    videoBandwidthQty += no.videoBW.qty;
     videoBandwidthRev += no.videoBW.revenue();
     
-    otherBandwidthQty += no.otherBW.qty + Double.MIN_NORMAL;
+    otherBandwidthQty += no.otherBW.qty;
     otherBandwidthRev += no.otherBW.revenue();
 
     zeroRatingDiscounts += no.zeroRatingDiscounts;
 
-    ixcVideoQty += no.videoIXC.qty + Double.MIN_NORMAL;
+    ixcVideoQty += no.videoIXC.qty;
     ixcVideoRev += no.videoIXC.revenue();
     
-    ixcOtherQty += no.otherIXC.qty + Double.MIN_NORMAL;
+    ixcOtherQty += no.otherIXC.qty;
     ixcOtherRev += no.otherIXC.revenue();
 
     ixcAvoided += no.ixcAvoided;
@@ -153,15 +153,15 @@ public void calculateNSPStats(NeutralityModel model) {
     nspBalance += no.getBalance();
   }
   
-  unbundledPrice = unbundledRev / unbundledQty;
-  bundlePrice = bundleRev / bundleQty;
-  nspContentPrice = nspContentRev / nspContentQty;
+  unbundledPrice = unbundledRev / (unbundledQty + Double.MIN_NORMAL);
+  bundlePrice = bundleRev / (bundleQty + Double.MIN_NORMAL);
+  nspContentPrice = nspContentRev / (nspContentQty + Double.MIN_NORMAL);
   
-  videoBandwidthPrice = videoBandwidthRev / videoBandwidthQty;
-  otherBandwidthPrice = otherBandwidthRev / otherBandwidthQty;
+  videoBandwidthPrice = videoBandwidthRev / (videoBandwidthQty + Double.MIN_NORMAL);
+  otherBandwidthPrice = otherBandwidthRev / (otherBandwidthQty + Double.MIN_NORMAL);
   
-  ixcVideoPrice = ixcVideoRev / ixcVideoQty;
-  ixcOtherPrice = ixcOtherRev / ixcOtherQty;
+  ixcVideoPrice = ixcVideoRev / (ixcVideoQty + Double.MIN_NORMAL);
+  ixcOtherPrice = ixcOtherRev / (ixcOtherQty + Double.MIN_NORMAL);
 }
 
 public void calculateHHIs(NeutralityModel model) {
@@ -174,7 +174,7 @@ public void calculateHHIs(NeutralityModel model) {
   for (int i = 0; i < model.networkOperators.size(); i++) {
     NetworkOperator no = model.networkOperators.get(i);
     networkSales[i] = no.netOnly.qty +
-                      no.bundle.qty;
+                      no.bundle.qty + Double.MIN_NORMAL;
   }
   hhiNetwork = HHI(networkSales);
   if (Double.isNaN(hhiNetwork) || Double.isInfinite(hhiNetwork))
@@ -184,12 +184,12 @@ public void calculateHHIs(NeutralityModel model) {
   // Video Content HHI
   List<Double> videoSales = new ArrayList<>();
   for (ContentProvider cp : model.videoContentProviders) {
-    videoSales.add(cp.content.qty);
+    videoSales.add(cp.content.qty + Double.MIN_NORMAL);
   }
   if (model.policyNSPContentAllowed) {
     for (NetworkOperator no : model.networkOperators) {
       videoSales.add(no.content.qty +
-                     no.bundle.qty);
+                     no.bundle.qty + Double.MIN_NORMAL);
     }
   }
   hhiVideo = HHI(videoSales);
