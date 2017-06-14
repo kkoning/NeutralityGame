@@ -224,6 +224,30 @@ plot_num <- 1
     plot_num <- plot_num + 1
 
 
+    sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(ixcVideoPrice))) + 
+      stat_bin2d(bins=heat_bins) + 
+      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
+      ggtitle('Distribution of log(ixcVideoPrice)')
+    plot_num <- plot_num + 1
+
+    sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(ixcVideoQty))) + 
+      stat_bin2d(bins=heat_bins) + 
+      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
+      ggtitle('Distribution of log(ixcVideoQty)')
+    plot_num <- plot_num + 1
+
+    sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(ixcOtherPrice))) + 
+      stat_bin2d(bins=heat_bins) + 
+      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
+      ggtitle('Distribution of log(ixcOtherPrice)')
+    plot_num <- plot_num + 1
+
+    sales_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(ixcOtherQty))) + 
+      stat_bin2d(bins=heat_bins) + 
+      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
+      ggtitle('Distribution of log(ixcOtherQty)')
+    plot_num <- plot_num + 1
+
 num_cols <- as.integer(length(sales_plots)^0.5 - 0.1) + 1
 png("sales.png", height=png_height, width=png_width, res=(300/(num_cols/2)))
 multiplot(plotlist=sales_plots,cols=num_cols)
