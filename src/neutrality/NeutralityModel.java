@@ -29,9 +29,9 @@ public Boolean policyZeroRated;
 public Boolean policyNSPContentAllowed;
 
 // Quasi-parameters; model is broken-ish without them?
-public Double linearDemandTerm;
 public CapitalCalculationMethod capCalcMethod;
-
+public PolicyRegime             policyRegime;
+public DemandAdjustmentMethod   demandAdjustmentMethod;
 
 public Integer maxSteps;
 
@@ -46,7 +46,6 @@ public double incomeOtherOnly;
 
 public double psi;
 public double tau;
-
 
 // Operational Variables
 ArrayList<NetworkOperator> networkOperators      = new ArrayList<>();
@@ -116,8 +115,7 @@ public boolean step() {
     cp.setKa();
     cp.setContentPrice();
   }
-  
-  
+
   /*
    * Generate consumption options. See getConsumptionOptions for details.
    */
@@ -167,13 +165,14 @@ private List<ConsumptionOption> getConsumptionOptions() {
               options.add(sb);
             }
           } else {
-            // When they're not the same company, treat it like 3rd party content
+            // When they're not the same company, treat it like 3rd party
+            // content
             SyntheticBundle sb = new SyntheticBundle(no1, no2, ocp, false);
             options.add(sb);
           }
         }
       }
-    }  
+    }
   }
 
   return options;
@@ -233,14 +232,40 @@ public void init() {
 
   // Pre-calculate psi and tau from omega.
   psi = tau = omega * (1 - gamma) * 0.5;
-  
+
+  // Pre-calculate individual policy restrictions
+  switch (policyRegime) {
+    case STRUCTURAL_SEPARATION:
+      policyNSPContentAllowed = false;
+      policyBundlingAllowed = false;
+      policyZeroRated = false;
+      break;
+    case RESTRICTED:
+      policyNSPContentAllowed = true;
+      policyBundlingAllowed = false;
+      policyZeroRated = false;
+      break;
+    case BUNDLING_ONLY:
+      policyNSPContentAllowed = true;
+      policyBundlingAllowed = true;
+      policyZeroRated = false;
+      break;
+    case ZERO_RATING_ONLY:
+      policyNSPContentAllowed = true;
+      policyBundlingAllowed = false;
+      policyZeroRated = true;
+      break;
+    case BUNDLING_AND_ZERO_RATING:
+      policyNSPContentAllowed = true;
+      policyBundlingAllowed = true;
+      policyZeroRated = true;
+      break;
+    default:
+      throw new RuntimeException();
+  }
+
   // Initialize representative consumer agents.
-  consumers = new Consumers(income,
-                            gamma,
-                            tau,
-                            psi,
-                            linearDemandTerm,
-                            debugOut);
+  consumers = new Consumers(this);
 
   if (isDebugEnabled())
     debugOut.println("Initialization completed.");
@@ -259,10 +284,22 @@ public static final double proportionB(double split) {
   return 1.0d - proportionA(split);
 }
 
-
 public static enum CapitalCalculationMethod {
   LOG_LOG,
   COBB_DOUGLASS
+}
+
+public static enum DemandAdjustmentMethod {
+  CONSTANT,
+  PRICE
+}
+
+public static enum PolicyRegime {
+  STRUCTURAL_SEPARATION,
+  RESTRICTED,
+  BUNDLING_ONLY,
+  ZERO_RATING_ONLY,
+  BUNDLING_AND_ZERO_RATING
 }
 
 }

@@ -1,39 +1,21 @@
 package neutrality;
 
-import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 
 public class Consumers {
 
-// final NeutralityModel model;
-final double income;
-final double gamma;
+final NeutralityModel model;
 final double beta;
-final double tau;
-final double psi;
-final double linearDemandTerm;
 
 double accumulatedUtility;
 double accumulatedCost;
 
-PrintStream debugOut;
+public Consumers(NeutralityModel model) {
 
-public Consumers(final double income,
-                 final double gamma,
-                 final double tau,
-                 final double psi,
-                 final double linearDemandTerm,
-                 final PrintStream debugOut) {
-
-  this.income = income;
-  this.gamma = gamma;
-  this.tau = tau;
-  this.psi = psi;
-  this.beta = 1 / (gamma - 1);
-  this.linearDemandTerm = linearDemandTerm;
-
-  this.debugOut = debugOut;
+  this.model = model;
+  
+  this.beta = 1 / (model.gamma - 1);
 
   accumulatedUtility = 0.0d;
   accumulatedCost = 0.0d;
@@ -52,16 +34,16 @@ public void consume(List<ConsumptionOption> options) {
   double[] prices = extractPrices(options);
   double[] quantities = determineConsumption(options);
 
-  if (debugOut != null) {
-    debugOut.println("Consumption Price/Qty vectors:");
-    debugOut.println(Arrays.toString(prices));
-    debugOut.println(Arrays.toString(quantities));
+  if (model.debugOut != null) {
+    model.debugOut.println("Consumption Price/Qty vectors:");
+    model.debugOut.println(Arrays.toString(prices));
+    model.debugOut.println(Arrays.toString(quantities));
     // Total purchased, in $
     double total = 0.0;
     for (int i = 0; i < prices.length; i++) {
       total += prices[i] * quantities[i];
     }
-    debugOut.println("total spent was " + total + ", income was " + income);
+    model.debugOut.println("total spent was " + total + ", income was " + model.income);
   }
 
   for (int i = 0; i < options.size(); i++) {
@@ -108,22 +90,22 @@ public double[] determineConsumption(List<ConsumptionOption> options) {
         term *= prices_toNegBeta[i];
         term *= prices_toBetaPlus1[j];
         den += term;
-        if (debugOut != null)
-          debugOut.println("term is " + term);
+        if (model.debugOut != null)
+          model.debugOut.println("term is " + term);
       }
 
     }
     // Residual term sensitive to price/capital balance
     double orElse = capitalTerms_toBeta[i];
     orElse *= prices_toNegBeta[i];
-    if (debugOut != null)
-      debugOut.println("residterm is " + orElse);
+    if (model.debugOut != null)
+      model.debugOut.println("residterm is " + orElse);
     den += orElse;
 
-    if (debugOut != null)
-      debugOut.println("total denominator is " + den);
+    if (model.debugOut != null)
+      model.debugOut.println("total denominator is " + den);
 
-    double firstTerm = income / den;
+    double firstTerm = model.income / den;
 
     // Residual term for all other goods; quasi-linear demand.
     // double secondTerm = prices[i] * linearDemandTerm;
@@ -131,8 +113,18 @@ public double[] determineConsumption(List<ConsumptionOption> options) {
     // capTerm[i];
     
     // Small negative constant to prevent convergence to zero
-    double secondTerm = 1;
+    double secondTerm = Double.NaN;
     
+    switch (model.demandAdjustmentMethod) {
+      case CONSTANT:
+        secondTerm = 1;
+        break;
+      case PRICE:
+        secondTerm = prices[i];
+        break;
+      default:
+        throw new RuntimeException();
+    }
 
     double qty = firstTerm - secondTerm;
 
