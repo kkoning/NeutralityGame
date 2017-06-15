@@ -22,36 +22,36 @@ f <- function(row, template) {
   configFile <- gsub("__ALPHA__", row$alpha, configFile)
   configFile <- gsub("__BETA__", row$beta, configFile)
   configFile <- gsub("__ZERO_IXC__", row$zeroIXC, configFile)
-  configFile <- gsub("__GAMMA__", row$gamma, configFile)
-  
-  configFile <- gsub("__BUNDLING__", row$bundling, configFile)
-  configFile <- gsub("__ZERORATING__", row$zeroRating, configFile)
-  configFile <- gsub("__ISP_CONTENT__", row$ispContent, configFile)
   configFile <- gsub("__NUM_3P_VIDEO__", row$numVideoCPs, configFile)
+
+  configFile <- gsub("__CAP_CALC_METHOD__", row$capCalcMethod, configFile)
+  configFile <- gsub("__DEMAND_ADJ_METHOD__", row$demandAdjMethod, configFile)
+  configFile <- gsub("__POLICY_REGIME__", row$policyRegime, configFile)
+
   cat(configFile, file = sprintf("%d.xml",row$ID), sep='\n')
 }
 
-
-
 parameters <- expand.grid(numNSPs = c(1, 2),
-                    numVideoCPs = c(1, 2, 3),
-					          gamma = c(0.4, 0.8),
+                    numVideoCPs = c(3, 4, 5),
+					          capCalcMethod = c("COBB_DOUGLASS", "LOG_LOG"),
+                    demandAdjMethod = c("CONSTANT", "PRICE"),
+                    policyRegime = c("STRUCTURAL_SEPARATION",
+                                    "RESTRICTED",
+                                    "BUNDLING_ONLY",
+                                    "ZERO_RATING_ONLY",
+                                    "BUNDLING_AND_ZERO_RATING"),
                     zeroIXC = c(FALSE, TRUE),
-                    zeroRating = c(FALSE, TRUE),
-                    bundling = c(FALSE, TRUE),
-                    ispContent = c(TRUE, FALSE),
                     alpha = rep(c(1), times=20),
                     beta = rep(c(1), times=20))
 parameters <- as.data.table(parameters)
-parameters <- parameters[!(ispContent == FALSE & bundling == TRUE)]
-parameters <- parameters[!(ispContent == FALSE & zeroRating == TRUE)]
-parameters <- parameters[!(ispContent == FALSE & numVideoCPs != 3)]
-parameters <- parameters[!(ispContent == TRUE & (numNSPs + numVideoCPs != 3))]
-
+parameters <- parameters[!(policyRegime == "STRUCTURAL_SEPARATION" & numVideoCPs != 4)]
+parameters <- parameters[!(policyRegime =! "STRUCTURAL_SEPARATION" & (numNSPs + numVideoCPs != 4))]
 parameters$ID <- seq.int(nrow(parameters))
-parameters$alpha <- exp(runif(nrow(parameters), -2,2))
-parameters$beta <- exp(runif(nrow(parameters), -2,2))
-# ggplot(parameters, aes(x=log(alpha))) + geom_histogram()
+parameters$alpha <- exp(rnorm(nrow(parameters), 1.5))
+parameters$beta <- exp(rnorm(nrow(parameters), 1.5))
+nrow(parameters)
+
+
 
 
 # Actually write stuff.  Commented out so as to not run accidentally and overwrite data!
