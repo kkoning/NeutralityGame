@@ -7,7 +7,7 @@ final_percent <- as.numeric(args[2]) / 100
 id <- as.integer(args[3])
 replicate <- as.integer(args[4])
 
-data <- read.csv(input_file, header=TRUE)
+data <- read.csv(filename, header=TRUE)
 data <- as.data.table(data)
 first_generation <- as.integer(max(data$generation) * (1-final_percent))
 summary <- data[generation >= first_generation, lapply(.SD, prot_mean, na.rm=TRUE) ]
