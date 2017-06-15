@@ -11,12 +11,12 @@
    <VectorIndividualFactory length="8">
     <GaussianRandomVectorRange start="0" end="7">
      <Means type="RepeatingDouble" start="0" end="7" value="0"/>
-     <Deviations type="RepeatingDouble" start="0" end="7" value="0.1"/>
+     <Deviations type="RepeatingDouble" start="0" end="7" value="2"/>
     </GaussianRandomVectorRange>
    </VectorIndividualFactory>
    <VectorCrossoverPipeline crossoverProb="0.3">
     <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="10"/>
+     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
      <VectorMutator length="8">
       <GaussianMutator start="0" end="7">
        <MutationProbability type="RepeatingDouble" start="0" end="7" value="0.1"/>
@@ -32,17 +32,17 @@
   <Population baseSize="20" initialSize="100" id="VideoContentProviders">
    <DefaultAgentFactory agentClass="neutrality.ContentProvider">
     <Parameter name="isVideoProvider" value="true"/>
-    <Parameter name="emulateMarket" value="true"/>
+    <Parameter name="emulateMarket" value="false"/>
    </DefaultAgentFactory>
    <VectorIndividualFactory length="2">
     <GaussianRandomVectorRange start="0" end="1">
      <Means type="RepeatingDouble" start="0" end="1" value="0"/>
-     <Deviations type="RepeatingDouble" start="0" end="1" value="0.1"/>
+     <Deviations type="RepeatingDouble" start="0" end="1" value="2"/>
     </GaussianRandomVectorRange>
    </VectorIndividualFactory>
    <VectorCrossoverPipeline crossoverProb="0.3">
     <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="10"/>
+     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
      <VectorMutator length="2">
       <GaussianMutator start="0" end="1">
        <MutationProbability type="RepeatingDouble" start="0" end="1" value="0.1"/>
@@ -65,12 +65,12 @@
    <VectorIndividualFactory length="2">
     <GaussianRandomVectorRange start="0" end="1">
      <Means type="RepeatingDouble" start="0" end="1" value="0"/>
-     <Deviations type="RepeatingDouble" start="0" end="1" value="0.1"/>
+     <Deviations type="RepeatingDouble" start="0" end="1" value="2"/>
     </GaussianRandomVectorRange>
    </VectorIndividualFactory>
    <VectorCrossoverPipeline crossoverProb="0.3">
     <VectorMutationPipeline>
-     <TournamentSelector topIndividuals="1" tournamentSize="10"/>
+     <TournamentSelector topIndividuals="1" tournamentSize="2"/>
      <VectorMutator length="2">
       <GaussianMutator start="0" end="1">
        <MutationProbability type="RepeatingDouble" start="0" end="1" value="0.1"/>
@@ -85,26 +85,31 @@
 
   <!-- Need an EvaluationGroupFactory -->
  <ShuffledEvaluationGroupFactory numGroups="110">
-  <AgentSource populationGroup="nsp" numAgents="1"/>
-  <AgentSource populationGroup="videoContent" numAgents="1"/>
+  <AgentSource populationGroup="nsp" numAgents="2"/>
+  <AgentSource populationGroup="videoContent" numAgents="2"/>
   <AgentSource populationGroup="otherContent" numAgents="1"/>
  </ShuffledEvaluationGroupFactory>
 
   <!-- Need an Agent Model Factory -->
  <DefaultAgentModelFactory modelClass="neutrality.NeutralityModel">
-  <Parameter name="alpha" value="0.2"/> <!-- 1 for testing -->
-  <Parameter name="beta" value="0.2"/> <!-- 1 for testing -->
-  <Parameter name="psi" value="0.4"/>
-  <Parameter name="tau" value="0.4"/>
-  <Parameter name="gamma" value="0.8"/>
+  <Parameter name="alpha" value="1"/> <!-- 1 for testing -->
+  <Parameter name="beta" value="1"/> <!-- 1 for testing -->
+  <Parameter name="omega" value="0.5"/>
+  <Parameter name="gamma" value="0.5"/>
   <Parameter name="income" value="100000"/>
   <Parameter name="nspMarginalCost" value="1"/>
-  <Parameter name="linearDemandTerm" value="1"/>
+  <!-- <Parameter name="capCalcMethod" value="LOG_LOG"/> -->
+  <Parameter name="capCalcMethod" value="COBB_DOUGLASS"/>
+  <!-- <Parameter name="demandAdjustmentMethod" value="CONSTANT"/> -->
+  <Parameter name="demandAdjustmentMethod" value="PRICE"/>
+  <!-- <Parameter name="policyRegime" value="STRUCTURAL_SEPARATION"/> -->
+  <!-- <Parameter name="policyRegime" value="RESTRICTED"/> -->
+  <!-- <Parameter name="policyRegime" value="BUNDLING_ONLY"/> -->
+  <!-- <Parameter name="policyRegime" value="ZERO_RATING_ONLY"/> -->
+  <Parameter name="policyRegime" value="BUNDLING_AND_ZERO_RATING"/>
 
-  <Parameter name="policy0PriceIXC" value="false"/>
-  <Parameter name="policyBundlingAllowed" value="true"/>
-  <Parameter name="policyZeroRated" value="true"/>
-  <Parameter name="policyNSPContentAllowed" value="true"/>
+  <Parameter name="policy0PriceIXC" value="TRUE"/>
+
  </DefaultAgentModelFactory>
 
 
@@ -112,10 +117,10 @@
  <DefaultEnvironmentStatistics file="DefaultEnvironmentStatistics.csv" format="csv"/>
 
  <!-- Need an Evaluator -->
- <!-- <LocalEvaluator/> -->
- <LocalParallelEvaluator/>
+ <LocalEvaluator/>
+ <!-- <LocalParallelEvaluator/> -->
 
  <!-- Simulation data output -->
- <DefaultModelSummaryData generations="10" file="summary.csv" format="csv"/>
+ <DefaultModelSummaryData generations="50" file="summary.csv" format="csv"/>
 
 </Environment>
