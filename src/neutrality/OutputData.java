@@ -21,6 +21,15 @@ public class OutputData {
 /*
  * Consumption Variables
  */
+double consumerVideoUtility;
+double consumerVideoPaid;
+
+double consumerOtherUtility;
+double consumerOtherPaid;
+
+double consumerBothUtility;
+double consumerBothPaid;
+
 double consumerUtility;
 double consumerPaid;
 
@@ -95,8 +104,17 @@ public OutputData(NeutralityModel model) {
 }
 
 public void calculateConsumerStats(NeutralityModel model) {
-  consumerUtility = model.consumers.accumulatedUtility;
-  consumerPaid = model.consumers.accumulatedCost;
+  consumerVideoUtility = model.consumersVideo.accumulatedUtility;
+  consumerVideoPaid = model.consumersVideo.accumulatedCost;
+
+  consumerOtherUtility = model.consumersOther.accumulatedUtility;
+  consumerOtherPaid = model.consumersOther.accumulatedCost;
+
+  consumerBothUtility = model.consumersBoth.accumulatedUtility;
+  consumerBothPaid = model.consumersBoth.accumulatedCost;
+  
+  consumerUtility = consumerVideoUtility + consumerOtherUtility + consumerBothUtility;
+  consumerPaid = consumerVideoPaid + consumerOtherPaid + consumerBothPaid;
 }
 
 public void calculateCPStats(NeutralityModel model) {

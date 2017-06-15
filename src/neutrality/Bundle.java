@@ -1,73 +1,69 @@
 package neutrality;
 
+import java.util.Optional;
+
 public class Bundle extends ConsumptionOption {
 
 public Bundle(NetworkOperator network,
-              ContentProvider other,
+              Optional<ContentProvider> other,
               boolean zeroRated) {
   this.network = network;
-  this.video = network;
+  this.video = Optional.of(network);
   this.other = other;
   this.zeroRated = zeroRated;
 }
 
 @Override
 public double getTotalCost() {
-  double bandwidthPrice = 0d;
-
-  if (zeroRated) {
-    // If the video is zero rated, consumers only need to pay for bandwidth
-    // for non-video services.
-    double bwPortion = network.getModel().otherBWIntensity;
-    bandwidthPrice = network.bandwidthPrice * bwPortion;
-  } else {
-    bandwidthPrice = network.bandwidthPrice;
-  }
-
+  // Connection/Content Prices
   double totalPrice = 0d;
   totalPrice += network.bundle.price;
-  totalPrice += other.content.price;
-  totalPrice += bandwidthPrice;
-
-  // Assume that CPs can pass through IXC prices to consumers, and also that
-  // NSPs don't pay IXC prices to themselves.
-  totalPrice += network.ixcPrice * network.getModel().otherBWIntensity;
+  if (other.isPresent())
+    totalPrice += other.get().content.price;
+  
+  // Assume CPs pass through IXC fees
+  if (other.isPresent())
+    totalPrice += network.otherIXC.price;
+  
+  // Consumer Bandwidth fees
+  if (!zeroRated)
+    totalPrice += network.videoBW.price;
+  if (other.isPresent())
+    totalPrice += network.otherBW.price;
 
   return totalPrice;
-
 }
 
 @Override
 public void consume(Consumers consumers, double qty) {
-  consumers.accumulatedUtility += utility(qty);
+  // Consumer costs/benefits
+  consumers.accumulatedUtility += consumers.utility(this, qty);
   consumers.accumulatedCost += getTotalCost() * qty;
 
+  // Connection/Content
   network.bundle.qty += qty;
-  other.content.qty += qty;
+  if (other.isPresent())
+    other.get().content.qty += qty;
 
-  /*
-   * Bandwidth Fees
-   */
-  // For Video
-  if (zeroRated) {
-    network.zeroRatingDiscounts += network.videoBW.price * qty;
-  } else {
-    network.videoBW.qty += qty;
-  }
-  // For Other
-  network.otherBW.qty += qty;
-
-  /*
-   *  IXC Fees
-   */
-  // Network Operator Receives
-  // Doesn't receive IXCs from itself
+  // IXC fees
   network.ixcAvoided += qty * network.videoIXC.price;
-  network.otherIXC.qty += qty;  // Does receive from other CP
-  
-  // Content Providers Pay
-  // NSP doesn't send to itself, avoidance tracked above
-  other.ixcPaid += qty * network.otherIXC.price; // Is paid by other CP.
+  if (other.isPresent()) {
+    network.otherIXC.qty += qty;
+    other.get().ixcPaid += network.otherIXC.price * qty;
+  }
+
+  // Consumer Bandwidth fees
+  if (video.isPresent()) {
+    if (zeroRated) {
+      network.zeroRatingDiscounts += network.videoBW.price * qty;
+    } else {
+      network.videoBW.qty += qty;
+    }
+  }
+  if (other.isPresent()) {
+    network.otherBW.qty += qty;
+  }
+
 
 }
 

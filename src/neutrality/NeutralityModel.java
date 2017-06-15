@@ -2,6 +2,7 @@ package neutrality;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import agency.AbstractAgentModel;
 import agency.Agent;
@@ -52,7 +53,9 @@ ArrayList<NetworkOperator> networkOperators      = new ArrayList<>();
 ArrayList<ContentProvider> videoContentProviders = new ArrayList<>();
 ArrayList<ContentProvider> otherContentProviders = new ArrayList<>();
 
-Consumers consumers;
+Consumers consumersVideo;
+Consumers consumersOther;
+Consumers consumersBoth;
 
 public NeutralityModel() {
 
@@ -121,30 +124,40 @@ public boolean step() {
    */
   if (isDebugEnabled())
     debugOut.println("Calculating possible consumption options of consumers");
-  List<ConsumptionOption> options = getConsumptionOptions();
+  
+  List<ConsumptionOption> optionsVideo = getConsumptionOptionsVideo();
+  List<ConsumptionOption> optionsOther = getConsumptionOptionsOther();
+  List<ConsumptionOption> optionsBoth = getConsumptionOptionsBoth();
 
   // Debug for completed offers
   if (isDebugEnabled()) {
     debugOut.println("Details of consumption options follows:");
-    debugOut.println("Other content only:");
-    for (ConsumptionOption co : options) {
+    debugOut.println("Video Content Only:");
+    for (ConsumptionOption co : optionsVideo)
       debugOut.println(co);
-    }
+    debugOut.println("Other Content Only:");
+    for (ConsumptionOption co : optionsOther)
+      debugOut.println(co);
+    debugOut.println("Both Content:");
+    for (ConsumptionOption co : optionsBoth)
+      debugOut.println(co);
   }
 
-  consumers.consume(options);
+  consumersVideo.consume(optionsVideo);
+  consumersOther.consume(optionsOther);
+  consumersBoth.consume(optionsBoth);
 
   return true; // Model is only one step.
 }
 
-private List<ConsumptionOption> getConsumptionOptions() {
+private List<ConsumptionOption> getConsumptionOptionsBoth() {
   ArrayList<ConsumptionOption> options = new ArrayList<>();
 
   // All possible synthetic options with 3rd party content
   for (NetworkOperator no : networkOperators) {
     for (ContentProvider vcp : videoContentProviders) {
       for (ContentProvider ocp : otherContentProviders) {
-        SyntheticBundle sb = new SyntheticBundle(no, vcp, ocp, false);
+        SyntheticBundle sb = new SyntheticBundle(no, Optional.of(vcp), Optional.of(ocp), false);
         options.add(sb);
       }
     }
@@ -158,20 +171,84 @@ private List<ConsumptionOption> getConsumptionOptions() {
           if (no1 == no2) {
             // A Network Operator offering their own content
             if (policyBundlingAllowed) {
-              Bundle b = new Bundle(no1, ocp, policyZeroRated);
+              Bundle b = new Bundle(no1, Optional.of(ocp), policyZeroRated);
               options.add(b);
             } else {
-              SyntheticBundle sb = new SyntheticBundle(no1, no1, ocp, policyZeroRated);
+              SyntheticBundle sb = new SyntheticBundle(no1,
+                                                       Optional.of(no1),
+                                                       Optional.of(ocp),
+                                                       policyZeroRated);
               options.add(sb);
             }
           } else {
             // When they're not the same company, treat it like 3rd party
             // content
-            SyntheticBundle sb = new SyntheticBundle(no1, no2, ocp, false);
+            SyntheticBundle sb = new SyntheticBundle(no1,
+                                                     Optional.of(no2),
+                                                     Optional.of(ocp),
+                                                     false);
             options.add(sb);
           }
         }
       }
+    }
+  }
+
+  return options;
+}
+
+private List<ConsumptionOption> getConsumptionOptionsVideo() {
+  ArrayList<ConsumptionOption> options = new ArrayList<>();
+
+  // All possible synthetic options with 3rd party content
+  for (NetworkOperator no : networkOperators) {
+    for (ContentProvider vcp : videoContentProviders) {
+      SyntheticBundle sb = new SyntheticBundle(no, Optional.of(vcp), Optional.empty(), false);
+      options.add(sb);
+    }
+  }
+
+  if (policyNSPContentAllowed) {
+    // All possible NSP video content bundles
+    for (NetworkOperator no1 : networkOperators) {
+      for (NetworkOperator no2 : networkOperators) {
+        if (no1 == no2) {
+          // A Network Operator offering their own content
+          if (policyBundlingAllowed) {
+            Bundle b = new Bundle(no1, Optional.empty(), policyZeroRated);
+            options.add(b);
+          } else {
+            SyntheticBundle sb = new SyntheticBundle(no1,
+                                                     Optional.of(no1),
+                                                     Optional.empty(),
+                                                     policyZeroRated);
+            options.add(sb);
+          }
+        } else {
+          // When they're not the same company, treat it like 3rd party
+          // content
+          SyntheticBundle sb = new SyntheticBundle(no1,
+                                                   Optional.of(no2),
+                                                   Optional.empty(),
+                                                   false);
+          options.add(sb);
+        }
+      }
+    }
+  }
+
+  return options;
+}
+
+
+private List<ConsumptionOption> getConsumptionOptionsOther() {
+  ArrayList<ConsumptionOption> options = new ArrayList<>();
+
+  // All possible synthetic options with 3rd party content
+  for (NetworkOperator no : networkOperators) {
+    for (ContentProvider ocp : otherContentProviders) {
+      SyntheticBundle sb = new SyntheticBundle(no, Optional.empty(), Optional.of(ocp), false);
+      options.add(sb);
     }
   }
 
@@ -265,7 +342,9 @@ public void init() {
   }
 
   // Initialize representative consumer agents.
-  consumers = new Consumers(this);
+  consumersVideo = new Consumers(this, income * videoContentValue, 1, 0);
+  consumersOther = new Consumers(this, income * otherContentValue, 0, 1);
+  consumersBoth = new Consumers(this, income, videoContentValue, otherContentValue);
 
   if (isDebugEnabled())
     debugOut.println("Initialization completed.");

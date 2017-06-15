@@ -1,10 +1,12 @@
 package neutrality;
 
+import java.util.Optional;
+
 public class SyntheticBundle extends ConsumptionOption {
 
 public SyntheticBundle(NetworkOperator network,
-                       ContentProvider video,
-                       ContentProvider other,
+                       Optional<ContentProvider> video,
+                       Optional<ContentProvider> other,
                        boolean zeroRated) {
   this.network = network;
   this.video = video;
@@ -14,63 +16,72 @@ public SyntheticBundle(NetworkOperator network,
 
 @Override
 public double getTotalCost() {
+
+  // Connection/Content Prices
   double totalPrice = 0d;
-
   totalPrice += network.netOnly.price;
-  totalPrice += video.content.price;
-  totalPrice += other.content.price;
+  if (video.isPresent())
+    totalPrice += video.get().content.price;
+  if (other.isPresent())
+    totalPrice += other.get().content.price;
 
-  if (!zeroRated) {
-    totalPrice += network.videoBW.price;
-  } 
-  totalPrice += network.otherBW.price;
-  
-  // Assume that CPs can pass through IXC prices to consumers, and also that
-  // NSPs don't pay IXC prices to themselves.
-  if (network != video) {
-    totalPrice += network.ixcPrice * network.getModel().videoBWIntensity;
-  }
-  totalPrice += network.ixcPrice * network.getModel().otherBWIntensity;
+  // Assume CPs pass through IXC fees
+  if (video.isPresent())
+    totalPrice += network.videoIXC.price;
+  if (other.isPresent())
+    totalPrice += network.otherIXC.price;
+
+  // Consumer Bandwidth fees
+  if (video.isPresent())
+    if (!zeroRated)
+      totalPrice += network.videoBW.price;
+  if (other.isPresent())
+    totalPrice += network.otherBW.price;
 
   return totalPrice;
+
 }
 
 @Override
 public void consume(Consumers consumers, double qty) {
-  consumers.accumulatedUtility += utility(qty);
+  // Consumer costs/benefits
+  consumers.accumulatedUtility += consumers.utility(this, qty);
   consumers.accumulatedCost += getTotalCost() * qty;
 
+  // Connection/Content
   network.netOnly.qty += qty;
-  video.content.qty += qty;
-  other.content.qty += qty;
-  
-  /*
-   *  Bandwidth Fees
-   */
-  // For Video
-  if (zeroRated) {
-    network.zeroRatingDiscounts += network.videoBW.price * qty;
-  } else {
-    network.videoBW.qty += qty;
-  }
-  // For other
-  network.otherBW.qty += qty;
-  
-  
-  /*
-   *  IXC Fees
-   */
-  // Network Operator Receives
-  if (network == video) {  // But not from itself.
-    network.ixcAvoided += qty * network.videoIXC.price;
-  } else {
-    network.videoIXC.qty += qty;
-  }
-  network.otherIXC.qty += qty;
+  if (video.isPresent())
+    video.get().content.qty += qty;
+  if (other.isPresent())
+    other.get().content.qty += qty;
 
-  // Content Providers Pay
-  video.ixcPaid += network.videoIXC.price * qty;
-  other.ixcPaid += network.otherIXC.price * qty;
+  // IXC fees
+  if (video.isPresent()) {
+    if (network == video.get()) {
+      // But not from itself.
+      network.ixcAvoided += qty * network.videoIXC.price;
+    } else {
+      network.videoIXC.qty += qty;
+      video.get().ixcPaid += network.videoIXC.price * qty;
+    }
+  }
+  if (other.isPresent()) {
+    network.otherIXC.qty += qty;
+    other.get().ixcPaid += network.otherIXC.price * qty;
+  }
+
+  // Consumer Bandwidth fees
+  if (video.isPresent()) {
+    if (zeroRated) {
+      network.zeroRatingDiscounts += network.videoBW.price * qty;
+    } else {
+      network.videoBW.qty += qty;
+    }
+  }
+  if (other.isPresent()) {
+    network.otherBW.qty += qty;
+  }
+
 }
 
 }

@@ -1,24 +1,60 @@
 package neutrality;
 
+import static neutrality.NeutralityModel.CapitalCalculationMethod.COBB_DOUGLASS;
+import static neutrality.NeutralityModel.CapitalCalculationMethod.LOG_LOG;
+
 import java.util.Arrays;
 import java.util.List;
 
 public class Consumers {
 
 final NeutralityModel model;
-final double beta;
+final double          income;
+final double          videoContentValue;
+final double          otherContentValue;
+final double          beta;
 
 double accumulatedUtility;
 double accumulatedCost;
 
-public Consumers(NeutralityModel model) {
-
+public Consumers(NeutralityModel model,
+                 double income,
+                 double videoContentValue,
+                 double otherContentValue) {
   this.model = model;
-  
+  this.income = income;
+  this.videoContentValue = videoContentValue;
+  this.otherContentValue = otherContentValue;
+
   this.beta = 1 / (model.gamma - 1);
 
   accumulatedUtility = 0.0d;
   accumulatedCost = 0.0d;
+}
+
+public double K(ConsumptionOption co) {
+
+  double netTerm, vidTerm, othTerm;
+
+  if (model.capCalcMethod.equals(LOG_LOG)) {
+    netTerm = Math.log(co.Kn() + Math.E);
+    vidTerm = Math.log(co.videoKa() + Math.E);
+    othTerm = Math.log(co.otherKa() + Math.E);
+  } else if (model.capCalcMethod.equals(COBB_DOUGLASS)) {
+    netTerm = Math.pow(co.Kn(), model.tau);
+    vidTerm = Math.pow(co.videoKa(), model.psi);
+    othTerm = Math.pow(co.otherKa(), model.psi);
+  } else {
+    throw new RuntimeException();
+  }
+
+  double kTot = netTerm * vidTerm * videoContentValue +
+                netTerm * othTerm * otherContentValue;
+  return kTot;
+}
+
+public double utility(ConsumptionOption co, double qty) {
+  return K(co) * Math.pow(qty, model.gamma);
 }
 
 /**
@@ -67,7 +103,7 @@ public double[] determineConsumption(List<ConsumptionOption> options) {
   for (int i = 0; i < options.size(); i++) {
     ConsumptionOption option = options.get(i);
 
-    capTerm[i] = option.K();
+    capTerm[i] = K(option);
 
     capitalTerms_toBeta[i] = Math.pow(capTerm[i], beta);
     capitalTerms_toNegBeta[i] = Math.pow(capTerm[i], -beta);
@@ -105,16 +141,16 @@ public double[] determineConsumption(List<ConsumptionOption> options) {
     if (model.debugOut != null)
       model.debugOut.println("total denominator is " + den);
 
-    double firstTerm = model.income / den;
+    double firstTerm = income / den;
 
     // Residual term for all other goods; quasi-linear demand.
     // double secondTerm = prices[i] * linearDemandTerm;
     // double secondTerm = linearDemandTerm * prices[i] * prices[i] /
     // capTerm[i];
-    
+
     // Small negative constant to prevent convergence to zero
     double secondTerm = Double.NaN;
-    
+
     switch (model.demandAdjustmentMethod) {
       case CONSTANT:
         secondTerm = 1;
@@ -140,8 +176,10 @@ public double[] determineConsumption(List<ConsumptionOption> options) {
       // Punish any agent that tries to give a negative qty.
       ConsumptionOption offendingOption = options.get(i);
       offendingOption.network.fitnessAdjustment -= qty * qty * 10;
-      offendingOption.video.fitnessAdjustment -= qty * qty * 10;
-      offendingOption.other.fitnessAdjustment -= qty * qty * 10;
+      if (offendingOption.video.isPresent())
+        offendingOption.video.get().fitnessAdjustment -= qty * qty * 10;
+      if (offendingOption.other.isPresent())
+        offendingOption.other.get().fitnessAdjustment -= qty * qty * 10;
 
       // Set to zero for other purposes.
       qty = 0d;
