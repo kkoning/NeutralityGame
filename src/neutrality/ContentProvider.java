@@ -1,5 +1,8 @@
 package neutrality;
 
+import static neutrality.NeutralityModel.CapitalCalculationMethod.COBB_DOUGLASS;
+import static neutrality.NeutralityModel.CapitalCalculationMethod.LOG_LOG;
+
 import java.util.Optional;
 
 import agency.SimpleFirm;
@@ -27,12 +30,11 @@ public Boolean emulateMarket;
 public double       Ka      = Double.NaN;
 public SalesTracker content = new SalesTracker();
 
-
 /*
- * IXC paid needs to be tracked directly, because a content provider will 
- * pay different amounts of IXC to different network providers.
+ * IXC paid needs to be tracked directly, because a content provider will pay
+ * different amounts of IXC to different network providers.
  */
-public double       ixcPaid = 0d;
+public double ixcPaid = 0d;
 
 public double fitnessAdjustment = 0d;
 
@@ -91,7 +93,16 @@ public SimpleFitness getFitness() {
     double utilProduced = 0;
 
     double qtyTerm = Math.pow(content.qty, getModel().gamma);
-    double kTerm = Math.pow(Ka, getModel().psi);
+    double kTerm;
+
+    if (getModel().capCalcMethod.equals(LOG_LOG)) {
+      kTerm = Math.log(Ka);
+    } else if (getModel().capCalcMethod.equals(COBB_DOUGLASS)) {
+      kTerm = Math.pow(Ka, getModel().psi);
+    } else {
+      throw new RuntimeException();
+    }
+
     utilProduced = qtyTerm * kTerm;
 
     double lossPenalty = 0;

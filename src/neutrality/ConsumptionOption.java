@@ -1,5 +1,8 @@
 package neutrality;
 
+import static neutrality.NeutralityModel.CapitalCalculationMethod.COBB_DOUGLASS;
+import static neutrality.NeutralityModel.CapitalCalculationMethod.LOG_LOG;
+
 /**
  * This
  *
@@ -16,13 +19,20 @@ public abstract double getTotalCost();
 public abstract void consume(Consumers consumers, double qty);
 
 public double K() {
-//  double netTerm = Math.pow(network.Kn,network.getModel().tau);
-//  double vidTerm = Math.pow(video.Ka,network.getModel().psi);
-//  double othTerm = Math.pow(other.Ka,network.getModel().psi);
+
+  double netTerm, vidTerm, othTerm;
   
-  double netTerm = Math.log(network.Kn + Math.E);
-  double vidTerm = Math.log(video.Ka + Math.E);
-  double othTerm = Math.log(other.Ka + Math.E);
+  if (network.getModel().capCalcMethod.equals(LOG_LOG)) {
+    netTerm = Math.log(network.Kn + Math.E);
+    vidTerm = Math.log(video.Ka + Math.E);
+    othTerm = Math.log(other.Ka + Math.E);
+  } else if (network.getModel().capCalcMethod.equals(COBB_DOUGLASS)) {
+    netTerm = Math.pow(network.Kn,network.getModel().tau);
+    vidTerm = Math.pow(video.Ka,network.getModel().psi);
+    othTerm = Math.pow(other.Ka,network.getModel().psi);
+  } else {
+    throw new RuntimeException();
+  }
   
   double vidVal = network.getModel().videoContentValue;
   double othVal = network.getModel().otherContentValue;

@@ -1,7 +1,5 @@
 package neutrality;
 
-import static agency.util.Statistics.HHI;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,13 +15,13 @@ public class NeutralityModel
 
 public Double alpha;
 public Double beta;
-public Double psi;
-public Double tau;
 public Double gamma;
 public Double demandPriceCoefficient;
 public Double income;
 public Double firmEndowment;
 public Double nspMarginalCost;
+
+public Double omega;
 
 public Boolean policy0PriceIXC;
 public Boolean policyBundlingAllowed;
@@ -32,6 +30,8 @@ public Boolean policyNSPContentAllowed;
 
 // Quasi-parameters; model is broken-ish without them?
 public Double linearDemandTerm;
+public CapitalCalculationMethod capCalcMethod;
+
 
 public Integer maxSteps;
 
@@ -43,6 +43,10 @@ public double otherBWIntensity;
 
 public double incomeVideoOnly;
 public double incomeOtherOnly;
+
+public double psi;
+public double tau;
+
 
 // Operational Variables
 ArrayList<NetworkOperator> networkOperators      = new ArrayList<>();
@@ -227,6 +231,9 @@ public void init() {
     debugOut.println("otherBWIntensity = " + otherBWIntensity);
   }
 
+  // Pre-calculate psi and tau from omega.
+  psi = tau = omega * (1 - gamma) * 0.5;
+  
   // Initialize representative consumer agents.
   consumers = new Consumers(income,
                             gamma,
@@ -250,6 +257,12 @@ public static final double proportionA(double split) {
 
 public static final double proportionB(double split) {
   return 1.0d - proportionA(split);
+}
+
+
+public static enum CapitalCalculationMethod {
+  LOG_LOG,
+  COBB_DOUGLASS
 }
 
 }
