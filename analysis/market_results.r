@@ -92,10 +92,22 @@ plot_num <- 1
       ggtitle('Distribution of videoBalance')
     plot_num <- plot_num + 1
 
-    diagnostic_plots[[plot_num]] = ggplot(models,aes(x = generation, y = consumerPaid)) + 
+    diagnostic_plots[[plot_num]] = ggplot(models,aes(x = generation, y = consumerVideoPaid)) + 
       stat_bin2d(bins=heat_bins) + 
       scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
-      ggtitle('Distribution of consumerPaid')
+      ggtitle('Distribution of consumerVideoPaid')
+    plot_num <- plot_num + 1
+
+    diagnostic_plots[[plot_num]] = ggplot(models,aes(x = generation, y = consumerOtherPaid)) + 
+      stat_bin2d(bins=heat_bins) + 
+      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
+      ggtitle('Distribution of consumerOtherPaid')
+    plot_num <- plot_num + 1
+
+    diagnostic_plots[[plot_num]] = ggplot(models,aes(x = generation, y = consumerBothPaid)) + 
+      stat_bin2d(bins=heat_bins) + 
+      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
+      ggtitle('Distribution of consumerBothPaid')
     plot_num <- plot_num + 1
 
 num_cols <- as.integer(length(diagnostic_plots)^0.5 - 0.1) + 1
@@ -310,15 +322,8 @@ plot_num <- 1
     plot_num <- plot_num + 1
 
 
-# 'consumerUtility',
 # 'zeroRatingDiscounts'
 # 'ixcAvoided',
-    market_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(consumerUtility))) + 
-      stat_bin2d(bins=heat_bins) + 
-      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
-      ggtitle('Distribution of log(consumerUtility)')
-    plot_num <- plot_num + 1
-
     market_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(zeroRatingDiscounts))) + 
       stat_bin2d(bins=heat_bins) + 
       scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
@@ -330,6 +335,33 @@ plot_num <- 1
       scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
       ggtitle('Distribution of log(ixcAvoided)')
     plot_num <- plot_num + 1
+
+# 'consumerUtility',
+    market_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(consumerVideoUtility))) + 
+      stat_bin2d(bins=heat_bins) + 
+      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
+      ggtitle('Distribution of log(consumerVideoUtility)')
+    plot_num <- plot_num + 1
+
+    market_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(consumerOtherUtility))) + 
+      stat_bin2d(bins=heat_bins) + 
+      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
+      ggtitle('Distribution of log(consumerOtherUtility)')
+    plot_num <- plot_num + 1
+
+    market_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(consumerBothUtility))) + 
+      stat_bin2d(bins=heat_bins) + 
+      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
+      ggtitle('Distribution of log(consumerBothUtility)')
+    plot_num <- plot_num + 1
+
+    market_plots[[plot_num]] = ggplot(models,aes(x = generation, y = log(consumerUtility))) + 
+      stat_bin2d(bins=heat_bins) + 
+      scale_fill_gradientn(colours=rainbow(5), trans="log", labels = fmt_dcimals(0)) +
+      ggtitle('Distribution of log(consumerUtility)')
+    plot_num <- plot_num + 1
+
+
 
 num_cols <- as.integer(length(market_plots)^0.5 - 0.1) + 1
 png("market.png", height=png_height, width=png_width, res=(300/(num_cols/2)))
